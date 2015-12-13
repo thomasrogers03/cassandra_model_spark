@@ -1,4 +1,3 @@
-require 'fileutils'
 require 'optparse'
 require 'bundler'
 Bundler.require :default
