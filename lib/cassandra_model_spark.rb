@@ -37,3 +37,5 @@ unless CassandraModel.const_defined?('RSPEC')
   initialize_java_engine
   require 'cassandra_model_spark/java_classes'
 end
+
+require 'cassandra_model_spark/raw_connection'
