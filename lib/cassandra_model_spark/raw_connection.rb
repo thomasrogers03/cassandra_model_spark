@@ -20,14 +20,17 @@ module CassandraModel
     def flat_spark_config(config = spark_config)
       config.inject({}) do |memo, (key, value)|
         if value.is_a?(Hash)
-          child_conf = flat_spark_config(value)
-          child_conf.each do |child_key, child_value|
-            memo["#{key}.#{child_key}"] = child_value
-          end
-          memo
+          memo.merge!(child_spark_conf(key, value))
         else
           memo.merge!(key.to_s => value)
         end
+      end
+    end
+
+    def child_spark_conf(key, value)
+      child_conf = flat_spark_config(value)
+      child_conf.inject({}) do |child_memo, (child_key, child_value)|
+        child_memo.merge!("#{key}.#{child_key}" => child_value)
       end
     end
 
