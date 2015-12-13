@@ -17,12 +17,37 @@ module CassandraModel
 
       subject { connection.java_spark_context }
 
-      its(:config) { is_expected.to eq(default_config) }
+      it { is_expected.to be_a_kind_of(JavaSparkContext) }
 
       it 'should not initialize the spark context multiple times' do
         connection.java_spark_context
         expect(JavaSparkContext).not_to receive(:new)
         connection.java_spark_context
+      end
+
+      its(:config) { is_expected.to eq(default_config) }
+
+      context 'with an overriding spark config' do
+        let(:config) do
+          {
+              hosts: %w(cassandra.local),
+              spark: {
+                  app: {name: 'sparky'},
+                  master: 'spark.dev',
+                  executor: {memory: '512g'},
+              }
+          }
+        end
+        let(:spark_config) do
+          SparkConf.from_hash({
+                                  'spark.app.name' => 'sparky',
+                                  'spark.master' => 'spark.dev',
+                                  'spark.executor.memory' => '512g',
+                                  'spark.cassandra.connection.host' => configured_host,
+                              })
+        end
+
+        its(:config) { is_expected.to eq(spark_config) }
       end
     end
 
