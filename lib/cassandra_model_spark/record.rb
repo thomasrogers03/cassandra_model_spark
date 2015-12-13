@@ -6,5 +6,9 @@ module CassandraModel
           table.connection.config[:keyspace],
           table_name)
     end
+
+    def self.count
+      rdd.count
+    end
   end
 end
