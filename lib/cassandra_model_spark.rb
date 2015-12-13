@@ -21,7 +21,7 @@ require 'active_support/core_ext/class/attribute_accessors'
 require 'thomas_utils'
 require 'batch_reactor'
 require 'cassandra_model'
-require 'rjb' unless RUBY_ENGINE == 'jruby'
+require 'rjb' unless RUBY_ENGINE == 'jruby' || CassandraModel.const_defined?('NO_BRIDGE')
 
 module CassandraModel
   module Spark
@@ -31,7 +31,7 @@ module CassandraModel
   end
 end
 
-unless CassandraModel.const_defined?('RSPEC')
+unless CassandraModel.const_defined?('NO_BRIDGE')
   require 'cassandra_model_spark/java_bridge'
   Dir["#{CassandraModel::Spark.root}/ext/scala_helper/target/*.jar"].each { |file| require file }
   initialize_java_engine

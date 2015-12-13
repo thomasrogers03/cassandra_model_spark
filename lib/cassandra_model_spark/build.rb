@@ -1,3 +1,7 @@
+module CassandraModel
+  NO_BRIDGE = true
+end
+
 require 'optparse'
 require 'bundler'
 Bundler.require :default

@@ -7,7 +7,7 @@ if ENV['COVERAGE'].to_i > 0
 end
 
 module CassandraModel
-  RSPEC = true
+  NO_BRIDGE = true
 end
 
 require 'bundler'
