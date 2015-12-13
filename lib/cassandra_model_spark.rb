@@ -35,4 +35,5 @@ unless CassandraModel.const_defined?('RSPEC')
   require 'cassandra_model_spark/java_bridge'
   Dir["#{CassandraModel::Spark.root}/ext/scala_helper/target/*.jar"].each { |file| require file }
   initialize_java_engine
+  require 'cassandra_model_spark/java_classes'
 end
