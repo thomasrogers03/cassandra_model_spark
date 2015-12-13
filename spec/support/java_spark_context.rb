@@ -28,5 +28,11 @@ class SparkConf
   attr_reader :conf
 end
 
+class InternalSparkContext < Struct.new(:config)
+end
+
 class JavaSparkContext < Struct.new(:config)
+  def sc
+    @sc ||= InternalSparkContext.new(config)
+  end
 end

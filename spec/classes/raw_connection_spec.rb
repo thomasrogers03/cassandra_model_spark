@@ -18,6 +18,20 @@ module CassandraModel
       subject { connection.java_spark_context }
 
       its(:config) { is_expected.to eq(default_config) }
+
+      it 'should not initialize the spark context multiple times' do
+        connection.java_spark_context
+        expect(JavaSparkContext).not_to receive(:new)
+        connection.java_spark_context
+      end
+    end
+
+    describe '#spark_context' do
+      let!(:context) { connection.java_spark_context }
+
+      subject { connection.spark_context }
+
+      it { is_expected.to eq(context.sc) }
     end
 
   end
