@@ -7,9 +7,9 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
-  revision: b723f85ba518f24a96c803983cd44ae32279d930
+  revision: 3440afa9f31359ad9f9bdc620a9e92d0c37f3965
   specs:
-    cassandra_model (0.9.10)
+    cassandra_model (0.9.11)
       activesupport (~> 4.0)
       batch_reactor (~> 0.0.1)
       cassandra-driver (~> 1.1)
@@ -27,7 +27,7 @@ PATH
   remote: .
   specs:
     cassandra_model_spark (0.0.1)
-      cassandra_model (~> 0.9.10)
+      cassandra_model (~> 0.9.11)
       rjb (~> 1.5.4)
 
 GEM
@@ -88,7 +88,6 @@ GEM
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
     rdoc (4.2.0)
-      json (~> 1.4)
     rjb (1.5.4)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
