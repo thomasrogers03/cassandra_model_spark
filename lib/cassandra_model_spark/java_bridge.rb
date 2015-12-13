@@ -30,7 +30,7 @@ module JavaBridge
   else
     def import_java_object(path, options = {})
       name = options.fetch(:as) { path.split('.').last }.to_sym
-      Object.const_set(name, Rjb.import(path))
+      Object.const_set(name, load_java_class(path))
     end
 
     def require(path)
@@ -55,6 +55,18 @@ module JavaBridge
 
     def java_jar_list
       @java_jar_list ||= []
+    end
+
+    def load_java_class(path)
+      import_quiet { Rjb.import(path) }
+    end
+
+    def import_quiet
+      prev_verbox = $VERBOSE
+      $VERBOSE = nil
+      yield
+    ensure
+      $VERBOSE = prev_verbox
     end
   end
 end
