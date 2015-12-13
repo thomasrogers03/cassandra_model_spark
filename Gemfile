@@ -10,6 +10,7 @@ group :development do
   gem 'thomas_utils', '~> 0.1.4', github: 'thomasrogers03/thomas_utils'
   gem 'batch_reactor', github: 'thomasrogers03/batch_reactor'
   gem 'cassandra_model', github: 'thomasrogers03/cassandra_model'
+  gem 'rjb'
 end
 
 group :test do

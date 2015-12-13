@@ -18,3 +18,17 @@ require 'concurrent'
 require 'cassandra'
 require 'active_support/all'
 require 'active_support/core_ext/class/attribute_accessors'
+
+module CassandraModel
+  module Spark
+    def self.root
+      @gem_root ||= File.expand_path('../..', __FILE__)
+    end
+  end
+end
+
+unless CassandraModel.const_defined?('RSPEC')
+  require 'cassandra_model_spark/java_bridge'
+  Dir["#{CassandraModel::Spark.root}/ext/scala_helper/target/*.jar"].each { |f| require f }
+  initialize_java_engine
+end
