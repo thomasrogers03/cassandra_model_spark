@@ -5,10 +5,12 @@ public/images
 public/assets
 log
 tmp
-tmp
 *.png
 .ruby-version
 .ruby-env
 .idea
 spike
 *.gem
+ext/scala_helper/target
+ext/scala_helper/project/project
+ext/scala_helper/project/target

@@ -28,6 +28,7 @@ PATH
   specs:
     cassandra_model_spark (0.0.1)
       cassandra_model (~> 0.9.10)
+      rjb (~> 1.5.4)
 
 GEM
   remote: https://rubygems.org/

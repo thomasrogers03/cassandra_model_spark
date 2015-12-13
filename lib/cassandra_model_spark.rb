@@ -18,6 +18,10 @@ require 'concurrent'
 require 'cassandra'
 require 'active_support/all'
 require 'active_support/core_ext/class/attribute_accessors'
+require 'thomas_utils'
+require 'batch_reactor'
+require 'cassandra_model'
+require 'rjb' unless RUBY_ENGINE == 'jruby'
 
 module CassandraModel
   module Spark
