@@ -39,4 +39,5 @@ unless CassandraModel.const_defined?('NO_BRIDGE')
 end
 
 require 'cassandra_model_spark/raw_connection'
+require 'cassandra_model_spark/connection_cache'
 require 'cassandra_model_spark/record'

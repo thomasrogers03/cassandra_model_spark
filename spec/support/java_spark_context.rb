@@ -35,4 +35,7 @@ class JavaSparkContext < Struct.new(:config)
   def sc
     @sc ||= InternalSparkContext.new(config)
   end
+
+  def stop
+  end
 end
