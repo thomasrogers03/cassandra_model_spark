@@ -1,3 +1,28 @@
+class JavaHash < Hash
+end
+
+class Hash
+  def to_java
+    JavaHash[self]
+  end
+end
+
+class FilteredRDD
+  attr_reader :rdd, :restriction
+
+  def initialize(rdd, restriction)
+    @rdd = rdd
+    @restriction = restriction
+  end
+end
+
+class SparkCassandraHelper
+  #noinspection RubyClassMethodNamingConvention
+  def self.filterRDD(rdd, restriction)
+    FilteredRDD.new(rdd, restriction)
+  end
+end
+
 class CassandraSQLContext
   attr_reader :keyspace
 

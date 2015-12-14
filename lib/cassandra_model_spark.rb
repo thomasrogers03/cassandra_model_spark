@@ -41,4 +41,5 @@ end
 require 'cassandra_model_spark/raw_connection'
 require 'cassandra_model_spark/connection_cache'
 require 'cassandra_model_spark/record'
+require 'cassandra_model_spark/query_builder'
 require 'cassandra_model_spark/data_frame'
