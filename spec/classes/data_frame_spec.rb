@@ -66,8 +66,16 @@ module CassandraModel
           expect { |block| data_frame.cached(&block) }.to yield_control
         end
 
+        it 'should yield within context of the frame' do
+          frame = nil
+          data_frame.cached { frame = self }
+          expect(frame).to eq(data_frame)
+        end
+
         it 'should cache the data frame' do
-          data_frame.cached { expect(data_frame.spark_data_frame).to be_cached }
+          cached = nil
+          data_frame.cached { cached = spark_data_frame.cached? }
+          expect(cached).to eq(true)
         end
 
         it 'should uncache it afterwards' do

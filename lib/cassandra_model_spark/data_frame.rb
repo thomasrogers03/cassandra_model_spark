@@ -26,9 +26,9 @@ module CassandraModel
         end.create_data_frame(sql_context, rdd)
       end
 
-      def cached
+      def cached(&block)
         spark_data_frame.cache
-        yield
+        instance_eval(&block)
         spark_data_frame.unpersist
       end
 
