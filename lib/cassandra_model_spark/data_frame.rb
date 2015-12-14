@@ -1,6 +1,7 @@
 module CassandraModel
   module Spark
     class DataFrame
+      extend QueryHelper
       SQL_TYPE_MAP = {
           int: SqlIntegerType,
           text: SqlStringType,

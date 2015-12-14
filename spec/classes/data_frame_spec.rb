@@ -79,11 +79,16 @@ module CassandraModel
         end
 
         it 'should uncache it afterwards' do
-          data_frame.cached { }
+          data_frame.cached {}
           expect(data_frame.spark_data_frame).not_to be_cached
         end
       end
 
+      describe 'querying the data frame' do
+        subject { DataFrame }
+
+        it_behaves_like 'a query helper'
+      end
     end
   end
 end
