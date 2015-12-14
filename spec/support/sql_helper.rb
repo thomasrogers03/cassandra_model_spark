@@ -1,10 +1,16 @@
 class CassandraSQLContext
+  attr_reader :keyspace
+
   def initialize(spark_context)
     @spark_context = spark_context
   end
 
   def ==(rhs)
     rhs.is_a?(CassandraSQLContext) && sql_context == rhs.sql_context
+  end
+
+  def setKeyspace(value)
+    @keyspace = value
   end
 
   protected

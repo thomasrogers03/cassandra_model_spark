@@ -14,7 +14,7 @@ module CassandraModel
       end
 
       def sql_context
-        @sql_context ||= CassandraSQLContext.new(record_klass.table.connection.spark_context)
+        @sql_context ||= create_sql_context
       end
 
       def spark_data_frame
@@ -29,6 +29,12 @@ module CassandraModel
       private
 
       attr_reader :record_klass, :rdd
+
+      def create_sql_context
+        CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
+          context.setKeyspace(record_klass.table.connection.config[:keyspace])
+        end
+      end
     end
   end
 end

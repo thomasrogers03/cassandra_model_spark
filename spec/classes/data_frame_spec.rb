@@ -12,7 +12,9 @@ module CassandraModel
 
       describe '#sql_context' do
         let(:spark_context) { record_klass.table.connection.spark_context }
+        let(:keyspace) { Faker::Lorem.word }
         subject { data_frame.sql_context }
+        before { record_klass.table.connection.config = { keyspace: keyspace } }
 
         it { is_expected.to eq(CassandraSQLContext.new(spark_context)) }
 
@@ -20,6 +22,10 @@ module CassandraModel
           data_frame.sql_context
           expect(CassandraSQLContext).not_to receive(:new)
           data_frame.sql_context
+        end
+
+        it 'should set the keyspace from the record class' do
+          expect(subject.keyspace).to eq(keyspace)
         end
       end
 
