@@ -92,7 +92,7 @@ module CassandraModel
       end
 
       describe 'querying the data frame' do
-        subject { DataFrame }
+        subject { data_frame }
 
         it_behaves_like 'a query helper'
       end
