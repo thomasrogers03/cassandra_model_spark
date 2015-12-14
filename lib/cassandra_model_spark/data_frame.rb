@@ -26,6 +26,12 @@ module CassandraModel
         end.create_data_frame(sql_context, rdd)
       end
 
+      def cached
+        spark_data_frame.cache
+        yield
+        spark_data_frame.unpersist
+      end
+
       private
 
       attr_reader :record_klass, :rdd

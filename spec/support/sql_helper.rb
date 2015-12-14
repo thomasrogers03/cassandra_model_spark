@@ -26,6 +26,18 @@ class SqlDataFrame
     @rdd = rdd
     @schema = schema
   end
+
+  def cache
+    @cached = true
+  end
+
+  def unpersist
+    @cached = false
+  end
+
+  def cached?
+    !!@cached
+  end
 end
 
 class SparkSchemaBuilder

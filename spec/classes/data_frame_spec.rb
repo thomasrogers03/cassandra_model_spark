@@ -14,7 +14,7 @@ module CassandraModel
         let(:spark_context) { record_klass.table.connection.spark_context }
         let(:keyspace) { Faker::Lorem.word }
         subject { data_frame.sql_context }
-        before { record_klass.table.connection.config = { keyspace: keyspace } }
+        before { record_klass.table.connection.config = {keyspace: keyspace} }
 
         it { is_expected.to eq(CassandraSQLContext.new(spark_context)) }
 
@@ -59,6 +59,21 @@ module CassandraModel
 
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
+      end
+
+      describe '#cached' do
+        it 'should yield' do
+          expect { |block| data_frame.cached(&block) }.to yield_control
+        end
+
+        it 'should cache the data frame' do
+          data_frame.cached { expect(data_frame.spark_data_frame).to be_cached }
+        end
+
+        it 'should uncache it afterwards' do
+          data_frame.cached { }
+          expect(data_frame.spark_data_frame).not_to be_cached
+        end
       end
 
     end
