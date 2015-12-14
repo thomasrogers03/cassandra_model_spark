@@ -24,7 +24,7 @@ module CassandraModel
             type = SQL_TYPE_MAP.fetch(type) { SqlStringType }
             builder.add_column(name.to_s, type)
           end
-        end.create_data_frame(sql_context, rdd)
+        end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(record_klass.table_name) }
       end
 
       def cached(&block)

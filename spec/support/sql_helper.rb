@@ -63,6 +63,9 @@ class SqlDataFrame
   def cached?
     !!@cached
   end
+
+  def register_temp_table(name)
+  end
 end
 
 class SparkSchemaBuilder

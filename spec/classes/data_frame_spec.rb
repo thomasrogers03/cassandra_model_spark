@@ -4,11 +4,13 @@ module CassandraModel
   module Spark
     describe DataFrame do
       let(:cassandra_columns) { {partition: :text} }
-      let(:record_klass) { Record }
+      let(:table_name) { Faker::Lorem.word }
+      let(:table) { TableRedux.new(table_name) }
+      let(:record_klass) do
+        double(:klass, table: table, cassandra_columns: cassandra_columns, table_name: table_name)
+      end
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
-
-      before { allow(Record).to receive(:cassandra_columns).and_return(cassandra_columns) }
 
       describe '#sql_context' do
         let(:spark_context) { record_klass.table.connection.spark_context }
@@ -38,6 +40,11 @@ module CassandraModel
         it 'should instance-cache the frame' do
           data_frame.spark_data_frame
           expect(SqlDataFrame).not_to receive(:new)
+          data_frame.spark_data_frame
+        end
+
+        it 'should register a temp table with the name of the table associated with the frame' do
+          expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(table_name)
           data_frame.spark_data_frame
         end
 
