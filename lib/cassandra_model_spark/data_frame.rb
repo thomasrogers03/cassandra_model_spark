@@ -13,6 +13,10 @@ module CassandraModel
         @rdd = rdd
       end
 
+      def sql_context
+        @sql_context ||= CassandraSQLContext.new(record_klass.table.connection.spark_context)
+      end
+
       def spark_data_frame
         @frame ||= SparkSchemaBuilder.new.tap do |builder|
           record_klass.cassandra_columns.each do |name, type|
@@ -25,10 +29,6 @@ module CassandraModel
       private
 
       attr_reader :record_klass, :rdd
-
-      def sql_context
-        CassandraSQLContext.new(record_klass.table.connection.spark_context)
-      end
     end
   end
 end

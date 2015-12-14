@@ -10,6 +10,19 @@ module CassandraModel
 
       before { allow(Record).to receive(:cassandra_columns).and_return(cassandra_columns) }
 
+      describe '#sql_context' do
+        let(:spark_context) { record_klass.table.connection.spark_context }
+        subject { data_frame.sql_context }
+
+        it { is_expected.to eq(CassandraSQLContext.new(spark_context)) }
+
+        it 'should cache the value' do
+          data_frame.sql_context
+          expect(CassandraSQLContext).not_to receive(:new)
+          data_frame.sql_context
+        end
+      end
+
       describe '#spark_data_frame' do
         let(:sql_columns) { {'partition' => SqlStringType} }
         subject { data_frame.spark_data_frame }
