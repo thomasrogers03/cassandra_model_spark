@@ -52,29 +52,6 @@ module CassandraModel
         sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}")
       end
 
-      def select_columns(options)
-        if options[:select]
-          select_clause = options[:select].map do |column|
-            if column.is_a?(Hash)
-              column, options = column.first
-              if options[:aggregate]
-                column = case options[:aggregate]
-                           when :stddev
-                             "AVG(POW(#{column},2) - POW(AVG(#{column}),2)"
-                           else
-                             "#{options[:aggregate].to_s.upcase}(#{column})"
-                         end
-              end
-              column = "#{column} AS #{options[:as]}" if options[:as]
-            end
-            record_klass.select_column(column)
-          end
-          select_clause * ', '
-        else
-          '*'
-        end
-      end
-
       private
 
       attr_reader :record_klass, :rdd
@@ -83,6 +60,37 @@ module CassandraModel
         CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
           context.setKeyspace(record_klass.table.connection.config[:keyspace])
         end
+      end
+
+      def select_columns(options)
+        options[:select] ? clean_select_columns(options) * ', ' : '*'
+      end
+
+      def clean_select_columns(options)
+        options[:select].map do |column|
+          column = updated_column(column) if column.is_a?(Hash)
+          record_klass.select_column(column)
+        end
+      end
+
+      def updated_column(column)
+        column, options = column.first
+        column = aggregate_column(column, options) if options[:aggregate]
+        column = "#{column} AS #{options[:as]}" if options[:as]
+        column
+      end
+
+      def aggregate_column(column, options)
+        case options[:aggregate]
+          when :stddev
+            variance_column(column)
+          else
+            "#{options[:aggregate].to_s.upcase}(#{column})"
+        end
+      end
+
+      def variance_column(column)
+        "AVG(POW(#{column},2) - POW(AVG(#{column}),2)"
       end
 
       def query_where_clause(restriction)
