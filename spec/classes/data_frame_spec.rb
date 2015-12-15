@@ -48,6 +48,16 @@ module CassandraModel
           data_frame.spark_data_frame
         end
 
+        context 'with a specific table name specified' do
+          let(:alias_table_name) { Faker::Lorem.word }
+          let(:data_frame) { DataFrame.new(record_klass, rdd, alias: alias_table_name) }
+
+          it 'should register a temp table with the alias' do
+            expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(alias_table_name)
+            data_frame.spark_data_frame
+          end
+        end
+
         its(:schema) { is_expected.to eq(sql_columns) }
 
         context 'with a different set of columns' do

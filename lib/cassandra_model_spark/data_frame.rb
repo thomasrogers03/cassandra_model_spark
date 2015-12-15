@@ -10,7 +10,8 @@ module CassandraModel
           timestamp: SqlTimestampType,
       }.freeze
 
-      def initialize(record_klass, rdd)
+      def initialize(record_klass, rdd, options = {})
+        @table_name = options.fetch(:alias) { record_klass.table_name }
         @record_klass = record_klass
         @rdd = rdd
       end
@@ -25,7 +26,7 @@ module CassandraModel
             type = SQL_TYPE_MAP.fetch(type) { SqlStringType }
             builder.add_column(name.to_s, type)
           end
-        end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(record_klass.table_name) }
+        end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name) }
       end
 
       def cached(&block)
@@ -36,7 +37,7 @@ module CassandraModel
 
       private
 
-      attr_reader :record_klass, :rdd
+      attr_reader :record_klass, :rdd, :table_name
 
       def create_sql_context
         CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
