@@ -47,13 +47,17 @@ module CassandraModel
       end
 
       def query(restriction, options)
-        select_columns = if options[:select]
-                           record_klass.select_columns(options.fetch(:select)) * ', '
-                         else
-                           '*'
-                         end
+        select_clause = select_columns(options)
         where_clause = query_where_clause(restriction)
-        sql_context.sql("SELECT #{select_columns} FROM #{table_name}#{where_clause}")
+        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}")
+      end
+
+      def select_columns(options)
+        if options[:select]
+          record_klass.select_columns(options[:select]) * ', '
+        else
+          '*'
+        end
       end
 
       private
