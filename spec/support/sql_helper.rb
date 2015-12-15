@@ -38,6 +38,9 @@ class CassandraSQLContext
     @keyspace = value
   end
 
+  def sql
+  end
+
   protected
 
   attr_reader :sql_context

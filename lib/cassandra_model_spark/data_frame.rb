@@ -46,6 +46,11 @@ module CassandraModel
         Cassandra::Future.error(NotImplementedError.new)
       end
 
+      def query(restriction, options)
+        select_columns = record_klass.select_columns(options.fetch(:select) { %w(*) }) * ', '
+        sql_context.sql("SELECT #{select_columns} FROM #{table_name}")
+      end
+
       private
 
       attr_reader :record_klass, :rdd

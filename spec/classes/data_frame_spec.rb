@@ -144,6 +144,50 @@ module CassandraModel
       it_behaves_like 'an async method not yet implemented', :request_async
       it_behaves_like 'an async method not yet implemented', :first_async
 
+      describe '#query' do
+        let(:sql_context) { double(:sql_context) }
+        let(:query) { double(:query) }
+        let(:restriction) { {} }
+        let(:options) { {} }
+        let(:query_sql) { "SELECT * FROM #{table_name}" }
+        let(:data_frame) { DataFrame.new(record_klass, rdd, sql_context: sql_context) }
+
+        subject { data_frame.query(restriction, options) }
+
+        before do
+          allow(sql_context).to receive(:sql).with(query_sql).and_return(query)
+          allow(record_klass).to(receive(:select_columns)) { |columns| columns }
+        end
+
+        it { is_expected.to eq(query) }
+
+        context 'with a different columns selected' do
+          let(:options) { {select: [:partition]} }
+          let(:query_sql) { "SELECT partition FROM #{table_name}" }
+
+          it { is_expected.to eq(query) }
+
+          context 'with multiple columns' do
+            let(:options) { {select: [:partition, :clustering]} }
+            let(:query_sql) { "SELECT partition, clustering FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when the columns are mapped' do
+            let(:query_sql) { "SELECT rk_partition FROM #{table_name}" }
+
+            before do
+              allow(record_klass).to(receive(:select_columns)) do |columns|
+                columns.map { |key| :"rk_#{key}" }
+              end
+            end
+
+            it { is_expected.to eq(query) }
+          end
+        end
+      end
+
     end
   end
 end
