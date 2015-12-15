@@ -127,6 +127,23 @@ module CassandraModel
 
         it_behaves_like 'a query helper'
       end
+
+      shared_examples_for 'an async method not yet implemented' do |method|
+        describe "##{method}" do
+          subject { data_frame.public_send(method, {}, {}) }
+
+          it { expect { subject.get }.to raise_error(NotImplementedError) }
+        end
+      end
+
+      describe '#request_async' do
+        subject { data_frame.request_async({}) }
+        it { is_expected.to be_a_kind_of(ResultPaginator) }
+      end
+
+      it_behaves_like 'an async method not yet implemented', :request_async
+      it_behaves_like 'an async method not yet implemented', :first_async
+
     end
   end
 end

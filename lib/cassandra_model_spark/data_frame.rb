@@ -38,6 +38,14 @@ module CassandraModel
         spark_data_frame.unpersist
       end
 
+      def request_async(*_)
+        ResultPaginator.new(first_async) {}
+      end
+
+      def first_async(*_)
+        Cassandra::Future.error(NotImplementedError.new)
+      end
+
       private
 
       attr_reader :record_klass, :rdd
