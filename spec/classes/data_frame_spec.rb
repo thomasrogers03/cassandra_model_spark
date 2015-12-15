@@ -231,6 +231,39 @@ module CassandraModel
             end
 
             it { is_expected.to eq(query) }
+
+            context 'when columns are aliased' do
+              let(:options) { {select: [{partition: {as: :part}}]} }
+              let(:query_sql) { "SELECT rk_partition AS part FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+          end
+
+          context 'when columns are aliased' do
+            let(:options) { {select: [{partition: {as: :part}}]} }
+            let(:query_sql) { "SELECT partition AS part FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when the column is to be aggregated' do
+            let(:aggregate) { :avg }
+            let(:options) { {select: [{partition: {aggregate: aggregate}}]} }
+            let(:query_sql) { "SELECT AVG(partition) FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+
+            shared_examples_for 'an aggregate function' do |function|
+              let(:aggregate) { function.downcase.to_sym }
+              let(:sql_aggregate) { function.to_s.upcase }
+              let(:query_sql) { "SELECT #{sql_aggregate}(partition) FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+
+            it_behaves_like 'an aggregate function', :count
+            it_behaves_like 'an aggregate function', :sum
           end
         end
       end

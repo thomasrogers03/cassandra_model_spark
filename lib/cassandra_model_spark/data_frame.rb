@@ -54,7 +54,15 @@ module CassandraModel
 
       def select_columns(options)
         if options[:select]
-          record_klass.select_columns(options[:select]) * ', '
+          select_clause = options[:select].map do |column|
+            if column.is_a?(Hash)
+              column, options = column.first
+              column = "#{options[:aggregate].to_s.upcase}(#{column})" if options[:aggregate]
+              column = "#{column} AS #{options[:as]}" if options[:as]
+            end
+            record_klass.select_column(column)
+          end
+          select_clause * ', '
         else
           '*'
         end
