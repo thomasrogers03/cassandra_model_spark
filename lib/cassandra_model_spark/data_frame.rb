@@ -10,6 +10,8 @@ module CassandraModel
           timestamp: SqlTimestampType,
       }.freeze
 
+      attr_reader :table_name
+
       def initialize(record_klass, rdd, options = {})
         @table_name = options.fetch(:alias) { record_klass.table_name }
         @sql_context = options[:sql_context]
@@ -38,7 +40,7 @@ module CassandraModel
 
       private
 
-      attr_reader :record_klass, :rdd, :table_name
+      attr_reader :record_klass, :rdd
 
       def create_sql_context
         CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|

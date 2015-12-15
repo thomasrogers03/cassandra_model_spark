@@ -12,6 +12,20 @@ module CassandraModel
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
 
+
+      describe '#table_name' do
+        subject { data_frame.table_name }
+
+        it { is_expected.to eq(table_name) }
+
+        context 'with a specific table name' do
+          let(:alias_table_name) { Faker::Lorem.word }
+          let(:data_frame) { DataFrame.new(record_klass, rdd, alias: alias_table_name) }
+
+          it { is_expected.to eq(alias_table_name) }
+        end
+      end
+
       describe '#sql_context' do
         let(:spark_context) { record_klass.table.connection.spark_context }
         let(:keyspace) { Faker::Lorem.word }
