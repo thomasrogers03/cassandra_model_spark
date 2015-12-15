@@ -48,8 +48,12 @@ module CassandraModel
 
       def query(restriction, options)
         select_clause = select_columns(options)
+        group_clause = if options[:group]
+                         updated_clause = options[:group].map { |column| quoted_column(column) } * ', '
+                         " GROUP BY #{updated_clause}"
+                       end
         where_clause = query_where_clause(restriction)
-        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}")
+        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}")
       end
 
       private

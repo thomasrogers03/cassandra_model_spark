@@ -210,6 +210,30 @@ module CassandraModel
           end
         end
 
+        describe 'column grouping' do
+          let(:options) { {group: [:partition]} }
+          let(:query_sql) { "SELECT * FROM #{table_name} GROUP BY `partition`" }
+
+          it { is_expected.to eq(query) }
+
+          context 'with multiple columns' do
+            let(:options) { {group: [:partition, :clustering]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} GROUP BY `partition`, `clustering`" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when the columns are mapped' do
+            let(:query_sql) { "SELECT * FROM #{table_name} GROUP BY `rk_partition`" }
+
+            before do
+              allow(record_klass).to(receive(:select_column)) { |column| :"rk_#{column}" }
+            end
+
+            it { is_expected.to eq(query) }
+          end
+        end
+
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }
           let(:query_sql) { "SELECT `partition` FROM #{table_name}" }
