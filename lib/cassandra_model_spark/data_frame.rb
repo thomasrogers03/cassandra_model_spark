@@ -48,14 +48,7 @@ module CassandraModel
 
       def query(restriction, options)
         select_columns = record_klass.select_columns(options.fetch(:select) { %w(*) }) * ', '
-        where_clause = if restriction.present?
-                         updated_restriction = restriction.map do |key, value|
-                           updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key : "#{key} ="
-                           value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
-                           "#{updated_key} #{value}"
-                         end * ' AND '
-                         " WHERE #{updated_restriction}"
-                      end
+        where_clause = query_where_clause(restriction)
         sql_context.sql("SELECT #{select_columns} FROM #{table_name}#{where_clause}")
       end
 
@@ -66,6 +59,17 @@ module CassandraModel
       def create_sql_context
         CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
           context.setKeyspace(record_klass.table.connection.config[:keyspace])
+        end
+      end
+
+      def query_where_clause(restriction)
+        if restriction.present?
+          restriction_clause = restriction.map do |key, value|
+            updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key : "#{key} ="
+            value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
+            "#{updated_key} #{value}"
+          end * ' AND '
+          " WHERE #{restriction_clause}"
         end
       end
     end
