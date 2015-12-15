@@ -54,7 +54,6 @@ module CassandraModel
 
         its(:sql_context) { is_expected.to eq(sql_context) }
         its(:table_name) { is_expected.to eq(table_alias) }
-
       end
     end
   end
