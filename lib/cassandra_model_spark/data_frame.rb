@@ -47,7 +47,11 @@ module CassandraModel
       end
 
       def query(restriction, options)
-        select_columns = record_klass.select_columns(options.fetch(:select) { %w(*) }) * ', '
+        select_columns = if options[:select]
+                           record_klass.select_columns(options.fetch(:select)) * ', '
+                         else
+                           '*'
+                         end
         where_clause = query_where_clause(restriction)
         sql_context.sql("SELECT #{select_columns} FROM #{table_name}#{where_clause}")
       end
@@ -65,7 +69,13 @@ module CassandraModel
       def query_where_clause(restriction)
         if restriction.present?
           restriction_clause = restriction.map do |key, value|
-            updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key : "#{key} ="
+            updated_key = if key.is_a?(ThomasUtils::KeyComparer)
+                            select_key = record_klass.select_columns([key.key]).first
+                            key.new_key(select_key)
+                          else
+                            select_key = record_klass.select_columns([key]).first
+                            "#{select_key} ="
+                          end
             value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
             "#{updated_key} #{value}"
           end * ' AND '
