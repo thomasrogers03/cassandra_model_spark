@@ -29,6 +29,13 @@ module CassandraModel
         it 'should set the keyspace from the record class' do
           expect(subject.keyspace).to eq(keyspace)
         end
+
+        context 'when the sql context is specified through the initializer' do
+          let(:sql_context) { double(:sql_context) }
+          let(:data_frame) { DataFrame.new(record_klass, rdd, sql_context: sql_context) }
+
+          it { is_expected.to eq(sql_context) }
+        end
       end
 
       describe '#spark_data_frame' do
