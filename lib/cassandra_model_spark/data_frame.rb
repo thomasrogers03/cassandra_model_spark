@@ -48,7 +48,14 @@ module CassandraModel
 
       def query(restriction, options)
         select_columns = record_klass.select_columns(options.fetch(:select) { %w(*) }) * ', '
-        sql_context.sql("SELECT #{select_columns} FROM #{table_name}")
+        where_clause = if restriction.present?
+                         updated_restriction = restriction.map do |key, value|
+                           value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
+                           "#{key} = #{value}"
+                         end * ' AND '
+                         " WHERE #{updated_restriction}"
+                      end
+        sql_context.sql("SELECT #{select_columns} FROM #{table_name}#{where_clause}")
       end
 
       private

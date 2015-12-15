@@ -161,6 +161,35 @@ module CassandraModel
 
         it { is_expected.to eq(query) }
 
+        describe 'restricting the data set' do
+          let(:restriction) { { partition: 47 } }
+          let(:query_sql) { "SELECT * FROM #{table_name} WHERE partition = 47" }
+
+          it { is_expected.to eq(query) }
+
+          context 'with a multi-column restriction' do
+            let(:restriction) { { partition: 30, clustering: 20.0 } }
+            let(:query_sql) { "SELECT * FROM #{table_name} WHERE partition = 30 AND clustering = 20.0" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when the restriction contains strings' do
+            let(:restriction) { { partition: 'part' } }
+            let(:query_sql) { "SELECT * FROM #{table_name} WHERE partition = 'part'" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when the restriction contains a timestamp' do
+            let(:time) { Time.now }
+            let(:restriction) { { partition: time } }
+            let(:query_sql) { "SELECT * FROM #{table_name} WHERE partition = '#{time}'" }
+
+            it { is_expected.to eq(query) }
+          end
+        end
+
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }
           let(:query_sql) { "SELECT partition FROM #{table_name}" }
