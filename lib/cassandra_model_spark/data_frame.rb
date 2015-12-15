@@ -50,8 +50,9 @@ module CassandraModel
         select_columns = record_klass.select_columns(options.fetch(:select) { %w(*) }) * ', '
         where_clause = if restriction.present?
                          updated_restriction = restriction.map do |key, value|
+                           updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key : "#{key} ="
                            value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
-                           "#{key} = #{value}"
+                           "#{updated_key} #{value}"
                          end * ' AND '
                          " WHERE #{updated_restriction}"
                       end

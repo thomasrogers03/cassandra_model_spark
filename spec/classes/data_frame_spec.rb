@@ -188,6 +188,13 @@ module CassandraModel
 
             it { is_expected.to eq(query) }
           end
+
+          context 'when the key is a KeyComparer' do
+            let(:restriction) { { :price.gt => 50.49 } }
+            let(:query_sql) { "SELECT * FROM #{table_name} WHERE price > 50.49" }
+
+            it { is_expected.to eq(query) }
+          end
         end
 
         context 'with a different columns selected' do
