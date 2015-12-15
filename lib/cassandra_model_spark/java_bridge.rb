@@ -60,14 +60,14 @@ module JavaBridge
     def load_java_class(path)
       import_quiet { Rjb.import(path) }
     end
+  end
 
-    def import_quiet
-      prev_verbox = $VERBOSE
-      $VERBOSE = nil
-      yield
-    ensure
-      $VERBOSE = prev_verbox
-    end
+  def import_quiet
+    prev_verbox = $VERBOSE
+    $VERBOSE = nil
+    yield
+  ensure
+    $VERBOSE = prev_verbox
   end
 end
 
