@@ -57,7 +57,14 @@ module CassandraModel
           select_clause = options[:select].map do |column|
             if column.is_a?(Hash)
               column, options = column.first
-              column = "#{options[:aggregate].to_s.upcase}(#{column})" if options[:aggregate]
+              if options[:aggregate]
+                column = case options[:aggregate]
+                           when :stddev
+                             "AVG(POW(#{column},2) - POW(AVG(#{column}),2)"
+                           else
+                             "#{options[:aggregate].to_s.upcase}(#{column})"
+                         end
+              end
               column = "#{column} AS #{options[:as]}" if options[:as]
             end
             record_klass.select_column(column)

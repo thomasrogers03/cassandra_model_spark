@@ -38,7 +38,7 @@ class CassandraSQLContext
     @keyspace = value
   end
 
-  def sql
+  def sql(*_)
   end
 
   protected
