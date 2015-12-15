@@ -68,16 +68,24 @@ module CassandraModel
 
       def clean_select_columns(options)
         options[:select].map do |column|
-          column = updated_column(column) if column.is_a?(Hash)
-          record_klass.select_column(column)
+          if column.is_a?(Hash)
+            updated_column(column)
+          else
+            quoted_column(column)
+          end
         end
       end
 
       def updated_column(column)
         column, options = column.first
+        column = quoted_column(column)
         column = aggregate_column(column, options) if options[:aggregate]
         column = "#{column} AS #{options[:as]}" if options[:as]
         column
+      end
+
+      def quoted_column(column)
+        "`#{record_klass.select_column(column)}`"
       end
 
       def aggregate_column(column, options)

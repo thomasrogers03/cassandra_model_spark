@@ -212,19 +212,19 @@ module CassandraModel
 
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }
-          let(:query_sql) { "SELECT partition FROM #{table_name}" }
+          let(:query_sql) { "SELECT `partition` FROM #{table_name}" }
 
           it { is_expected.to eq(query) }
 
           context 'with multiple columns' do
             let(:options) { {select: [:partition, :clustering]} }
-            let(:query_sql) { "SELECT partition, clustering FROM #{table_name}" }
+            let(:query_sql) { "SELECT `partition`, `clustering` FROM #{table_name}" }
 
             it { is_expected.to eq(query) }
           end
 
           context 'when the columns are mapped' do
-            let(:query_sql) { "SELECT rk_partition FROM #{table_name}" }
+            let(:query_sql) { "SELECT `rk_partition` FROM #{table_name}" }
 
             before do
               allow(record_klass).to(receive(:select_column)) { |column| :"rk_#{column}" }
@@ -234,7 +234,7 @@ module CassandraModel
 
             context 'when columns are aliased' do
               let(:options) { {select: [{partition: {as: :part}}]} }
-              let(:query_sql) { "SELECT rk_partition AS part FROM #{table_name}" }
+              let(:query_sql) { "SELECT `rk_partition` AS part FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
             end
@@ -242,7 +242,7 @@ module CassandraModel
 
           context 'when columns are aliased' do
             let(:options) { {select: [{partition: {as: :part}}]} }
-            let(:query_sql) { "SELECT partition AS part FROM #{table_name}" }
+            let(:query_sql) { "SELECT `partition` AS part FROM #{table_name}" }
 
             it { is_expected.to eq(query) }
           end
@@ -250,14 +250,14 @@ module CassandraModel
           context 'when the column is to be aggregated' do
             let(:aggregate) { :avg }
             let(:options) { {select: [{partition: {aggregate: aggregate}}]} }
-            let(:query_sql) { "SELECT AVG(partition) FROM #{table_name}" }
+            let(:query_sql) { "SELECT AVG(`partition`) FROM #{table_name}" }
 
             it { is_expected.to eq(query) }
 
             shared_examples_for 'an aggregate function' do |function|
               let(:aggregate) { function.downcase.to_sym }
               let(:sql_aggregate) { function.to_s.upcase }
-              let(:query_sql) { "SELECT #{sql_aggregate}(partition) FROM #{table_name}" }
+              let(:query_sql) { "SELECT #{sql_aggregate}(`partition`) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
             end
@@ -267,7 +267,7 @@ module CassandraModel
 
             context 'when requesting a variance aggregate' do
               let(:aggregate) { :stddev }
-              let(:query_sql) { "SELECT AVG(POW(partition,2) - POW(AVG(partition),2) FROM #{table_name}" }
+              let(:query_sql) { "SELECT AVG(POW(`partition`,2) - POW(AVG(`partition`),2) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
             end
