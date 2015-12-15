@@ -48,10 +48,7 @@ module CassandraModel
 
       def query(restriction, options)
         select_clause = select_columns(options)
-        group_clause = if options[:group]
-                         updated_clause = options[:group].map { |column| quoted_column(column) } * ', '
-                         " GROUP BY #{updated_clause}"
-                       end
+        group_clause = group_clause(options)
         where_clause = query_where_clause(restriction)
         sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}")
       end
@@ -68,6 +65,13 @@ module CassandraModel
 
       def select_columns(options)
         options[:select] ? clean_select_columns(options) * ', ' : '*'
+      end
+
+      def group_clause(options)
+        if options[:group]
+          updated_clause = options[:group].map { |column| quoted_column(column) } * ', '
+          " GROUP BY #{updated_clause}"
+        end
       end
 
       def clean_select_columns(options)
