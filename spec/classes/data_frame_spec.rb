@@ -156,7 +156,10 @@ module CassandraModel
 
         before do
           allow(sql_context).to receive(:sql).with(query_sql).and_return(query)
-          allow(record_klass).to(receive(:select_columns)) { |columns| columns }
+          allow(record_klass).to(receive(:select_column)) { |column| column }
+          allow(record_klass).to(receive(:select_columns)) do |columns|
+            columns.map { |column| record_klass.select_column(column) }
+          end
         end
 
         it { is_expected.to eq(query) }
@@ -200,9 +203,7 @@ module CassandraModel
             let(:query_sql) { "SELECT * FROM #{table_name} WHERE ck_partition = 47" }
 
             before do
-              allow(record_klass).to(receive(:select_columns)) do |columns|
-                columns.map { |key| :"ck_#{key}" }
-              end
+              allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" }
             end
 
             it { is_expected.to eq(query) }
@@ -226,9 +227,7 @@ module CassandraModel
             let(:query_sql) { "SELECT rk_partition FROM #{table_name}" }
 
             before do
-              allow(record_klass).to(receive(:select_columns)) do |columns|
-                columns.map { |key| :"rk_#{key}" }
-              end
+              allow(record_klass).to(receive(:select_column)) { |column| :"rk_#{column}" }
             end
 
             it { is_expected.to eq(query) }

@@ -74,10 +74,10 @@ module CassandraModel
         if restriction.present?
           restriction_clause = restriction.map do |key, value|
             updated_key = if key.is_a?(ThomasUtils::KeyComparer)
-                            select_key = record_klass.select_columns([key.key]).first
+                            select_key = record_klass.select_column(key.key)
                             key.new_key(select_key)
                           else
-                            select_key = record_klass.select_columns([key]).first
+                            select_key = record_klass.select_column(key)
                             "#{select_key} ="
                           end
             value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
