@@ -3,7 +3,8 @@ require 'rspec'
 module CassandraModel
   describe QueryBuilder do
     let(:rdd) { double(:rdd) }
-    let(:record_klass) { double(:klass, rdd: rdd) }
+    let(:table_name) { Faker::Lorem.word }
+    let(:record_klass) { double(:klass, rdd: rdd, table_name: table_name) }
     let(:restriction_key) { Faker::Lorem.word.to_sym }
     let(:restriction_value) { Faker::Lorem.word }
     let(:restriction) { {restriction_key => restriction_value} }
@@ -44,6 +45,16 @@ module CassandraModel
 
           its(:restriction) { is_expected.to eq(java_restriction) }
         end
+      end
+
+      describe 'DataFrame options' do
+        let(:data_frame) { query_builder.as_data_frame(sql_context: sql_context, alias: table_alias) }
+        let(:sql_context) { double(:sql_context) }
+        let(:table_alias) { Faker::Lorem.word }
+
+        its(:sql_context) { is_expected.to eq(sql_context) }
+        its(:table_name) { is_expected.to eq(table_alias) }
+
       end
     end
   end
