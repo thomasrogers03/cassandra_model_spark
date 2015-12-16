@@ -12,7 +12,6 @@ module CassandraModel
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
 
-
       describe '#table_name' do
         subject { data_frame.table_name }
 
@@ -304,8 +303,50 @@ module CassandraModel
             end
           end
         end
-      end
 
+        describe 'pulling data from the data set' do
+          describe '#first' do
+            let(:result_sql_type) { SqlTypeWrapper.new(SqlStringType) }
+            let(:result_value) { Faker::Lorem.word }
+
+            let(:key) { Faker::Lorem.word }
+            let(:attributes) { {key => Faker::Lorem.word} }
+            let(:result) { {select_key => result_value} }
+            let(:select_key) { Faker::Lorem.word }
+            let(:options) { {select: [select_key]} }
+
+            let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
+            let(:query_schema) { SqlStructType.new(fields) }
+            let(:query) { double(:query, schema: query_schema, first: RDDRow[result]) }
+            let(:result_record) { MockRecord.new(result) }
+
+            before do
+              allow(data_frame).to receive(:query).with(attributes, options).and_return(query)
+              allow(record_klass).to receive(:new) do |attributes|
+                MockRecord.new(attributes)
+              end
+            end
+
+            it 'should return the result mapped to a CassandraModel::Record' do
+              expect(data_frame.first(attributes, options)).to eq(result_record)
+            end
+
+            shared_examples_for 'converting sql types back to ruby types' do |value, sql_type|
+              let(:result_sql_type) { SqlTypeWrapper.new(sql_type) }
+              let(:result_value) { value }
+
+              it 'should return the result mapped to a CassandraModel::Record' do
+                expect(data_frame.first(attributes, options)).to eq(result_record)
+              end
+            end
+
+            it_behaves_like 'converting sql types back to ruby types', 15, SqlIntegerType
+            it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
+            it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
+
+          end
+        end
+      end
     end
   end
 end

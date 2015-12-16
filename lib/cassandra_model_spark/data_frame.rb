@@ -53,6 +53,25 @@ module CassandraModel
         sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}")
       end
 
+      def first(restriction, options)
+        query = query(restriction, options)
+        row = query.first
+        attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
+          value = case field.data_type.to_string
+                    when 'IntegerType'
+                      row.getInt(index)
+                    when 'DoubleType'
+                      row.getDouble(index)
+                    when 'TimestampType'
+                      row.getTimestamp(index)
+                    else
+                      row.getString(index)
+                  end
+          memo.merge!(field.name => value)
+        end
+        record_klass.new(attributes)
+      end
+
       private
 
       attr_reader :record_klass, :rdd

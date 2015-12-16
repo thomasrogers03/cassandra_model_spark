@@ -123,8 +123,32 @@ end
 class SqlStringType < SqlDataType
 end
 class SqlStructField < SqlDataType
+  attr_reader :name
+
+  def initialize(name, type)
+    @name = name
+    @type = type
+  end
+
+  def data_type
+    @type
+  end
 end
 class SqlStructType < SqlDataType
+  attr_reader :fields
+
+  def initialize(fields)
+    @fields = fields
+  end
 end
 class SqlTimestampType < SqlDataType
+end
+class SqlTypeWrapper < SqlDataType
+  def initialize(internal_type)
+    @internal_type = internal_type
+  end
+
+  def to_string
+    @internal_type.to_s.match(/^Sql(.+)$/)[1]
+  end
 end
