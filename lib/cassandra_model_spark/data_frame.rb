@@ -9,6 +9,13 @@ module CassandraModel
           double: SqlDoubleType,
           timestamp: SqlTimestampType,
       }.freeze
+      #noinspection RubyStringKeysInHashInspection
+      SQL_RUBY_TYPE_FUNCTIONS = {
+          'IntegerType' => :getInt,
+          'StringType' => :getString,
+          'DoubleType' => :getDouble,
+          'TimestampType' => :getTimestamp,
+      }
 
       attr_reader :table_name
 
@@ -57,16 +64,8 @@ module CassandraModel
         query = query(restriction, options)
         row = query.first
         attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
-          value = case field.data_type.to_string
-                    when 'IntegerType'
-                      row.getInt(index)
-                    when 'DoubleType'
-                      row.getDouble(index)
-                    when 'TimestampType'
-                      row.getTimestamp(index)
-                    else
-                      row.getString(index)
-                  end
+          converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(field.data_type.to_string) { :getString }
+          value = row.public_send(converter, index)
           memo.merge!(field.name => value)
         end
         record_klass.new(attributes)

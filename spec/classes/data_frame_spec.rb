@@ -344,6 +344,15 @@ module CassandraModel
             it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
             it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
 
+            context 'with a type we cannot handle' do
+              let(:result_sql_type) { SqlTypeWrapper.new('SqlFakeType') }
+              let(:result_value) { '1239333-33333' }
+
+              it 'should return the result mapped to a CassandraModel::Record' do
+                expect(data_frame.first(attributes, options)).to eq(result_record)
+              end
+            end
+
           end
         end
       end
