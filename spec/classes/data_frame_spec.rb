@@ -308,7 +308,7 @@ module CassandraModel
         end
 
         describe 'pulling data from the data set' do
-          describe '#first' do
+          shared_examples_for 'a method mapping a query result to a Record' do |method, collect_method|
             let(:result_sql_type) { SqlTypeWrapper.new(SqlStringType) }
             let(:result_value) { Faker::Lorem.word }
 
@@ -320,9 +320,8 @@ module CassandraModel
 
             let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
             let(:query_schema) { SqlStructType.new(fields) }
-            let(:query) { double(:query, schema: query_schema, first: RDDRow[result]) }
+            let(:query) { double(:query, schema: query_schema, first: RDDRow[result], collect: [RDDRow[result]]) }
             let(:record_attributes) { {select_key.to_sym => result_value} }
-            let(:result_record) { MockRecord.new(record_attributes) }
 
             before do
               allow(data_frame).to receive(:query).with(attributes, options).and_return(query)
@@ -333,11 +332,11 @@ module CassandraModel
 
             it 'should support default values' do
               allow(data_frame).to receive(:query).and_return(query)
-              expect { data_frame.first }.not_to raise_error
+              expect { data_frame.public_send(method) }.not_to raise_error
             end
 
             it 'should return the result mapped to a CassandraModel::Record' do
-              expect(data_frame.first(attributes, options)).to eq(result_record)
+              expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
             end
 
             shared_examples_for 'converting sql types back to ruby types' do |value, sql_type|
@@ -345,7 +344,7 @@ module CassandraModel
               let(:result_value) { value }
 
               it 'should return the result mapped to a CassandraModel::Record' do
-                expect(data_frame.first(attributes, options)).to eq(result_record)
+                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
               end
             end
 
@@ -358,7 +357,7 @@ module CassandraModel
               let(:result_value) { '1239333-33333' }
 
               it 'should convert to a string' do
-                expect(data_frame.first(attributes, options)).to eq(result_record)
+                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
               end
             end
 
@@ -370,9 +369,19 @@ module CassandraModel
               end
 
               it 'should map the columns' do
-                expect(data_frame.first(attributes, options)).to eq(result_record)
+                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
               end
             end
+          end
+
+          describe '#first' do
+            let(:record_result) { MockRecord.new(record_attributes) }
+            it_behaves_like 'a method mapping a query result to a Record', :first, :first
+          end
+
+          describe '#request' do
+            let(:record_result) { [MockRecord.new(record_attributes)] }
+            it_behaves_like 'a method mapping a query result to a Record', :request, :collect
           end
 
         end

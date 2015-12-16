@@ -60,16 +60,17 @@ module CassandraModel
         sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}")
       end
 
+      def request(restriction = {}, options = {})
+        query = query(restriction, options)
+        query.collect.map do |row|
+          row_to_record(query, row)
+        end
+      end
+
       def first(restriction = {}, options = {})
         query = query(restriction, options)
         row = query.first
-        attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
-          converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(field.data_type.to_string) { :getString }
-          value = row.public_send(converter, index)
-          column = record_klass.select_column(field.name.to_sym)
-          memo.merge!(column => value)
-        end
-        record_klass.new(attributes)
+        row_to_record(query, row)
       end
 
       private
@@ -80,6 +81,16 @@ module CassandraModel
         CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
           context.setKeyspace(record_klass.table.connection.config[:keyspace])
         end
+      end
+
+      def row_to_record(query, row)
+        attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
+          converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(field.data_type.to_string) { :getString }
+          value = row.public_send(converter, index)
+          column = record_klass.select_column(field.name.to_sym)
+          memo.merge!(column => value)
+        end
+        record_klass.new(attributes)
       end
 
       def select_columns(options)
