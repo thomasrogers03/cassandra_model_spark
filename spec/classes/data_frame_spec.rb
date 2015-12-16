@@ -166,6 +166,11 @@ module CassandraModel
 
         it { is_expected.to eq(query) }
 
+        it 'should ensure that the data_frame has been created' do
+          expect(data_frame).to receive(:spark_data_frame)
+          subject
+        end
+
         describe 'restricting the data set' do
           let(:restriction) { {partition: 47} }
           let(:query_sql) { "SELECT * FROM #{table_name} WHERE partition = 47" }

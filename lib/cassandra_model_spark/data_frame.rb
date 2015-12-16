@@ -54,6 +54,7 @@ module CassandraModel
       end
 
       def query(restriction, options)
+        spark_data_frame
         select_clause = select_columns(options)
         group_clause = group_clause(options)
         where_clause = query_where_clause(restriction)
