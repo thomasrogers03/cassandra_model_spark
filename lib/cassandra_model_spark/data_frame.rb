@@ -100,6 +100,8 @@ module CassandraModel
         case options[:aggregate]
           when :variance
             variance_column(column)
+          when :stddev
+            "POW(#{variance_column(column)},0.5)"
           else
             "#{options[:aggregate].to_s.upcase}(#{column})"
         end

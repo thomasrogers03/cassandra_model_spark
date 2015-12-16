@@ -295,6 +295,13 @@ module CassandraModel
 
               it { is_expected.to eq(query) }
             end
+
+            context 'when requesting a standard deviation aggregate' do
+              let(:aggregate) { :stddev }
+              let(:query_sql) { "SELECT POW(AVG(POW(`partition`,2)) - POW(AVG(`partition`),2),0.5) FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
           end
         end
       end
