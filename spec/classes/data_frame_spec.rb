@@ -12,6 +12,13 @@ module CassandraModel
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
 
+      before do
+        allow(record_klass).to(receive(:select_column)) { |column| column }
+        allow(record_klass).to(receive(:select_columns)) do |columns|
+          columns.map { |column| record_klass.select_column(column) }
+        end
+      end
+
       describe '#table_name' do
         subject { data_frame.table_name }
 
@@ -155,10 +162,6 @@ module CassandraModel
 
         before do
           allow(sql_context).to receive(:sql).with(query_sql).and_return(query)
-          allow(record_klass).to(receive(:select_column)) { |column| column }
-          allow(record_klass).to(receive(:select_columns)) do |columns|
-            columns.map { |column| record_klass.select_column(column) }
-          end
         end
 
         it { is_expected.to eq(query) }
@@ -318,7 +321,8 @@ module CassandraModel
             let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
             let(:query_schema) { SqlStructType.new(fields) }
             let(:query) { double(:query, schema: query_schema, first: RDDRow[result]) }
-            let(:result_record) { MockRecord.new(result) }
+            let(:record_attributes) { {select_key.to_sym => result_value} }
+            let(:result_record) { MockRecord.new(record_attributes) }
 
             before do
               allow(data_frame).to receive(:query).with(attributes, options).and_return(query)
@@ -353,7 +357,19 @@ module CassandraModel
               end
             end
 
+            context 'when the record maps result columns' do
+              let(:record_attributes) { {:"abc_#{select_key}_def" => result_value} }
+
+              before do
+                allow(record_klass).to(receive(:select_column)) { |column| :"abc_#{column}_def" }
+              end
+
+              it 'should map the columns' do
+                expect(data_frame.first(attributes, options)).to eq(result_record)
+              end
+            end
           end
+
         end
       end
     end

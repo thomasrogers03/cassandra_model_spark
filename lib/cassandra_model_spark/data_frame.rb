@@ -66,7 +66,8 @@ module CassandraModel
         attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
           converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(field.data_type.to_string) { :getString }
           value = row.public_send(converter, index)
-          memo.merge!(field.name => value)
+          column = record_klass.select_column(field.name.to_sym)
+          memo.merge!(column => value)
         end
         record_klass.new(attributes)
       end
