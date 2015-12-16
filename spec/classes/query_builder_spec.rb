@@ -8,7 +8,13 @@ module CassandraModel
     let(:restriction_key) { Faker::Lorem.word.to_sym }
     let(:restriction_value) { Faker::Lorem.word }
     let(:restriction) { {restriction_key => restriction_value} }
-    let(:java_restriction) { JavaHash[restriction.stringify_keys] }
+    let(:updated_restriction) do
+      restriction.inject({}) do |memo, (key, value)|
+        updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key.to_s : "#{key} ="
+        memo.merge!(updated_key => value)
+      end
+    end
+    let(:java_restriction) { JavaHash[updated_restriction] }
     let(:query_builder) { QueryBuilder.new(record_klass).where(restriction) }
 
     before do
@@ -34,8 +40,14 @@ module CassandraModel
         its(:rdd) { is_expected.to eq(rdd) }
         its(:restriction) { is_expected.to eq(java_restriction) }
 
+        context 'when the a restriction key is a ThomasUtils::KeyComparer' do
+          let(:restriction_key) { :clustering.gt }
+
+          its(:restriction) { is_expected.to eq(java_restriction) }
+        end
+
         context 'when the record klass modifies the restriction for querying' do
-          let(:java_restriction) { JavaHash["rk_#{restriction_key}" => restriction_value] }
+          let(:java_restriction) { JavaHash["rk_#{restriction_key} =" => restriction_value] }
 
           before do
             allow(record_klass).to receive(:restriction_attributes) do |restriction|
