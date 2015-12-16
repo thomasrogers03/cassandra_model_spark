@@ -98,7 +98,7 @@ module CassandraModel
 
       def aggregate_column(column, options)
         case options[:aggregate]
-          when :stddev
+          when :variance
             variance_column(column)
           else
             "#{options[:aggregate].to_s.upcase}(#{column})"
@@ -106,7 +106,7 @@ module CassandraModel
       end
 
       def variance_column(column)
-        "AVG(POW(#{column},2) - POW(AVG(#{column}),2)"
+        "AVG(POW(#{column},2)) - POW(AVG(#{column}),2)"
       end
 
       def query_where_clause(restriction)

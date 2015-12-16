@@ -290,8 +290,8 @@ module CassandraModel
             it_behaves_like 'an aggregate function', :sum
 
             context 'when requesting a variance aggregate' do
-              let(:aggregate) { :stddev }
-              let(:query_sql) { "SELECT AVG(POW(`partition`,2) - POW(AVG(`partition`),2) FROM #{table_name}" }
+              let(:aggregate) { :variance }
+              let(:query_sql) { "SELECT AVG(POW(`partition`,2)) - POW(AVG(`partition`),2) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
             end
