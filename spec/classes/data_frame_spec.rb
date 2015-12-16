@@ -348,7 +348,7 @@ module CassandraModel
               let(:result_sql_type) { SqlTypeWrapper.new('SqlFakeType') }
               let(:result_value) { '1239333-33333' }
 
-              it 'should return the result mapped to a CassandraModel::Record' do
+              it 'should convert to a string' do
                 expect(data_frame.first(attributes, options)).to eq(result_record)
               end
             end
