@@ -12,7 +12,12 @@ object CassandraHelper {
   }
   def filterRDD(rdd: CassandraRDD[CassandraRow], restriction: HashMap[String, Any]) = {
     var result = rdd
-    for ((k,v) <- restriction) result = result.where(k + " ?", v)
+    for ((k,v) <- restriction) {
+      result = v match {
+        case (a: Array[Any]) => result.where(k, a : _*)
+        case _ => result.where(k, v)
+      }
+    }
     result
   }
 }
