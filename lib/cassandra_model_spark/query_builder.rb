@@ -3,7 +3,8 @@ module CassandraModel
     def as_data_frame(options = {})
       updated_restriction = @record_klass.restriction_attributes(@params).inject({}) do |memo, (key, value)|
         updated_key = if value.is_a?(Array)
-                        "#{key} IN (#{(%w(?)*value.count)*','})"
+                        updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key.to_s : "#{key} IN"
+                        "#{updated_key} (#{(%w(?)*value.count)*','})"
                       else
                         key.is_a?(ThomasUtils::KeyComparer) ? "#{key} ?" : "#{key} = ?"
                       end

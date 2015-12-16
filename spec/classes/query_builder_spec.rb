@@ -11,7 +11,8 @@ module CassandraModel
     let(:updated_restriction) do
       restriction.inject({}) do |memo, (key, value)|
         updated_key = if value.is_a?(Array)
-                        "#{key} IN (#{(%w(?)*value.count) * ', '})"
+                        updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key.to_s : "#{key} IN"
+                        "#{updated_key} (#{(%w(?)*value.count) * ', '})"
                       else
                         key.is_a?(ThomasUtils::KeyComparer) ? "#{key} ?" : "#{key} = ?"
                       end
@@ -54,6 +55,12 @@ module CassandraModel
           let(:restriction_value) { [Faker::Lorem.word] }
 
           its(:restriction) { is_expected.to eq(java_restriction) }
+
+          context 'when a restriction key is a ThomasUtils::KeyComparer' do
+            let(:restriction_key) { :clustering.gt }
+
+            its(:restriction) { is_expected.to eq(java_restriction) }
+          end
         end
 
         context 'when the record klass modifies the restriction for querying' do
