@@ -60,7 +60,7 @@ module CassandraModel
         sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}")
       end
 
-      def first(restriction, options)
+      def first(restriction = {}, options = {})
         query = query(restriction, options)
         row = query.first
         attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|

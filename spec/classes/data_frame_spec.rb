@@ -331,6 +331,11 @@ module CassandraModel
               end
             end
 
+            it 'should support default values' do
+              allow(data_frame).to receive(:query).and_return(query)
+              expect { data_frame.first }.not_to raise_error
+            end
+
             it 'should return the result mapped to a CassandraModel::Record' do
               expect(data_frame.first(attributes, options)).to eq(result_record)
             end
