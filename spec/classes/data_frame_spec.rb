@@ -262,7 +262,7 @@ module CassandraModel
         end
 
         it_behaves_like 'a column grouping', :group, 'GROUP BY'
-        it_behaves_like 'a column grouping', :order, 'ORDER BY'
+        it_behaves_like 'a column grouping', :order_by, 'ORDER BY'
 
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }

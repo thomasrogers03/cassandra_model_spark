@@ -65,7 +65,7 @@ module CassandraModel
         spark_data_frame
         select_clause = select_columns(options)
         group_clause = group_clause(:group, 'GROUP BY', options)
-        order_clause = group_clause(:order, 'ORDER BY', options)
+        order_clause = group_clause(:order_by, 'ORDER BY', options)
         where_clause = query_where_clause(restriction)
         sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}#{order_clause}")
       end
