@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
-  revision: 3cf67d9ddf19b5f6c251118a90ca8a920dbac90e
+  revision: d15df41d5e0be4b60931b026c179b3a2c40e9a80
   specs:
     cassandra_model (0.9.14)
       activesupport (~> 4.0)
