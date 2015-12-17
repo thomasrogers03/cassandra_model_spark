@@ -285,6 +285,13 @@ module CassandraModel
 
           it { is_expected.to eq(query) }
 
+          context 'when explicitly selecting all columns (ie for an aggregate)' do
+            let(:options) { {select: [:*]} }
+            let(:query_sql) { "SELECT * FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+          end
+
           context 'with multiple columns' do
             let(:options) { {select: [:partition, :clustering]} }
             let(:query_sql) { "SELECT `partition`, `clustering` FROM #{table_name}" }

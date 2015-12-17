@@ -153,7 +153,11 @@ module CassandraModel
       end
 
       def quoted_column(column)
-        "`#{record_klass.select_column(column)}`"
+        if column == :*
+          '*'
+        else
+          "`#{record_klass.select_column(column)}`"
+        end
       end
 
       def aggregate_column(column, options)
