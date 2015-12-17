@@ -32,6 +32,26 @@ module CassandraModel
         end
       end
 
+      describe '#union' do
+        let(:record_klass_two) { record_klass }
+        let(:rdd_two) { double(:rdd) }
+        let(:union_rdd) { double(:rdd) }
+        let(:data_frame_two) { DataFrame.new(record_klass_two, rdd_two) }
+        let(:union_data_frame) { DataFrame.new(record_klass, union_rdd) }
+
+        before { allow(rdd).to receive(:union).with(rdd_two).and_return(union_rdd) }
+
+        subject { data_frame.union(data_frame_two) }
+
+        it { is_expected.to eq(union_data_frame) }
+
+        context 'when the Record classes do not match' do
+          let(:record_klass_two) { double(:klass, table_name: Faker::Lorem.word) }
+
+          it { expect { subject }.to raise_error(ArgumentError, 'Cannot union DataFrames with different Record types!') }
+        end
+      end
+
       describe '#sql_context' do
         let(:spark_context) { record_klass.table.connection.spark_context }
         let(:keyspace) { Faker::Lorem.word }

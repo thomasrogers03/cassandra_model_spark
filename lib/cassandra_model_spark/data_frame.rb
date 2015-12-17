@@ -31,6 +31,13 @@ module CassandraModel
         @sql_context ||= create_sql_context
       end
 
+      def union(rhs)
+        unless record_klass == rhs.record_klass
+          raise ArgumentError, 'Cannot union DataFrames with different Record types!'
+        end
+        DataFrame.new(record_klass, rdd.union(rhs.rdd))
+      end
+
       def spark_data_frame
         @frame ||= SparkSchemaBuilder.new.tap do |builder|
           record_klass.cassandra_columns.each do |name, type|
@@ -76,9 +83,17 @@ module CassandraModel
         row_to_record(query, row)
       end
 
-      private
+      def ==(rhs)
+        rhs.is_a?(DataFrame) &&
+            record_klass == rhs.record_klass &&
+            rdd == rhs.rdd
+      end
+
+      protected
 
       attr_reader :record_klass, :rdd
+
+      private
 
       def create_sql_context
         CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
