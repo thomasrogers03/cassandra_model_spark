@@ -28,6 +28,35 @@ module CassandraModel
       end
     end
 
+    describe '#group' do
+      it 'should pass group options to the underlying Record query' do
+        query_builder.group(:make)
+        expect(record_klass).to receive(:request).with(a_kind_of(Hash), group: [:make])
+        query_builder.get
+      end
+
+      it 'should return the QueryBuilder' do
+        expect(query_builder.group(:make)).to eq(query_builder)
+      end
+
+      context 'with multiple columns' do
+        it 'should pass group options to the underlying Record query' do
+          query_builder.group(:make, :model)
+          expect(record_klass).to receive(:request).with(a_kind_of(Hash), group: [:make, :model])
+          query_builder.get
+        end
+      end
+
+      context 'when called multiple times' do
+        it 'should chain the values' do
+          query_builder.group(:make)
+          query_builder.group(:model)
+          expect(record_klass).to receive(:request).with(a_kind_of(Hash), group: [:make, :model])
+          query_builder.get
+        end
+      end
+    end
+
     describe '#as_data_frame' do
       let(:data_frame) { query_builder.as_data_frame }
       let(:frame_klass) { data_frame.send(:record_klass) }

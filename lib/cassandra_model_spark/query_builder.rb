@@ -1,5 +1,11 @@
 module CassandraModel
   class QueryBuilder
+    def group(*columns)
+      @options[:group] ||= []
+      @options[:group].concat(columns)
+      self
+    end
+
     def as_data_frame(options = {})
       updated_restriction = @record_klass.restriction_attributes(@params).inject({}) do |memo, (key, value)|
         updated_key = if value.is_a?(Array)
