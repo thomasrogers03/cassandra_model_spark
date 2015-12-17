@@ -122,7 +122,14 @@ module CassandraModel
 
       def group_clause(type, prefix, options)
         if options[type]
-          updated_clause = options[type].map { |column| quoted_column(column) } * ', '
+          updated_clause = options[type].map do |column|
+            if column.is_a?(Hash)
+              column, direction = column.first
+              "#{quoted_column(column)} #{direction.upcase}"
+            else
+              quoted_column(column)
+            end
+          end * ', '
           " #{prefix} #{updated_clause}"
         end
       end

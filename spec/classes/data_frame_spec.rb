@@ -264,6 +264,21 @@ module CassandraModel
         it_behaves_like 'a column grouping', :group, 'GROUP BY'
         it_behaves_like 'a column grouping', :order_by, 'ORDER BY'
 
+        describe 'ordering column in specific directions' do
+          let(:direction) { :desc }
+          let(:options) { {order_by: [{partition: direction}]} }
+          let(:query_sql) { "SELECT * FROM #{table_name} ORDER BY `partition` DESC" }
+
+          it { is_expected.to eq(query) }
+
+          context 'with a different direction' do
+            let(:direction) { :asc }
+            let(:query_sql) { "SELECT * FROM #{table_name} ORDER BY `partition` ASC" }
+
+            it { is_expected.to eq(query) }
+          end
+        end
+
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }
           let(:query_sql) { "SELECT `partition` FROM #{table_name}" }
