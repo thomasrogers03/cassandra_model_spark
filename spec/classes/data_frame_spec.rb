@@ -333,6 +333,9 @@ module CassandraModel
               allow(record_klass).to receive(:new) do |attributes|
                 MockRecord.new(attributes)
               end
+              allow(record_klass).to receive(:normalized_attributes) do |attributes|
+                attributes.symbolize_keys
+              end
             end
 
             it 'should support default values' do
@@ -367,10 +370,15 @@ module CassandraModel
             end
 
             context 'when the record maps result columns' do
-              let(:record_attributes) { {:"abc_#{select_key}_def" => result_value} }
+              let(:result) { {"rk_#{select_key}" => result_value} }
+              let(:fields) { [SqlStructField.new("rk_#{select_key}", result_sql_type)] }
 
               before do
-                allow(record_klass).to(receive(:select_column)) { |column| :"abc_#{column}_def" }
+                allow(record_klass).to receive(:normalized_attributes) do |attributes|
+                  attributes.inject({}) do |memo, (key, value)|
+                    memo.merge!(key.match(/^rk_(.+)$/)[1].to_sym => value)
+                  end
+                end
               end
 
               it 'should map the columns' do
