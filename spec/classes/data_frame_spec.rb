@@ -322,6 +322,7 @@ module CassandraModel
             let(:result) { {select_key => result_value} }
             let(:select_key) { Faker::Lorem.word }
             let(:options) { {select: [select_key]} }
+            let(:available_columns) { [select_key.to_sym] }
 
             let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
             let(:query_schema) { SqlStructType.new(fields) }
@@ -336,6 +337,7 @@ module CassandraModel
               allow(record_klass).to receive(:normalized_attributes) do |attributes|
                 attributes.symbolize_keys
               end
+              allow(record_klass).to receive(:columns).and_return(available_columns)
             end
 
             it 'should support default values' do
@@ -383,6 +385,14 @@ module CassandraModel
 
               it 'should map the columns' do
                 expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
+              end
+            end
+
+            context 'when a returned column is not part of the cassandra table' do
+              let(:available_columns) { [Faker::Lorem.word.to_sym] }
+
+              it 'should return a hash instead of the Record class' do
+                expect(data_frame.public_send(method, attributes, options)).to include(record_attributes)
               end
             end
           end

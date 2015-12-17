@@ -92,7 +92,11 @@ module CassandraModel
           memo.merge!(column => value)
         end
         attributes = record_klass.normalized_attributes(attributes)
-        record_klass.new(attributes)
+        if attributes.keys.all? { |column| record_klass.columns.include?(column) }
+          record_klass.new(attributes)
+        else
+          attributes
+        end
       end
 
       def select_columns(options)
