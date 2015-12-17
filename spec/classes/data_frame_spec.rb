@@ -217,21 +217,21 @@ module CassandraModel
           end
         end
 
-        describe 'column grouping' do
-          let(:options) { {group: [:partition]} }
-          let(:query_sql) { "SELECT * FROM #{table_name} GROUP BY `partition`" }
+        shared_examples_for 'a column grouping' do |method, clause|
+          let(:options) { {method => [:partition]} }
+          let(:query_sql) { "SELECT * FROM #{table_name} #{clause} `partition`" }
 
           it { is_expected.to eq(query) }
 
           context 'with multiple columns' do
-            let(:options) { {group: [:partition, :clustering]} }
-            let(:query_sql) { "SELECT * FROM #{table_name} GROUP BY `partition`, `clustering`" }
+            let(:options) { {method => [:partition, :clustering]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} #{clause} `partition`, `clustering`" }
 
             it { is_expected.to eq(query) }
           end
 
           context 'when the columns are mapped' do
-            let(:query_sql) { "SELECT * FROM #{table_name} GROUP BY `rk_partition`" }
+            let(:query_sql) { "SELECT * FROM #{table_name} #{clause} `rk_partition`" }
 
             before do
               allow(record_klass).to(receive(:select_column)) { |column| :"rk_#{column}" }
@@ -240,6 +240,9 @@ module CassandraModel
             it { is_expected.to eq(query) }
           end
         end
+
+        it_behaves_like 'a column grouping', :group, 'GROUP BY'
+        it_behaves_like 'a column grouping', :order, 'ORDER BY'
 
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }

@@ -57,9 +57,10 @@ module CassandraModel
       def query(restriction, options)
         spark_data_frame
         select_clause = select_columns(options)
-        group_clause = group_clause(options)
+        group_clause = group_clause(:group, 'GROUP BY', options)
+        order_clause = group_clause(:order, 'ORDER BY', options)
         where_clause = query_where_clause(restriction)
-        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}")
+        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}#{order_clause}")
       end
 
       def request(restriction = {}, options = {})
@@ -104,10 +105,10 @@ module CassandraModel
         options[:select] ? clean_select_columns(options) * ', ' : '*'
       end
 
-      def group_clause(options)
-        if options[:group]
-          updated_clause = options[:group].map { |column| quoted_column(column) } * ', '
-          " GROUP BY #{updated_clause}"
+      def group_clause(type, prefix, options)
+        if options[type]
+          updated_clause = options[type].map { |column| quoted_column(column) } * ', '
+          " #{prefix} #{updated_clause}"
         end
       end
 
