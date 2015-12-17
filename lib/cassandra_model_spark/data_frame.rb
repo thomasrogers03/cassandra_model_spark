@@ -12,6 +12,7 @@ module CassandraModel
       #noinspection RubyStringKeysInHashInspection
       SQL_RUBY_TYPE_FUNCTIONS = {
           'IntegerType' => :getInt,
+          'LongType' => :getLong,
           'StringType' => :getString,
           'DoubleType' => :getDouble,
           'TimestampType' => :getTimestamp,

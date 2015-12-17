@@ -1,9 +1,19 @@
 class MockRecord < Struct.new(:attributes)
 end
 
+class SqlLong < Struct.new(:value)
+  def to_i
+    value.to_i
+  end
+end
+
 class RDDRow < Hash
   def getInt(column)
     values[column].to_i
+  end
+
+  def getLong(column)
+    SqlLong.new(values[column].to_i)
   end
 
   def getDouble(column)

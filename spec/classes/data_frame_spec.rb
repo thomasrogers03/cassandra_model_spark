@@ -359,6 +359,7 @@ module CassandraModel
             end
 
             it_behaves_like 'converting sql types back to ruby types', 15, SqlIntegerType
+            it_behaves_like 'converting sql types back to ruby types', SqlLong.new(153), SqlLongType
             it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
             it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
 
