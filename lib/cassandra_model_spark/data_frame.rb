@@ -66,8 +66,11 @@ module CassandraModel
         select_clause = select_columns(options)
         group_clause = group_clause(:group, 'GROUP BY', options)
         order_clause = group_clause(:order_by, 'ORDER BY', options)
+        limit_clause = if options[:limit]
+                         " LIMIT #{options[:limit]}"
+                       end
         where_clause = query_where_clause(restriction)
-        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}#{order_clause}")
+        sql_context.sql("SELECT #{select_clause} FROM #{table_name}#{where_clause}#{group_clause}#{order_clause}#{limit_clause}")
       end
 
       def request(restriction = {}, options = {})

@@ -279,6 +279,14 @@ module CassandraModel
           end
         end
 
+        context 'with a limit specified' do
+          let(:limit) { rand(1...5) }
+          let(:options) { {limit: limit} }
+          let(:query_sql) { "SELECT * FROM #{table_name} LIMIT #{limit}" }
+
+          it { is_expected.to eq(query) }
+        end
+
         context 'with a different columns selected' do
           let(:options) { {select: [:partition]} }
           let(:query_sql) { "SELECT `partition` FROM #{table_name}" }
