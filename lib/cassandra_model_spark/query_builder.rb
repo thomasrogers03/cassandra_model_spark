@@ -7,6 +7,17 @@ module CassandraModel
     end
 
     def as_data_frame(options = {})
+      if @record_klass.is_a?(Spark::DataFrame)
+        query_frame = @record_klass.query(@params, @options)
+        Spark::DataFrame.new(@record_klass.record_klass, nil, options.merge(spark_data_frame: query_frame))
+      else
+        data_frame_from_model(options)
+      end
+    end
+
+    private
+
+    def data_frame_from_model(options)
       updated_restriction = @record_klass.restriction_attributes(@params).inject({}) do |memo, (key, value)|
         updated_key = if value.is_a?(Array)
                         updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key.to_s : "#{key} IN"

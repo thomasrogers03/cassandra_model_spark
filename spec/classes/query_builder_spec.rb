@@ -2,9 +2,11 @@ require 'rspec'
 
 module CassandraModel
   describe QueryBuilder do
+    let(:sql_context) { double(:sql_context) }
     let(:rdd) { double(:rdd) }
     let(:table_name) { Faker::Lorem.word }
-    let(:record_klass) { double(:klass, rdd: rdd, table_name: table_name) }
+    let(:base_record_klass) { double(:klass, rdd: rdd, table_name: table_name) }
+    let(:record_klass) { base_record_klass }
     let(:restriction_key) { Faker::Lorem.word.to_sym }
     let(:restriction_value) { Faker::Lorem.word }
     let(:restriction) { {restriction_key => restriction_value} }
@@ -23,8 +25,10 @@ module CassandraModel
     let(:query_builder) { QueryBuilder.new(record_klass).where(restriction) }
 
     before do
-      allow(record_klass).to receive(:restriction_attributes) do |restriction|
-        restriction
+      unless record_klass.is_a?(Spark::DataFrame)
+        allow(record_klass).to receive(:restriction_attributes) do |restriction|
+          restriction
+        end
       end
     end
 
@@ -107,11 +111,29 @@ module CassandraModel
 
       describe 'DataFrame options' do
         let(:data_frame) { query_builder.as_data_frame(sql_context: sql_context, alias: table_alias) }
-        let(:sql_context) { double(:sql_context) }
         let(:table_alias) { Faker::Lorem.word }
 
         its(:sql_context) { is_expected.to eq(sql_context) }
         its(:table_name) { is_expected.to eq(table_alias) }
+      end
+
+      context 'when the record klass is a DataFrame' do
+        let(:spark_data_frame) { double(:frame, sql_context: sql_context, register_temp_table: nil) }
+        let(:frame_alias) { Faker::Lorem.word }
+        let(:record_klass) { Spark::DataFrame.new(base_record_klass, rdd) }
+        let(:select_column) { Faker::Lorem.word.to_sym }
+        let(:limit) { rand(1..10) }
+        let(:query_builder) { QueryBuilder.new(record_klass).where(restriction).select(select_column).limit(limit) }
+        let(:data_frame) { query_builder.as_data_frame(alias: frame_alias) }
+
+        before do
+          allow(record_klass).to receive(:query).with(restriction, select: [select_column], limit: limit).and_return(spark_data_frame)
+        end
+
+        its(:record_klass) { is_expected.to eq(base_record_klass) }
+        its(:table_name) { is_expected.to eq(frame_alias) }
+        its(:sql_context) { is_expected.to eq(sql_context) }
+        its(:spark_data_frame) { is_expected.to eq(spark_data_frame) }
       end
     end
   end
