@@ -22,8 +22,13 @@ module CassandraModel
 
       def initialize(record_klass, rdd, options = {})
         @table_name = options.fetch(:alias) { record_klass.table_name }
-        @frame = options[:spark_data_frame]
         @sql_context = options[:sql_context] || @frame.try(:sql_context)
+        @frame = options[:spark_data_frame]
+        if @frame
+          raise ArgumentError, 'DataFrames created from Spark DataFrames require aliases!' unless options[:alias]
+          @frame.register_temp_table(options[:alias])
+          @sql_context = @frame.sql_context
+        end
         @record_klass = record_klass
         @rdd = rdd
       end

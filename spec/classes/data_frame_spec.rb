@@ -13,12 +13,32 @@ module CassandraModel
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
 
       let(:frame_context) { double(:sql_context) }
-      let(:spark_frame) { double(:frame, sql_context: frame_context) }
+      let(:spark_frame) { double(:frame, sql_context: frame_context, register_temp_table: nil) }
+      let(:spark_frame_alias) { Faker::Lorem.word }
 
       before do
         allow(record_klass).to(receive(:select_column)) { |column| column }
         allow(record_klass).to(receive(:select_columns)) do |columns|
           columns.map { |column| record_klass.select_column(column) }
+        end
+      end
+
+      describe 'initialization' do
+        context 'when a spark data frame is provided to the initializer' do
+          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame, alias: spark_frame_alias) }
+
+          it 'should register a temp table with the specified alis' do
+            expect(spark_frame).to receive(:register_temp_table).with(spark_frame_alias)
+            data_frame
+          end
+
+          context 'when an alias is not provided' do
+            let(:spark_frame_alias) { nil }
+
+            it 'should raise an error' do
+              expect { data_frame }.to raise_error(ArgumentError, 'DataFrames created from Spark DataFrames require aliases!')
+            end
+          end
         end
       end
 
@@ -81,7 +101,7 @@ module CassandraModel
         end
 
         context 'when a spark data frame is provided to the initializer' do
-          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame) }
+          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame, alias: spark_frame_alias) }
 
           it { is_expected.to eq(frame_context) }
         end
@@ -105,7 +125,7 @@ module CassandraModel
         end
 
         context 'when a spark data frame is provided to the initializer' do
-          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame) }
+          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame, alias: spark_frame_alias) }
 
           it { is_expected.to eq(spark_frame) }
         end
