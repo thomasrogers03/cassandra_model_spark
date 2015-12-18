@@ -42,6 +42,12 @@ module CassandraModel
         end
       end
 
+      describe '#record_klass' do
+        subject { data_frame.record_klass }
+
+        it { is_expected.to eq(record_klass) }
+      end
+
       describe '#table_name' do
         subject { data_frame.table_name }
 

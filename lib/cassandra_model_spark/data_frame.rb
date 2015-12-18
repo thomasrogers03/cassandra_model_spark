@@ -18,7 +18,7 @@ module CassandraModel
           'TimestampType' => :getTimestamp,
       }
 
-      attr_reader :table_name
+      attr_reader :table_name, :record_klass
 
       def initialize(record_klass, rdd, options = {})
         @table_name = options.fetch(:alias) { record_klass.table_name }
@@ -100,7 +100,7 @@ module CassandraModel
 
       protected
 
-      attr_reader :record_klass, :rdd
+      attr_reader :rdd
 
       private
 
