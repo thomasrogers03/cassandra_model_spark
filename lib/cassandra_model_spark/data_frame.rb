@@ -155,6 +155,11 @@ module CassandraModel
 
       def updated_column(column)
         column, options = column.first
+
+        if options.is_a?(Symbol)
+          options = { aggregate: options, as: :"#{column}_#{options}" }
+        end
+
         column = quoted_column(column)
         column = aggregate_column(column, options) if options[:aggregate]
         column = "#{column} AS #{options[:as]}" if options[:as]

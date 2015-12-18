@@ -397,6 +397,15 @@ module CassandraModel
 
             it { is_expected.to eq(query) }
 
+            context 'when the aggregate is provided using short-hand' do
+              let(:select_key) { Faker::Lorem.word.to_sym }
+              let(:aggregate) { %w(avg sum min max).sample.to_sym }
+              let(:options) { {select: [select_key => aggregate]} }
+              let(:query_sql) { "SELECT #{aggregate.upcase}(`#{select_key}`) AS #{select_key}_#{aggregate} FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+
             shared_examples_for 'an aggregate function' do |function|
               let(:aggregate) { function.downcase.to_sym }
               let(:sql_aggregate) { function.to_s.upcase }
