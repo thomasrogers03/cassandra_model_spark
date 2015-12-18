@@ -12,6 +12,9 @@ module CassandraModel
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
 
+      let(:frame_context) { double(:sql_context) }
+      let(:spark_frame) { double(:frame, sql_context: frame_context) }
+
       before do
         allow(record_klass).to(receive(:select_column)) { |column| column }
         allow(record_klass).to(receive(:select_columns)) do |columns|
@@ -76,6 +79,12 @@ module CassandraModel
 
           it { is_expected.to eq(sql_context) }
         end
+
+        context 'when a spark data frame is provided to the initializer' do
+          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame) }
+
+          it { is_expected.to eq(frame_context) }
+        end
       end
 
       describe '#spark_data_frame' do
@@ -93,6 +102,12 @@ module CassandraModel
         it 'should register a temp table with the name of the table associated with the frame' do
           expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(table_name)
           data_frame.spark_data_frame
+        end
+
+        context 'when a spark data frame is provided to the initializer' do
+          let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame) }
+
+          it { is_expected.to eq(spark_frame) }
         end
 
         context 'with a specific table name specified' do

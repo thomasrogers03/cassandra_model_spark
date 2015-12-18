@@ -22,7 +22,8 @@ module CassandraModel
 
       def initialize(record_klass, rdd, options = {})
         @table_name = options.fetch(:alias) { record_klass.table_name }
-        @sql_context = options[:sql_context]
+        @frame = options[:spark_data_frame]
+        @sql_context = options[:sql_context] || @frame.try(:sql_context)
         @record_klass = record_klass
         @rdd = rdd
       end
