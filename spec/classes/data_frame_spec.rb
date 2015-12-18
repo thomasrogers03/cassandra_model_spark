@@ -27,9 +27,18 @@ module CassandraModel
         context 'when a spark data frame is provided to the initializer' do
           let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame, alias: spark_frame_alias) }
 
-          it 'should register a temp table with the specified alis' do
+          it 'should register a temp table with the specified alias' do
             expect(spark_frame).to receive(:register_temp_table).with(spark_frame_alias)
             data_frame
+          end
+
+          context 'when the alias is a symbol' do
+            let(:spark_frame_alias) { Faker::Lorem.word.to_sym }
+
+            it 'should convert it to a string' do
+              expect(spark_frame).to receive(:register_temp_table).with(spark_frame_alias.to_s)
+              data_frame
+            end
           end
 
           context 'when an alias is not provided' do
@@ -128,6 +137,15 @@ module CassandraModel
         it 'should register a temp table with the name of the table associated with the frame' do
           expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(table_name)
           data_frame.spark_data_frame
+        end
+
+        context 'when the table name is a symbol' do
+          let(:table_name) { Faker::Lorem.word.to_sym }
+
+          it 'should register a temp using the stringified table name' do
+            expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(table_name.to_s)
+            data_frame.spark_data_frame
+          end
         end
 
         context 'when a spark data frame is provided to the initializer' do

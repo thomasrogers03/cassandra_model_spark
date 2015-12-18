@@ -26,7 +26,7 @@ module CassandraModel
         @frame = options[:spark_data_frame]
         if @frame
           raise ArgumentError, 'DataFrames created from Spark DataFrames require aliases!' unless options[:alias]
-          @frame.register_temp_table(options[:alias])
+          @frame.register_temp_table(options[:alias].to_s)
           @sql_context = @frame.sql_context
         end
         @record_klass = record_klass
@@ -50,7 +50,7 @@ module CassandraModel
             type = SQL_TYPE_MAP.fetch(type) { SqlStringType }
             builder.add_column(name.to_s, type)
           end
-        end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name) }
+        end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name.to_s) }
       end
 
       def cached(&block)
