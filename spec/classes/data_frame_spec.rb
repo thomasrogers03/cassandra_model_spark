@@ -341,6 +341,21 @@ module CassandraModel
 
               it { is_expected.to eq(query) }
             end
+
+            context 'when provided with a child column' do
+              let(:child_key) { Faker::Lorem.word.to_sym }
+              let(:restriction) { { :price.child(child_key).lt => 43.99 } }
+              let(:query_sql) { "SELECT * FROM #{table_name} WHERE `price`.`#{child_key}` < 43.99" }
+
+              it { is_expected.to eq(query) }
+
+              context 'when the columns are mapped' do
+                let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_price`.`#{child_key}` < 43.99" }
+                before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+
+                it { is_expected.to eq(query) }
+              end
+            end
           end
 
           context 'when the columns are mapped' do
