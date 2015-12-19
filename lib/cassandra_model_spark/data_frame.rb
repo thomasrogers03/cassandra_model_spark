@@ -267,13 +267,14 @@ module CassandraModel
           restriction_clause = restriction.map do |key, value|
             updated_key = if key.is_a?(ThomasUtils::KeyComparer)
                             select_key = record_klass.select_column("#{key.key}")
-                            key.new_key("`#{select_key}`")
+                            key.new_key(select_key).quote('`')
                           elsif key.is_a?(ThomasUtils::KeyChild)
-                            select_key = record_klass.select_column(key.key)
-                            "`#{select_key}`.`#{key.child}` ="
+                            new_key = record_klass.select_column(key.key)
+                            updated_key = key.new_key(new_key)
+                            ThomasUtils::KeyComparer.new(updated_key, '=').quote('`')
                           else
                             select_key = record_klass.select_column(key)
-                            "`#{select_key}` ="
+                            ThomasUtils::KeyComparer.new(select_key, '=').quote('`')
                           end
             value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
             "#{updated_key} #{value}"
