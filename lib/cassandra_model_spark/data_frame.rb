@@ -16,6 +16,7 @@ module CassandraModel
           'StringType' => :getString,
           'DoubleType' => :getDouble,
           'TimestampType' => :getTimestamp,
+          'MapType(StringType,StringType,true)' => :getMap,
       }
 
       attr_reader :table_name, :record_klass
@@ -143,8 +144,14 @@ module CassandraModel
 
       def row_to_record(query, row)
         attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
-          converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(field.data_type.to_string) { :getString }
+          sql_type = field.data_type.to_string
+          converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
           value = row.public_send(converter, index)
+
+          if sql_type == 'MapType(StringType,StringType,true)'
+            value = Hash[value.toSeq.array.to_a.map! { |pair| [pair._1, pair._2] }]
+          end
+
           column = field.name
           memo.merge!(column => value)
         end

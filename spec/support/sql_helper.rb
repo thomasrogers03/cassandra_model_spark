@@ -111,6 +111,9 @@ end
 class SqlLongType < SqlDataType
 end
 class SqlStringStringMapType < SqlDataType
+  def self.to_s
+    'SqlMapType(StringType,StringType,true)'
+  end
 end
 class SqlMetadata < SqlDataType
 end

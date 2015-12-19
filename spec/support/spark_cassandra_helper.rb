@@ -7,6 +7,21 @@ class SqlLong < Struct.new(:value)
   end
 end
 
+class ScalaSeq < Struct.new(:array)
+end
+
+class ScalaMapPair < Struct.new(:_1, :_2)
+end
+
+class ScalaMap < Struct.new(:hash)
+  def toSeq
+    pairs = hash.map do |key, value|
+      ScalaMapPair.new(key, value)
+    end
+    ScalaSeq.new(pairs)
+  end
+end
+
 class RDDRow < Hash
   def getInt(column)
     values[column].to_i
@@ -26,6 +41,10 @@ class RDDRow < Hash
 
   def getTimestamp(column)
     Time.at(values[column].to_f)
+  end
+
+  def getMap(column)
+    ScalaMap.new(values[column])
   end
 end
 

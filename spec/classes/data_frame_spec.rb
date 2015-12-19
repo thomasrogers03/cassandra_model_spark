@@ -541,6 +541,7 @@ module CassandraModel
             it_behaves_like 'converting sql types back to ruby types', SqlLong.new(153), SqlLongType
             it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
             it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
+            it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
 
             context 'with a type we cannot handle' do
               let(:result_sql_type) { SqlTypeWrapper.new('SqlFakeType') }
