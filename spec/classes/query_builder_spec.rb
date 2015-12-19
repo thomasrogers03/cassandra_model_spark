@@ -5,7 +5,7 @@ module CassandraModel
     let(:sql_context) { double(:sql_context) }
     let(:rdd) { double(:rdd) }
     let(:table_name) { Faker::Lorem.word }
-    let(:base_record_klass) { double(:klass, rdd: rdd, table_name: table_name) }
+    let(:base_record_klass) { double(:klass, rdd: rdd, table_name: table_name, rdd_row_mapping: nil) }
     let(:record_klass) { base_record_klass }
     let(:restriction_key) { Faker::Lorem.word.to_sym }
     let(:restriction_value) { Faker::Lorem.word }

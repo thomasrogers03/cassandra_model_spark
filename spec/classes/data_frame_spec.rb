@@ -6,8 +6,9 @@ module CassandraModel
       let(:cassandra_columns) { {partition: :text} }
       let(:table_name) { Faker::Lorem.word }
       let(:table) { TableRedux.new(table_name) }
+      let(:record_klass_rdd_mapper) { nil }
       let(:record_klass) do
-        double(:klass, table: table, cassandra_columns: cassandra_columns, table_name: table_name)
+        double(:klass, table: table, cassandra_columns: cassandra_columns, table_name: table_name, rdd_row_mapping: record_klass_rdd_mapper)
       end
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
@@ -85,7 +86,7 @@ module CassandraModel
         it { is_expected.to eq(union_data_frame) }
 
         context 'when the Record classes do not match' do
-          let(:record_klass_two) { double(:klass, table_name: Faker::Lorem.word) }
+          let(:record_klass_two) { double(:klass, table_name: Faker::Lorem.word, rdd_row_mapping: nil) }
 
           it { expect { subject }.to raise_error(ArgumentError, 'Cannot union DataFrames with different Record types!') }
         end
@@ -184,12 +185,11 @@ module CassandraModel
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
 
-        context 'when a row mapper is provided' do
+        shared_examples_for 'mapping an rdd' do
+          let(:rdd_mapper) { {mapper: row_mapper, type_map: type_map} }
           let(:type_map) { nil }
           let(:mapped_rdd) { double(:rdd) }
           let(:row_mapper) { double(:mapper) }
-          let(:options) { {row_mapping: {mapper: row_mapper, type_map: type_map}} }
-          let(:data_frame) { DataFrame.new(record_klass, rdd, options) }
 
           before { allow(row_mapper).to receive(:mappedRDD).with(rdd).and_return(mapped_rdd) }
 
@@ -218,6 +218,19 @@ module CassandraModel
               its(:schema) { is_expected.to eq(sql_columns) }
             end
           end
+        end
+
+        context 'when a row mapper is provided' do
+          let(:options) { {row_mapping: rdd_mapper} }
+          let(:data_frame) { DataFrame.new(record_klass, rdd, options) }
+
+          it_behaves_like 'mapping an rdd'
+        end
+
+        context 'when the record klass has a row mapper' do
+          let(:record_klass_rdd_mapper) { rdd_mapper }
+
+          it_behaves_like 'mapping an rdd'
         end
       end
 

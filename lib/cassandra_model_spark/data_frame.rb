@@ -31,7 +31,9 @@ module CassandraModel
         end
         @record_klass = record_klass
 
-        @row_mapping = options.fetch(:row_mapping) { {} }
+        @row_mapping = options.fetch(:row_mapping) do
+          @record_klass.rdd_row_mapping || {}
+        end
         @rdd = if @row_mapping[:mapper]
                  @row_mapping[:mapper].mappedRDD(rdd)
                else
