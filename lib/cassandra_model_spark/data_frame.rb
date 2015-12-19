@@ -201,6 +201,10 @@ module CassandraModel
         end
 
         column = quoted_column(column)
+        column = "#{column}.`#{options[:child]}`" if options[:child]
+        if options[:children]
+          column = options[:children].map { |child| "#{column}.`#{child}`" } * ', '
+        end
         column = aggregate_column(column, options) if options[:aggregate]
         column = "#{column} AS #{options[:as]}" if options[:as]
         column

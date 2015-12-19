@@ -441,6 +441,23 @@ module CassandraModel
             it { is_expected.to eq(query) }
           end
 
+          context 'when provided with a child column' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:options) { {select: [{partition: {child: child_key}}]} }
+            let(:query_sql) { "SELECT `partition`.`#{child_key}` FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when provided with a multiple child columns' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:child_key_two) { Faker::Lorem.word.to_sym }
+            let(:options) { {select: [{partition: {children: [child_key, child_key_two]}}]} }
+            let(:query_sql) { "SELECT `partition`.`#{child_key}`, `partition`.`#{child_key_two}` FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+          end
+
           context 'when the column is to be aggregated' do
             let(:aggregate) { :avg }
             let(:options) { {select: [{partition: {aggregate: aggregate}}]} }
