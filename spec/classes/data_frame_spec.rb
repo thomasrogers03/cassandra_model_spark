@@ -182,6 +182,20 @@ module CassandraModel
 
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
+
+        context 'when a row mapper is provided' do
+          let(:type_map) { nil }
+          let(:mapped_rdd) { double(:rdd) }
+          let(:row_mapper) { double(:mapper) }
+          let(:options) { {row_mapping: {mapper: row_mapper, type_map: type_map}} }
+          let(:data_frame) { DataFrame.new(record_klass, rdd, options) }
+
+          before { allow(row_mapper).to receive(:mappedRDD).with(rdd).and_return(mapped_rdd) }
+
+          it 'should create the frame using the mapped rdd' do
+            expect(subject.rdd).to eq(mapped_rdd)
+          end
+        end
       end
 
       describe '#cached' do

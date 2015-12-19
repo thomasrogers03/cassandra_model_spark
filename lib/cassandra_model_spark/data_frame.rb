@@ -30,7 +30,13 @@ module CassandraModel
           @sql_context = @frame.sql_context
         end
         @record_klass = record_klass
-        @rdd = rdd
+
+        @row_mapping = options.fetch(:row_mapping) { {} }
+        @rdd = if @row_mapping[:mapper]
+                 @row_mapping[:mapper].mappedRDD(rdd)
+               else
+                 rdd
+               end
       end
 
       def sql_context
@@ -157,7 +163,7 @@ module CassandraModel
         column, options = column.first
 
         if options.is_a?(Symbol)
-          options = { aggregate: options, as: :"#{column}_#{options}" }
+          options = {aggregate: options, as: :"#{column}_#{options}"}
         end
 
         column = quoted_column(column)
