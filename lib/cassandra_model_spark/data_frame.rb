@@ -23,22 +23,11 @@ module CassandraModel
       def initialize(record_klass, rdd, options = {})
         @table_name = options.fetch(:alias) { record_klass.table_name }
         @sql_context = options[:sql_context]
-        @frame = options[:spark_data_frame]
-        if @frame
-          raise ArgumentError, 'DataFrames created from Spark DataFrames require aliases!' unless options[:alias]
-          @frame.register_temp_table(options[:alias].to_s)
-          @sql_context = @frame.sql_context
-        end
+        initialize_frame_from_existing(options)
         @record_klass = record_klass
 
-        @row_mapping = options.fetch(:row_mapping) do
-          @record_klass.rdd_row_mapping || {}
-        end
-        @rdd = if @row_mapping[:mapper]
-                 @row_mapping[:mapper].mappedRDD(rdd)
-               else
-                 rdd
-               end
+        initialize_row_mapping(options)
+        initialize_rdd(rdd)
       end
 
       def sql_context
@@ -112,6 +101,29 @@ module CassandraModel
       attr_reader :rdd
 
       private
+
+      def initialize_frame_from_existing(options)
+        @frame = options[:spark_data_frame]
+        if @frame
+          raise ArgumentError, 'DataFrames created from Spark DataFrames require aliases!' unless options[:alias]
+          @frame.register_temp_table(options[:alias].to_s)
+          @sql_context = @frame.sql_context
+        end
+      end
+
+      def initialize_rdd(rdd)
+        @rdd = if @row_mapping[:mapper]
+                 @row_mapping[:mapper].mappedRDD(rdd)
+               else
+                 rdd
+               end
+      end
+
+      def initialize_row_mapping(options)
+        @row_mapping = options.fetch(:row_mapping) do
+          @record_klass.rdd_row_mapping || {}
+        end
+      end
 
       def row_type_mapping
         @row_mapping[:type_map] ||= {}
