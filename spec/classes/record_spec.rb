@@ -31,6 +31,7 @@ module CassandraModel
     end
 
     its(:count) { is_expected.to eq(rdd_count) }
+    its(:rdd_row_mapping) { is_expected.to be_nil }
 
   end
 end

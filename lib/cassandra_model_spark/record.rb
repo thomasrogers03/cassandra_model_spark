@@ -7,6 +7,10 @@ module CassandraModel
           table_name)
     end
 
+    def self.rdd_row_mapping
+      nil
+    end
+
     def self.count
       rdd.count
     end
