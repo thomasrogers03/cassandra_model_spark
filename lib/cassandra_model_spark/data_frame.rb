@@ -242,7 +242,9 @@ module CassandraModel
       def aggregate_column(column, options)
         case options[:aggregate]
           when :count_distinct
-            "COUNT(DISTINCT #{column})"
+            "COUNT(#{distinct_aggregate(column)})"
+          when :distinct
+            distinct_aggregate(column)
           when :variance
             variance_column(column)
           when :stddev
@@ -250,6 +252,10 @@ module CassandraModel
           else
             "#{options[:aggregate].to_s.upcase}(#{column})"
         end
+      end
+
+      def distinct_aggregate(column)
+        "DISTINCT #{column}"
       end
 
       def variance_column(column)
