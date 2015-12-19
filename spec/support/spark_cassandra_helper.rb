@@ -10,13 +10,19 @@ end
 class ScalaSeq < Struct.new(:array)
 end
 
+class ScalaValueWrapper < Struct.new(:value)
+  def to_string
+    value
+  end
+end
+
 class ScalaMapPair < Struct.new(:_1, :_2)
 end
 
 class ScalaMap < Struct.new(:hash)
   def toSeq
     pairs = hash.map do |key, value|
-      ScalaMapPair.new(key, value)
+      ScalaMapPair.new(ScalaValueWrapper.new(key), ScalaValueWrapper.new(value))
     end
     ScalaSeq.new(pairs)
   end

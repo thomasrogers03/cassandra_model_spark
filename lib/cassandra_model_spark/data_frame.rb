@@ -149,7 +149,7 @@ module CassandraModel
           value = row.public_send(converter, index)
 
           if sql_type == 'MapType(StringType,StringType,true)'
-            value = Hash[value.toSeq.array.to_a.map! { |pair| [pair._1, pair._2] }]
+            value = Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.to_string, pair._2.to_string] }]
           end
 
           column = field.name
