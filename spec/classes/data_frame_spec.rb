@@ -334,16 +334,35 @@ module CassandraModel
             let(:query_sql) { "SELECT * FROM #{table_name} WHERE `price` > 50.49" }
 
             it { is_expected.to eq(query) }
+
+            context 'when the columns are mapped' do
+              let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_price` > 50.49" }
+              before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+
+              it { is_expected.to eq(query) }
+            end
           end
 
           context 'when the columns are mapped' do
             let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_partition` = 47" }
-
-            before do
-              allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" }
-            end
+            before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
 
             it { is_expected.to eq(query) }
+          end
+
+          context 'when provided with a child column' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:restriction) { { :partition.child(child_key) => 49.99 } }
+            let(:query_sql) { "SELECT * FROM #{table_name} WHERE `partition`.`#{child_key}` = 49.99" }
+
+            it { is_expected.to eq(query) }
+
+            context 'when the columns are mapped' do
+              let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_partition`.`#{child_key}` = 49.99" }
+              before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+
+              it { is_expected.to eq(query) }
+            end
           end
         end
 

@@ -260,8 +260,11 @@ module CassandraModel
         if restriction.present?
           restriction_clause = restriction.map do |key, value|
             updated_key = if key.is_a?(ThomasUtils::KeyComparer)
-                            select_key = record_klass.select_column("`#{key.key}`")
-                            key.new_key(select_key)
+                            select_key = record_klass.select_column("#{key.key}")
+                            key.new_key("`#{select_key}`")
+                          elsif key.is_a?(ThomasUtils::KeyChild)
+                            select_key = record_klass.select_column(key.key)
+                            "`#{select_key}`.`#{key.child}` ="
                           else
                             select_key = record_klass.select_column(key)
                             "`#{select_key}` ="
