@@ -487,7 +487,7 @@ module CassandraModel
 
             context 'when requesting a distinct count aggregate' do
               let(:aggregate) { :count_distinct }
-              let(:query_sql) { "SELECT COUNT(DISTINCT(`partition`)) FROM #{table_name}" }
+              let(:query_sql) { "SELECT COUNT(DISTINCT `partition`) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
             end
