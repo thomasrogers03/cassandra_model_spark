@@ -174,13 +174,34 @@ module CassandraModel
           updated_clause = options[type].map do |column|
             if column.is_a?(Hash)
               column, direction = column.first
-              "#{quoted_column(column)} #{direction.upcase}"
+              updated_column = quoted_column(column)
+              if direction.is_a?(Hash)
+                if direction[:child]
+                  group_child_clause(direction[:child], updated_column)
+                elsif direction[:children]
+                  direction[:children].map do |child|
+                    group_child_clause(child, updated_column)
+                  end * ', '
+                end
+              else
+                "#{updated_column} #{direction.upcase}"
+              end
             else
               quoted_column(column)
             end
           end * ', '
           " #{prefix} #{updated_clause}"
         end
+      end
+
+      def group_child_clause(child, updated_column)
+        child, direction = if child.is_a?(Hash)
+                             child.first
+                           else
+                             [child]
+                           end
+        direction_clause = (" #{direction.upcase}" if direction)
+        "#{updated_column}.`#{child}`#{direction_clause}"
       end
 
       def clean_select_columns(options)

@@ -369,6 +369,23 @@ module CassandraModel
 
             it { is_expected.to eq(query) }
           end
+
+          context 'when provided with a child column' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:options) { {method => [{partition: {child: child_key}}]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} #{clause} `partition`.`#{child_key}`" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when provided with a multiple child columns' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:child_key_two) { Faker::Lorem.word.to_sym }
+            let(:options) { {method => [{partition: {children: [child_key, child_key_two]}}]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} #{clause} `partition`.`#{child_key}`, `partition`.`#{child_key_two}`" }
+
+            it { is_expected.to eq(query) }
+          end
         end
 
         it_behaves_like 'a column grouping', :group, 'GROUP BY'
@@ -384,6 +401,23 @@ module CassandraModel
           context 'with a different direction' do
             let(:direction) { :asc }
             let(:query_sql) { "SELECT * FROM #{table_name} ORDER BY `partition` ASC" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when provided with a child column' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:options) { {order_by: [{partition: {child: {child_key => :desc}, direction: :asc}}]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} ORDER BY `partition`.`#{child_key}` DESC" }
+
+            it { is_expected.to eq(query) }
+          end
+
+          context 'when provided with a multiple child columns' do
+            let(:child_key) { Faker::Lorem.word.to_sym }
+            let(:child_key_two) { Faker::Lorem.word.to_sym }
+            let(:options) { {order_by: [{partition: {children: [{child_key => :asc}, {child_key_two => :desc}]}}]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} ORDER BY `partition`.`#{child_key}` ASC, `partition`.`#{child_key_two}` DESC" }
 
             it { is_expected.to eq(query) }
           end
