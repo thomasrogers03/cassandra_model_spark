@@ -14,9 +14,18 @@ import_java_object 'org.apache.spark.api.cassandra_model.CassandraHelper', as: '
 import_java_object 'org.apache.spark.api.cassandra_model.SchemaBuilder', as: 'SparkSchemaBuilder'
 import_java_object 'org.apache.spark.api.cassandra_model.DataTypeHelper', as: 'SparkSqlDataTypeHelper'
 
-%w(ArrayType BinaryType BooleanType ByteType DataType
+%w(BinaryType BooleanType ByteType DataType
    DateType Decimal DecimalType DoubleType FloatType IntegerType
-   LongType MapType Metadata NullType PrecisionInfo ShortType
+   LongType Metadata NullType PrecisionInfo ShortType
    StringType StructField StructType TimestampType).each do |sql_type|
   Object.const_set(:"Sql#{sql_type}", import_quiet { SparkSqlDataTypeHelper.public_send(:"get#{sql_type}") })
 end
+
+#noinspection RubyConstantNamingConvention
+SqlStringArrayType = SparkSqlDataTypeHelper.getArrayType(SqlStringType)
+
+#noinspection RubyConstantNamingConvention
+SqlIntegerArrayType = SparkSqlDataTypeHelper.getArrayType(SqlIntegerType)
+
+#noinspection RubyConstantNamingConvention
+SqlStringStringMapType = SparkSqlDataTypeHelper.getMapType(SqlStringType, SqlStringType)
