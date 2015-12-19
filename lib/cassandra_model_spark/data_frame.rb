@@ -45,8 +45,14 @@ module CassandraModel
         @frame ||= SparkSchemaBuilder.new.tap do |builder|
           record_klass.cassandra_columns.each do |name, type|
             select_name = record_klass.normalized_column(name)
-            type = row_type_mapping[select_name] || SQL_TYPE_MAP.fetch(type) { SqlStringType }
-            builder.add_column(name.to_s, type)
+            mapped_type = row_type_mapping[select_name]
+            new_name = mapped_type ? mapped_type[:name] : name
+            type = if mapped_type
+                     mapped_type[:type]
+                   else
+                     SQL_TYPE_MAP.fetch(type) { SqlStringType }
+                   end
+            builder.add_column(new_name.to_s, type)
           end
         end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name.to_s) }
       end

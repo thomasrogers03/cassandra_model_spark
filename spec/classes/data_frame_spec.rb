@@ -199,15 +199,16 @@ module CassandraModel
 
           context 'when a column type map is provided' do
             let(:mapped_column) { Faker::Lorem.word.to_sym }
-            let(:type_map) { {mapped_column => SqlStringStringMapType} }
+            let(:mapped_column_alias) { Faker::Lorem.word.to_sym }
+            let(:type_map) { {mapped_column => {type: SqlStringStringMapType, name: mapped_column_alias}} }
             let(:cassandra_columns) { {mapped_column => :blob} }
-            let(:sql_columns) { {mapped_column.to_s => SqlStringStringMapType} }
+            let(:sql_columns) { {mapped_column_alias.to_s => SqlStringStringMapType} }
 
             its(:schema) { is_expected.to eq(sql_columns) }
 
             context 'when the Record class maps column names' do
               let(:cassandra_columns) { {"rk_#{mapped_column}" => :blob} }
-              let(:sql_columns) { {"rk_#{mapped_column}" => SqlStringStringMapType} }
+              let(:sql_columns) { {mapped_column_alias.to_s => SqlStringStringMapType} }
 
               before do
                 allow(record_klass).to(receive(:normalized_column)) do |column|
