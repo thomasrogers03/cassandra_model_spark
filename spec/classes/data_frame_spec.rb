@@ -502,6 +502,7 @@ module CassandraModel
             let(:select_key) { Faker::Lorem.word }
             let(:options) { {select: [select_key]} }
             let(:available_columns) { [select_key.to_sym] }
+            let(:deferred_columns) { [] }
 
             let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
             let(:query_schema) { SqlStructType.new(fields) }
@@ -517,6 +518,7 @@ module CassandraModel
                 attributes.symbolize_keys
               end
               allow(record_klass).to receive(:columns).and_return(available_columns)
+              allow(record_klass).to receive(:deferred_columns).and_return(deferred_columns)
             end
 
             it 'should support default values' do
@@ -574,6 +576,15 @@ module CassandraModel
 
               it 'should return a hash instead of the Record class' do
                 expect(data_frame.public_send(method, attributes, options)).to include(record_attributes)
+              end
+
+              context 'when it is part of the deferred columns' do
+                let(:available_columns) { [Faker::Lorem.word.to_sym] }
+                let(:deferred_columns) { [select_key.to_sym] }
+
+                it 'should give back a record instance' do
+                  expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
+                end
               end
             end
           end

@@ -156,7 +156,9 @@ module CassandraModel
           memo.merge!(column => value)
         end
         attributes = record_klass.normalized_attributes(attributes)
-        if attributes.keys.all? { |column| record_klass.columns.include?(column) }
+
+        available_columns = record_klass.columns + record_klass.deferred_columns
+        if attributes.keys.all? { |column| available_columns.include?(column) }
           record_klass.new(attributes)
         else
           attributes
