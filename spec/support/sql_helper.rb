@@ -88,7 +88,7 @@ end
 class SqlDataType
 end
 
-class SqlArrayType < SqlDataType
+class SqlStringArrayType < SqlDataType
 end
 class SqlBinaryType < SqlDataType
 end
@@ -110,7 +110,7 @@ class SqlIntegerType < SqlDataType
 end
 class SqlLongType < SqlDataType
 end
-class SqlMapType < SqlDataType
+class SqlStringStringMapType < SqlDataType
 end
 class SqlMetadata < SqlDataType
 end

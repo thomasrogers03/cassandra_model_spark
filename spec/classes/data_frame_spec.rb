@@ -17,6 +17,7 @@ module CassandraModel
       let(:spark_frame_alias) { Faker::Lorem.word }
 
       before do
+        allow(record_klass).to(receive(:normalized_column)) { |column| column }
         allow(record_klass).to(receive(:select_column)) { |column| column }
         allow(record_klass).to(receive(:select_columns)) do |columns|
           columns.map { |column| record_klass.select_column(column) }
@@ -194,6 +195,28 @@ module CassandraModel
 
           it 'should create the frame using the mapped rdd' do
             expect(subject.rdd).to eq(mapped_rdd)
+          end
+
+          context 'when a column type map is provided' do
+            let(:mapped_column) { Faker::Lorem.word.to_sym }
+            let(:type_map) { {mapped_column => SqlStringStringMapType} }
+            let(:cassandra_columns) { {mapped_column => :blob} }
+            let(:sql_columns) { {mapped_column.to_s => SqlStringStringMapType} }
+
+            its(:schema) { is_expected.to eq(sql_columns) }
+
+            context 'when the Record class maps column names' do
+              let(:cassandra_columns) { {"rk_#{mapped_column}" => :blob} }
+              let(:sql_columns) { {"rk_#{mapped_column}" => SqlStringStringMapType} }
+
+              before do
+                allow(record_klass).to(receive(:normalized_column)) do |column|
+                  column.match(/^rk_(.+)$/)[1].to_sym
+                end
+              end
+
+              its(:schema) { is_expected.to eq(sql_columns) }
+            end
           end
         end
       end
