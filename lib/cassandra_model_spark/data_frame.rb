@@ -250,7 +250,12 @@ module CassandraModel
           when :stddev
             "POW(#{variance_column(column)},0.5)"
           else
-            "#{options[:aggregate].to_s.upcase}(#{column})"
+            if options[:aggregate] =~ /^cast_/
+              type = options[:aggregate].to_s.match(/^cast_(.+)$/)[1]
+              "CAST(#{column} AS #{type})"
+            else
+              "#{options[:aggregate].to_s.upcase}(#{column})"
+            end
         end
       end
 

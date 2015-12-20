@@ -553,6 +553,17 @@ module CassandraModel
             it_behaves_like 'an aggregate function', :count
             it_behaves_like 'an aggregate function', :sum
 
+            shared_examples_for 'casting as column to another type' do |type|
+              let(:aggregate) { :"cast_#{type}" }
+              let(:query_sql) { "SELECT CAST(`partition` AS #{type}) FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+
+            it_behaves_like 'casting as column to another type', :int
+            it_behaves_like 'casting as column to another type', :double
+            it_behaves_like 'casting as column to another type', :string
+
             context 'when requesting a distinct aggregate' do
               let(:aggregate) { :distinct }
               let(:query_sql) { "SELECT DISTINCT `partition` FROM #{table_name}" }
