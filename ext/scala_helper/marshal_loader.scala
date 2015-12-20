@@ -43,6 +43,13 @@ class MarshalLoader (dump: Array[Byte]) {
     value
   }
 
+  private def decodeDouble(): java.lang.Double = {
+    val length = decodeInt()
+    val str_value = new String(nextBytes(length))
+
+    str_value.toDouble
+  }
+
   private def decodeSymbol(): String = {
     val length = decodeInt()
     val string_bytes = nextBytes(length)
@@ -141,6 +148,7 @@ class MarshalLoader (dump: Array[Byte]) {
       case 0x54 => true: java.lang.Boolean
       case 0x46 => false: java.lang.Boolean
       case 0x69 => decodeInt()
+      case 0x66 => decodeDouble()
       case 0x3a => decodeSymbol()
       case 0x3b => decodeSymLink()
       case 0x7b => decodeHash()
