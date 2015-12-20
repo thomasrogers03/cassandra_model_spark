@@ -145,7 +145,8 @@ module CassandraModel
       end
 
       def row_to_record(query, row)
-        attributes = query.schema.fields.each.with_index.inject({}) do |memo, (field, index)|
+        attributes = {}
+        query.schema.fields.each_with_index do |field, index|
           sql_type = field.data_type.to_string
           converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
           value = row.public_send(converter, index)
@@ -155,7 +156,7 @@ module CassandraModel
           end
 
           column = field.name
-          memo.merge!(column => value)
+          attributes.merge!(column => value)
         end
         attributes = record_klass.normalized_attributes(attributes)
 
