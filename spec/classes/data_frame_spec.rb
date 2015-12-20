@@ -121,6 +121,17 @@ module CassandraModel
           let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame, alias: spark_frame_alias) }
 
           it { is_expected.to eq(frame_context) }
+
+          context 'when the record klass has a row mapper' do
+            let(:row_mapper) { double(:row_mapper) }
+            let(:rdd_mapper) { {mapper: row_mapper, type_map: {}} }
+            let(:record_klass_rdd_mapper) { rdd_mapper }
+
+            it 'should not use the row mapper of the class' do
+              expect(row_mapper).not_to receive(:mappedRDD)
+              subject
+            end
+          end
         end
       end
 

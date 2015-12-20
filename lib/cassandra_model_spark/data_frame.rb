@@ -119,11 +119,13 @@ module CassandraModel
       end
 
       def initialize_rdd(rdd)
-        @rdd = if @row_mapping[:mapper]
-                 @row_mapping[:mapper].mappedRDD(rdd)
-               else
-                 rdd
-               end
+        if rdd
+          @rdd = if @row_mapping[:mapper]
+                   @row_mapping[:mapper].mappedRDD(rdd)
+                 else
+                   rdd
+                 end
+        end
       end
 
       def initialize_row_mapping(options)
