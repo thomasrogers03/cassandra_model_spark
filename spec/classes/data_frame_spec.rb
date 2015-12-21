@@ -294,13 +294,18 @@ module CassandraModel
       describe '#normalized' do
         let(:available_columns) { [Faker::Lorem.word.to_sym] }
         let(:select_options) do
-          available_columns.inject({}) { |memo, key| memo.merge!(key: {as: key}) }
+          available_columns.inject({}) { |memo, key| memo.merge!(key => {as: key}) }
         end
+        let(:select_columns) { available_columns.map { |key| {key => {as: key}} } }
         let(:normalized_frame) { data_frame.select(select_options).as_data_frame(alias: :"normalized_#{table_name}") }
+        let(:query_frame) { double(:data_frame, register_temp_table: nil, sql_context: data_frame.sql_context) }
 
         subject { data_frame.normalized }
 
-        before { allow(record_klass).to receive(:columns).and_return(available_columns) }
+        before do
+          allow(record_klass).to receive(:columns).and_return(available_columns)
+          allow(data_frame).to receive(:query).with({}, select: select_columns).and_return(query_frame)
+        end
 
         it { is_expected.to eq(normalized_frame) }
 
