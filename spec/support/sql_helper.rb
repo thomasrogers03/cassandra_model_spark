@@ -31,7 +31,7 @@ class CassandraSQLContext
   end
 
   def ==(rhs)
-    rhs.is_a?(CassandraSQLContext) && sql_context == rhs.sql_context
+    rhs.is_a?(CassandraSQLContext) && spark_context == rhs.spark_context
   end
 
   def setKeyspace(value)
@@ -43,7 +43,7 @@ class CassandraSQLContext
 
   protected
 
-  attr_reader :sql_context
+  attr_reader :spark_context
 end
 
 class SqlDataFrame
