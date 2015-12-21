@@ -17,6 +17,10 @@ module CassandraModel
         "CAST(#{quoted_key} AS #{@type})"
       end
 
+      def new_key(key)
+        self.class.new(key, @type)
+      end
+
     end
   end
 end

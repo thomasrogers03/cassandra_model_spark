@@ -32,6 +32,15 @@ module CassandraModel
           it { is_expected.to eq(quoted_string) }
         end
       end
+
+      describe '#new_key' do
+        let(:new_key) { Faker::Lorem.word.to_sym }
+        let(:quoted_string) { "CAST(#{quote}#{new_key}#{quote} AS #{upcase_type})" }
+
+        subject { cast.new_key(new_key).quote(quote) }
+
+        it { is_expected.to eq(quoted_string) }
+      end
       
       describe 'Symbol methods' do
         subject { key.cast_as(type).quote(quote) }
