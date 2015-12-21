@@ -17,9 +17,9 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/thomas_utils.git
-  revision: 0d9c529f1fa80fd4bad45d7c25a9fc6af388efa4
+  revision: 256501296d2f52ddccc512288060ee806969f375
   specs:
-    thomas_utils (0.1.15)
+    thomas_utils (0.1.16)
       concurrent-ruby (~> 0.8)
       workers (~> 0.3)
 
@@ -29,7 +29,7 @@ PATH
     cassandra_model_spark (0.0.1)
       cassandra_model (~> 0.9.16)
       rjb (~> 1.5.4)
-      thomas_utils (~> 0.1.15)
+      thomas_utils (~> 0.1.16)
 
 GEM
   remote: https://rubygems.org/
