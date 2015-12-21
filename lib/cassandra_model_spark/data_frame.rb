@@ -145,19 +145,23 @@ module CassandraModel
       end
 
       def row_to_record(schema, row)
-        attributes = {}
-        schema.fields.each_with_index do |field, index|
-          value = field_value(field, index, row)
-          column = field.name
-          attributes.merge!(column => value)
-        end
-        attributes = record_klass.normalized_attributes(attributes)
+        attributes = row_attributes(row, schema)
 
         if valid_record?(attributes)
           record_klass.new(attributes)
         else
           attributes
         end
+      end
+
+      def row_attributes(row, schema)
+        attributes = {}
+        schema.fields.each_with_index do |field, index|
+          value = field_value(field, index, row)
+          column = field.name
+          attributes.merge!(column => value)
+        end
+        record_klass.normalized_attributes(attributes)
       end
 
       def valid_record?(attributes)
