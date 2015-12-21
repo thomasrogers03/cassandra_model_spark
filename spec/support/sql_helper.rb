@@ -85,9 +85,27 @@ class SparkSchemaBuilder
   end
 end
 
-class SqlDataType
+class SqlDataTypeClass < Struct.new(:simple_name)
+  alias :getSimpleName :simple_name
 end
 
+#noinspection RubyClassMethodNamingConvention,RubyInstanceMethodNamingConvention
+class SqlDataType
+  def self.getClass
+    SqlDataTypeClass.new(to_s.match(/^Sql(.+)$/)[1])
+  end
+
+  def self.to_string
+    to_s.match(/^Sql(.+)$/)[1]
+  end
+
+  def getClass
+    self.class.getClass
+  end
+end
+
+class SqlFakeType < SqlDataType
+end
 class SqlStringArrayType < SqlDataType
 end
 class SqlBinaryType < SqlDataType
@@ -152,6 +170,6 @@ class SqlTypeWrapper < SqlDataType
   end
 
   def to_string
-    @internal_type.to_s.match(/^Sql(.+)$/)[1]
+    @internal_type.to_string
   end
 end

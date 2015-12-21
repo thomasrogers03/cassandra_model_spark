@@ -659,8 +659,18 @@ module CassandraModel
             it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
             it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
 
+            context 'when a type is a StructType' do
+              let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType)]) }
+              let(:result_sql_type) { sql_type }
+              let(:result_value) { RDDRow[description: Faker::Lorem.word] }
+
+              it 'should recursively map the results' do
+                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
+              end
+            end
+
             context 'with a type we cannot handle' do
-              let(:result_sql_type) { SqlTypeWrapper.new('SqlFakeType') }
+              let(:result_sql_type) { SqlTypeWrapper.new(SqlFakeType) }
               let(:result_value) { '1239333-33333' }
 
               it 'should convert to a string' do

@@ -87,14 +87,14 @@ module CassandraModel
       def request(restriction = {}, options = {})
         query = query(restriction, options)
         query.collect.map do |row|
-          row_to_record(query, row)
+          row_to_record(query.schema, row)
         end
       end
 
       def first(restriction = {}, options = {})
         query = query(restriction, options)
         row = query.first
-        row_to_record(query, row)
+        row_to_record(query.schema, row)
       end
 
       def ==(rhs)
@@ -144,19 +144,26 @@ module CassandraModel
         end
       end
 
-      def row_to_record(query, row)
+      def row_to_record(schema, row)
         attributes = {}
-        query.schema.fields.each_with_index do |field, index|
-          sql_type = field.data_type.to_string
-          converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
-          value = row.public_send(converter, index)
+        schema.fields.each_with_index do |field, index|
+          data_type = field.data_type
+          if data_type.getClass.getSimpleName == 'StructType'
+            value = row_to_record(data_type, row.get(index))
+            column = field.name
+            attributes.merge!(column => value)
+          else
+            sql_type = data_type.to_string
+            converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
+            value = row.public_send(converter, index)
 
-          if sql_type == 'MapType(StringType,StringType,true)'
-            value = Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.to_string, pair._2.to_string] }]
+            if sql_type == 'MapType(StringType,StringType,true)'
+              value = Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.to_string, pair._2.to_string] }]
+            end
+
+            column = field.name
+            attributes.merge!(column => value)
           end
-
-          column = field.name
-          attributes.merge!(column => value)
         end
         attributes = record_klass.normalized_attributes(attributes)
 

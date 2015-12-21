@@ -29,6 +29,10 @@ class ScalaMap < Struct.new(:hash)
 end
 
 class RDDRow < Hash
+  def get(column)
+    values[column]
+  end
+
   def getInt(column)
     values[column].to_i
   end
