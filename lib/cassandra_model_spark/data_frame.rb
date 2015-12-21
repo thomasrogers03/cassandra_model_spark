@@ -242,7 +242,12 @@ module CassandraModel
         column, options = column.first
 
         if options.is_a?(Symbol)
-          options = {aggregate: options, as: :"#{column}_#{options}"}
+          updated_column = if column.is_a?(ThomasUtils::KeyChild)
+                             "#{column}".gsub(/\./, '_')
+                           else
+                             column
+                           end
+          options = {aggregate: options, as: :"#{updated_column}_#{options}"}
         end
 
         column = quoted_column(column)

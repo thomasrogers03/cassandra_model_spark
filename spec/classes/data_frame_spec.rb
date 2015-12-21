@@ -543,6 +543,13 @@ module CassandraModel
               let(:query_sql) { "SELECT COUNT(`partition`.`#{child_key}`) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
+
+              context 'when using the short-hand' do
+                let(:options) { {select: [:partition.child(child_key) => :count]} }
+                let(:query_sql) { "SELECT COUNT(`partition`.`#{child_key}`) AS partition_#{child_key}_count FROM #{table_name}" }
+
+                it { is_expected.to eq(query) }
+              end
             end
           end
 
