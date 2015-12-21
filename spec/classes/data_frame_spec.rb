@@ -353,6 +353,13 @@ module CassandraModel
               it { is_expected.to eq(query) }
             end
 
+            context 'with a ColumnCast' do
+              let(:restriction) { {:price.cast_as(:double).gt => 50.49} }
+              let(:query_sql) { "SELECT * FROM #{table_name} WHERE CAST(`price` AS DOUBLE) > 50.49" }
+
+              it { is_expected.to eq(query) }
+            end
+
             context 'when provided with a child column' do
               let(:child_key) { Faker::Lorem.word.to_sym }
               let(:restriction) { {:price.child(child_key).lt => 43.99} }
