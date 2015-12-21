@@ -208,14 +208,8 @@ module CassandraModel
           updated_clause = options[type].map do |column|
             if column.is_a?(Hash)
               column, direction = column.first
-              updated_column = if column.is_a?(ThomasUtils::KeyChild)
-                                 column.quote('`')
-                               else
-                                 quoted_column(column)
-                               end
+              updated_column = quoted_column(column)
               "#{updated_column} #{direction.upcase}"
-            elsif column.is_a?(ThomasUtils::KeyChild)
-              column.quote('`')
             else
               quoted_column(column)
             end
@@ -238,8 +232,6 @@ module CassandraModel
         options[:select].map do |column|
           if column.is_a?(Hash)
             updated_column(column)
-          elsif column.is_a?(ThomasUtils::KeyChild)
-            column.quote('`')
           else
             quoted_column(column)
           end
@@ -253,11 +245,7 @@ module CassandraModel
           options = {aggregate: options, as: :"#{column}_#{options}"}
         end
 
-        column = if column.is_a?(ThomasUtils::KeyChild)
-                   column.quote('`')
-                 else
-                   quoted_column(column)
-                 end
+        column = quoted_column(column)
         column = aggregate_column(column, options) if options[:aggregate]
         column = "#{column} AS #{options[:as]}" if options[:as]
         column
@@ -266,6 +254,8 @@ module CassandraModel
       def quoted_column(column)
         if column == :*
           '*'
+        elsif column.is_a?(ThomasUtils::KeyChild)
+          column.quote('`')
         else
           "`#{record_klass.select_column(column)}`"
         end
