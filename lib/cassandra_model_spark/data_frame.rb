@@ -208,18 +208,14 @@ module CassandraModel
           updated_clause = options[type].map do |column|
             if column.is_a?(Hash)
               column, direction = column.first
-              updated_column = quoted_column(column)
-              if direction.is_a?(Hash)
-                if direction[:child]
-                  group_child_clause(direction[:child], updated_column)
-                elsif direction[:children]
-                  direction[:children].map do |child|
-                    group_child_clause(child, updated_column)
-                  end * ', '
-                end
-              else
-                "#{updated_column} #{direction.upcase}"
-              end
+              updated_column = if column.is_a?(ThomasUtils::KeyChild)
+                                 column.quote('`')
+                               else
+                                 quoted_column(column)
+                               end
+              "#{updated_column} #{direction.upcase}"
+            elsif column.is_a?(ThomasUtils::KeyChild)
+              column.quote('`')
             else
               quoted_column(column)
             end
