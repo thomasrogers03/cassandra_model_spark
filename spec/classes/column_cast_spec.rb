@@ -53,6 +53,15 @@ module CassandraModel
 
         it { is_expected.to eq(quoted_string) }
       end
+
+      describe 'KeyChild methods' do
+        let(:child) { Faker::Lorem.word.to_sym }
+        let(:quoted_string) { "CAST(#{quote}#{key}#{quote}.#{quote}#{child}#{quote} AS #{upcase_type})" }
+
+        subject { ThomasUtils::KeyChild.new(key, child).cast_as(type).quote(quote) }
+
+        it { is_expected.to eq(quoted_string) }
+      end
     end
   end
 end

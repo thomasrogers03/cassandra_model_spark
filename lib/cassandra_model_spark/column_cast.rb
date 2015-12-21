@@ -27,6 +27,14 @@ module CassandraModel
   end
 end
 
+module ThomasUtils
+  class KeyChild
+    def cast_as(type)
+      CassandraModel::Spark::ColumnCast.new(self, type)
+    end
+  end
+end
+
 class Symbol
   def cast_as(type)
     CassandraModel::Spark::ColumnCast.new(self, type)
