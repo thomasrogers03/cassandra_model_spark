@@ -520,21 +520,30 @@ module CassandraModel
             it { is_expected.to eq(query) }
           end
 
-          context 'when provided with a child column' do
+          describe 'dealing with column children' do
             let(:child_key) { Faker::Lorem.word.to_sym }
-            let(:options) { {select: [:partition.child(child_key)]} }
-            let(:query_sql) { "SELECT `partition`.`#{child_key}` FROM #{table_name}" }
 
-            it { is_expected.to eq(query) }
-          end
+            context 'when provided with a child column' do
+              let(:options) { {select: [:partition.child(child_key)]} }
+              let(:query_sql) { "SELECT `partition`.`#{child_key}` FROM #{table_name}" }
 
-          context 'when provided with a multiple child columns' do
-            let(:child_key) { Faker::Lorem.word.to_sym }
-            let(:child_key_two) { Faker::Lorem.word.to_sym }
-            let(:options) { {select: [:partition.child(child_key), :partition.child(child_key_two)]} }
-            let(:query_sql) { "SELECT `partition`.`#{child_key}`, `partition`.`#{child_key_two}` FROM #{table_name}" }
+              it { is_expected.to eq(query) }
+            end
 
-            it { is_expected.to eq(query) }
+            context 'when provided with a multiple child columns' do
+              let(:child_key_two) { Faker::Lorem.word.to_sym }
+              let(:options) { {select: [:partition.child(child_key), :partition.child(child_key_two)]} }
+              let(:query_sql) { "SELECT `partition`.`#{child_key}`, `partition`.`#{child_key_two}` FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+
+            describe 'aggregating on child columns' do
+              let(:options) { {select: [:partition.child(child_key) => {aggregate: :count}]} }
+              let(:query_sql) { "SELECT COUNT(`partition`.`#{child_key}`) FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
           end
 
           context 'when the column is to be aggregated' do

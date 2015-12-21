@@ -253,7 +253,11 @@ module CassandraModel
           options = {aggregate: options, as: :"#{column}_#{options}"}
         end
 
-        column = quoted_column(column)
+        column = if column.is_a?(ThomasUtils::KeyChild)
+                   column.quote('`')
+                 else
+                   quoted_column(column)
+                 end
         column = aggregate_column(column, options) if options[:aggregate]
         column = "#{column} AS #{options[:as]}" if options[:as]
         column
