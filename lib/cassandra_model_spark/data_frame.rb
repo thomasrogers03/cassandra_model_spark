@@ -147,32 +147,52 @@ module CassandraModel
       def row_to_record(schema, row)
         attributes = {}
         schema.fields.each_with_index do |field, index|
-          data_type = field.data_type
-          if data_type.getClass.getSimpleName == 'StructType'
-            value = row_to_record(data_type, row.get(index))
-            column = field.name
-            attributes.merge!(column => value)
-          else
-            sql_type = data_type.to_string
-            converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
-            value = row.public_send(converter, index)
-
-            if sql_type == 'MapType(StringType,StringType,true)'
-              value = Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.to_string, pair._2.to_string] }]
-            end
-
-            column = field.name
-            attributes.merge!(column => value)
-          end
+          value = field_value(field, index, row)
+          column = field.name
+          attributes.merge!(column => value)
         end
         attributes = record_klass.normalized_attributes(attributes)
 
-        available_columns = record_klass.columns + record_klass.deferred_columns
-        if attributes.keys.all? { |column| available_columns.include?(column) }
+        if valid_record?(attributes)
           record_klass.new(attributes)
         else
           attributes
         end
+      end
+
+      def valid_record?(attributes)
+        available_columns = record_klass.columns + record_klass.deferred_columns
+        attributes.keys.all? { |column| available_columns.include?(column) }
+      end
+
+      def field_value(field, index, row)
+        data_type = field.data_type
+        if column_is_struct?(data_type)
+          row_to_record(data_type, row.get(index))
+        else
+          decode_column_value(data_type, index, row)
+        end
+      end
+
+      def decode_column_value(data_type, index, row)
+        sql_type = data_type.to_string
+        converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
+        value = row.public_send(converter, index)
+
+        value = decode_hash(value) if column_is_string_map?(sql_type)
+        value
+      end
+
+      def decode_hash(value)
+        Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.to_string, pair._2.to_string] }]
+      end
+
+      def column_is_string_map?(sql_type)
+        sql_type == 'MapType(StringType,StringType,true)'
+      end
+
+      def column_is_struct?(data_type)
+        data_type.getClass.getSimpleName == 'StructType'
       end
 
       def select_columns(options)
