@@ -257,6 +257,8 @@ module CassandraModel
       end
 
       def quoted_column(column)
+        return column.map { |child_column| quoted_column(child_column) } * ', ' if column.is_a?(Array)
+
         if column == :*
           '*'
         elsif column.is_a?(ThomasUtils::KeyChild)

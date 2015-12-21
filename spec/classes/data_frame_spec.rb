@@ -575,6 +575,13 @@ module CassandraModel
               let(:query_sql) { "SELECT #{sql_aggregate}(`partition`) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
+
+              context 'with multiple column in the aggregate' do
+                let(:options) { {select: [{[:partition, :clustering] => {aggregate: aggregate}}]} }
+                let(:query_sql) { "SELECT #{sql_aggregate}(`partition`, `clustering`) FROM #{table_name}" }
+
+                it { is_expected.to eq(query) }
+              end
             end
 
             it_behaves_like 'an aggregate function', :count
