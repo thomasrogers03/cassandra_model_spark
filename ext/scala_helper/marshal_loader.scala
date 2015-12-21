@@ -50,6 +50,11 @@ class MarshalLoader (dump: Array[Byte]) {
     str_value.toDouble
   }
 
+  private def decodeASCIIString(): String = {
+    val length = decodeInt()
+    new String(nextBytes(length))
+  }
+
   private def decodeSymbol(): String = {
     val length = decodeInt()
     val string_bytes = nextBytes(length)
@@ -153,6 +158,7 @@ class MarshalLoader (dump: Array[Byte]) {
       case 0x3b => decodeSymLink()
       case 0x7b => decodeHash()
       case 0x5b => decodeArray()
+      case 0x22 => decodeASCIIString()
       case 0x49 => decodeString()
       case _ => throw new IllegalArgumentException("Unsupported code type: " + code)
     }
