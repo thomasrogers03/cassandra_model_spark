@@ -6,9 +6,13 @@ module CassandraModel
       let(:key) { Faker::Lorem.word.to_sym }
       let(:type) { %w(int double string timestamp).sample.to_sym }
       let(:upcase_type) { type.to_s.upcase }
-      let(:cast) { ColumnCast.new(key, type) }
       let(:quote) { %w(` ' ").sample }
       let(:quoted_string) { "CAST(#{quote}#{key}#{quote} AS #{upcase_type})" }
+      let(:cast) { ColumnCast.new(key, type) }
+
+      subject { cast }
+
+      it { is_expected.to be_a_kind_of(ThomasUtils::SymbolHelpers) }
 
       describe '#quote' do
         subject { cast.quote(quote) }

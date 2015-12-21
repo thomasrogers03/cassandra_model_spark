@@ -1,6 +1,7 @@
 module CassandraModel
   module Spark
     class ColumnCast
+      include ThomasUtils::SymbolHelpers
 
       def initialize(key, type)
         @key = key
