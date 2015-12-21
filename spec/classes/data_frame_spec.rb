@@ -422,6 +422,13 @@ module CassandraModel
             it { is_expected.to eq(query) }
           end
 
+          context 'with a casted column' do
+            let(:options) { {method => [:partition.cast_as(:int)]} }
+            let(:query_sql) { "SELECT * FROM #{table_name} #{clause} CAST(`partition` AS INT)" }
+
+            it { is_expected.to eq(query) }
+          end
+
           context 'when provided with a child column' do
             let(:child_key) { Faker::Lorem.word.to_sym }
             let(:options) { {method => [:partition.child(child_key)]} }
