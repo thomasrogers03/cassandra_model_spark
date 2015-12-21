@@ -7,18 +7,17 @@ module CassandraModel
       let(:type) { %w(int double string timestamp).sample.to_sym }
       let(:upcase_type) { type.to_s.upcase }
       let(:cast) { ColumnCast.new(key, type) }
+      let(:quote) { %w(` ' ").sample }
+      let(:quoted_string) { "CAST(#{quote}#{key}#{quote} AS #{upcase_type})" }
 
       describe '#quote' do
-        let(:quote) { %w(` ' ").sample }
-        let(:expected_string) { "CAST(#{quote}#{key}#{quote} AS #{upcase_type})" }
-
         subject { cast.quote(quote) }
 
-        it { is_expected.to eq(expected_string) }
+        it { is_expected.to eq(quoted_string) }
 
         context 'when the key responds to #quote' do
           let(:key) { double(:quoting_key, to_s: 'bananas') }
-          let(:expected_string) { "CAST(#{quote}bananas#{quote}.#{quote}seeds#{quote} AS #{upcase_type})" }
+          let(:quoted_string) { "CAST(#{quote}bananas#{quote}.#{quote}seeds#{quote} AS #{upcase_type})" }
 
           before do
             allow(key).to receive(:quote) do |quote|
@@ -26,10 +25,15 @@ module CassandraModel
             end
           end
 
-          it { is_expected.to eq(expected_string) }
+          it { is_expected.to eq(quoted_string) }
         end
       end
+      
+      describe 'Symbol methods' do
+        subject { key.cast_as(type).quote(quote) }
 
+        it { is_expected.to eq(quoted_string) }
+      end
     end
   end
 end
