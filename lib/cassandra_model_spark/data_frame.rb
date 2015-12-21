@@ -261,7 +261,7 @@ module CassandraModel
 
         if column == :*
           '*'
-        elsif column.is_a?(ThomasUtils::KeyChild)
+        elsif column.respond_to?(:quote)
           column.quote('`')
         else
           "`#{record_klass.select_column(column)}`"
@@ -281,7 +281,7 @@ module CassandraModel
           else
             if options[:aggregate] =~ /^cast_/
               type = options[:aggregate].to_s.match(/^cast_(.+)$/)[1]
-              "CAST(#{column} AS #{type})"
+              "CAST(#{column} AS #{type.upcase})"
             else
               "#{options[:aggregate].to_s.upcase}(#{column})"
             end

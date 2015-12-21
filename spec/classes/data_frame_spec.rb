@@ -589,7 +589,7 @@ module CassandraModel
 
             shared_examples_for 'casting as column to another type' do |type|
               let(:aggregate) { :"cast_#{type}" }
-              let(:query_sql) { "SELECT CAST(`partition` AS #{type}) FROM #{table_name}" }
+              let(:query_sql) { "SELECT CAST(`partition` AS #{type.to_s.upcase}) FROM #{table_name}" }
 
               it { is_expected.to eq(query) }
             end
@@ -597,6 +597,14 @@ module CassandraModel
             it_behaves_like 'casting as column to another type', :int
             it_behaves_like 'casting as column to another type', :double
             it_behaves_like 'casting as column to another type', :string
+
+            context 'when provided with a ColumnCast' do
+              let(:aggregate) { :max }
+              let(:options) { {select: [{:partition.cast_as(:int) => {aggregate: aggregate}}]} }
+              let(:query_sql) { "SELECT MAX(CAST(`partition` AS INT)) FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
 
             context 'when requesting a distinct aggregate' do
               let(:aggregate) { :distinct }
