@@ -77,6 +77,15 @@ module CassandraModel
         Cassandra::Future.error(NotImplementedError.new)
       end
 
+      def sql(query)
+        spark_data_frame
+        query = sql_context.sql(query)
+        query.collect.map do |row|
+          row_to_record(query.schema, row)
+        end
+
+      end
+
       def query(restriction, options)
         spark_data_frame
         select_clause = select_columns(options)

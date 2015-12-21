@@ -316,6 +316,32 @@ module CassandraModel
         end
       end
 
+      describe '#sql' do
+        let(:select_key) { Faker::Lorem.word }
+        let(:result_sql_type) { SqlStringType }
+        let(:result) { {select_key.to_sym => Faker::Lorem.word} }
+        let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
+        let(:query_schema) { SqlStructType.new(fields) }
+        let(:query_result) { double(:query, collect: [RDDRow[result]], schema: query_schema) }
+        let(:query) { "SELECT * FROM #{table_name}" }
+
+        subject { data_frame.sql(query) }
+
+        before do
+          allow(record_klass).to receive(:normalized_attributes) { |attributes| attributes.symbolize_keys }
+          allow(record_klass).to receive(:columns).and_return([select_key])
+          allow(record_klass).to receive(:deferred_columns).and_return([])
+          allow(data_frame.sql_context).to receive(:sql).with(query).and_return(query_result)
+        end
+
+        it { is_expected.to eq([result]) }
+
+        it 'should ensure that the data_frame has been created' do
+          expect(data_frame).to receive(:spark_data_frame)
+          subject
+        end
+      end
+
       describe '#query' do
         let(:sql_context) { double(:sql_context) }
         let(:query) { double(:query) }
