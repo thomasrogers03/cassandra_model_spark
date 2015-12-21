@@ -291,6 +291,26 @@ module CassandraModel
       it_behaves_like 'an async method not yet implemented', :request_async
       it_behaves_like 'an async method not yet implemented', :first_async
 
+      describe '#normalized' do
+        let(:available_columns) { [Faker::Lorem.word.to_sym] }
+        let(:select_options) do
+          available_columns.inject({}) { |memo, key| memo.merge!(key: {as: key}) }
+        end
+        let(:normalized_frame) { data_frame.select(select_options).as_data_frame(alias: :"normalized_#{table_name}") }
+
+        subject { data_frame.normalized }
+
+        before { allow(record_klass).to receive(:columns).and_return(available_columns) }
+
+        it { is_expected.to eq(normalized_frame) }
+
+        context 'with multiple columns' do
+          let(:available_columns) { 2.times.map { Faker::Lorem.word.to_sym } }
+
+          it { is_expected.to eq(normalized_frame) }
+        end
+      end
+
       describe '#query' do
         let(:sql_context) { double(:sql_context) }
         let(:query) { double(:query) }

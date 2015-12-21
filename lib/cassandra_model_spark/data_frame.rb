@@ -64,6 +64,11 @@ module CassandraModel
         spark_data_frame.unpersist
       end
 
+      def normalized
+        select_options = record_klass.columns.inject({}) { |memo, column| memo.merge!(column: {as: column}) }
+        select(select_options).as_data_frame(alias: :"normalized_#{table_name}")
+      end
+
       def request_async(*_)
         ResultPaginator.new(first_async) {}
       end
@@ -100,7 +105,7 @@ module CassandraModel
       def ==(rhs)
         rhs.is_a?(DataFrame) &&
             record_klass == rhs.record_klass &&
-            rdd == rhs.rdd
+            ((rdd && rdd == rhs.rdd) || (!rdd && spark_data_frame == rhs.spark_data_frame))
       end
 
       protected

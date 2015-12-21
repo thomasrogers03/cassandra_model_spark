@@ -67,7 +67,15 @@ class SqlDataFrame
     !!@cached
   end
 
+  #noinspection RubyUnusedLocalVariable
   def register_temp_table(name)
+  end
+
+  def ==(rhs)
+    rhs.is_a?(SqlDataFrame) &&
+        sql_context == rhs.sql_context &&
+        rdd == rhs.rdd &&
+        schema == rhs.schema
   end
 end
 
