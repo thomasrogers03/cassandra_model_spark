@@ -303,10 +303,10 @@ module CassandraModel
                           elsif key.is_a?(ThomasUtils::KeyChild)
                             new_key = record_klass.select_column(key.key)
                             updated_key = key.new_key(new_key)
-                            quoted_key(updated_key)
+                            quoted_restriction(updated_key)
                           else
                             select_key = record_klass.select_column(key)
-                            quoted_key(select_key)
+                            quoted_restriction(select_key)
                           end
             value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
             "#{updated_key} #{value}"
@@ -315,7 +315,7 @@ module CassandraModel
         end
       end
 
-      def quoted_key(updated_key)
+      def quoted_restriction(updated_key)
         ThomasUtils::KeyComparer.new(updated_key, '=').quote('`')
       end
     end
