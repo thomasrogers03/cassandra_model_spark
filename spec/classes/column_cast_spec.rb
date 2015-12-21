@@ -14,6 +14,12 @@ module CassandraModel
 
       it { is_expected.to be_a_kind_of(ThomasUtils::SymbolHelpers) }
 
+      describe '#key' do
+        subject { cast.key }
+
+        it { is_expected.to eq(key) }
+      end
+
       describe '#quote' do
         subject { cast.quote(quote) }
 
@@ -41,7 +47,7 @@ module CassandraModel
 
         it { is_expected.to eq(quoted_string) }
       end
-      
+
       describe 'Symbol methods' do
         subject { key.cast_as(type).quote(quote) }
 

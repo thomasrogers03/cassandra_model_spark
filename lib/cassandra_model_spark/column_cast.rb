@@ -3,6 +3,8 @@ module CassandraModel
     class ColumnCast
       include ThomasUtils::SymbolHelpers
 
+      attr_reader :key
+
       def initialize(key, type)
         @key = key
         @type = type.to_s.upcase
