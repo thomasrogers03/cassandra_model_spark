@@ -355,7 +355,7 @@ module CassandraModel
 
             context 'when provided with a child column' do
               let(:child_key) { Faker::Lorem.word.to_sym }
-              let(:restriction) { { :price.child(child_key).lt => 43.99 } }
+              let(:restriction) { {:price.child(child_key).lt => 43.99} }
               let(:query_sql) { "SELECT * FROM #{table_name} WHERE `price`.`#{child_key}` < 43.99" }
 
               it { is_expected.to eq(query) }
@@ -378,7 +378,7 @@ module CassandraModel
 
           context 'when provided with a child column' do
             let(:child_key) { Faker::Lorem.word.to_sym }
-            let(:restriction) { { :partition.child(child_key) => 49.99 } }
+            let(:restriction) { {:partition.child(child_key) => 49.99} }
             let(:query_sql) { "SELECT * FROM #{table_name} WHERE `partition`.`#{child_key}` = 49.99" }
 
             it { is_expected.to eq(query) }
@@ -522,7 +522,7 @@ module CassandraModel
 
           context 'when provided with a child column' do
             let(:child_key) { Faker::Lorem.word.to_sym }
-            let(:options) { {select: [{partition: {child: child_key}}]} }
+            let(:options) { {select: [:partition.child(child_key)]} }
             let(:query_sql) { "SELECT `partition`.`#{child_key}` FROM #{table_name}" }
 
             it { is_expected.to eq(query) }
@@ -531,7 +531,7 @@ module CassandraModel
           context 'when provided with a multiple child columns' do
             let(:child_key) { Faker::Lorem.word.to_sym }
             let(:child_key_two) { Faker::Lorem.word.to_sym }
-            let(:options) { {select: [{partition: {children: [child_key, child_key_two]}}]} }
+            let(:options) { {select: [:partition.child(child_key), :partition.child(child_key_two)]} }
             let(:query_sql) { "SELECT `partition`.`#{child_key}`, `partition`.`#{child_key_two}` FROM #{table_name}" }
 
             it { is_expected.to eq(query) }

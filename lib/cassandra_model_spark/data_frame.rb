@@ -242,6 +242,8 @@ module CassandraModel
         options[:select].map do |column|
           if column.is_a?(Hash)
             updated_column(column)
+          elsif column.is_a?(ThomasUtils::KeyChild)
+            column.quote('`')
           else
             quoted_column(column)
           end
@@ -256,10 +258,6 @@ module CassandraModel
         end
 
         column = quoted_column(column)
-        column = "#{column}.`#{options[:child]}`" if options[:child]
-        if options[:children]
-          column = options[:children].map { |child| "#{column}.`#{child}`" } * ', '
-        end
         column = aggregate_column(column, options) if options[:aggregate]
         column = "#{column} AS #{options[:as]}" if options[:as]
         column
