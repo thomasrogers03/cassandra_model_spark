@@ -315,6 +315,14 @@ module CassandraModel
           it { is_expected.to eq(normalized_frame) }
         end
 
+        context 'with a custom alias' do
+          let(:alias_table_name) { Faker::Lorem.word }
+
+          subject { data_frame.normalized(alias_table_name) }
+
+          its(:table_name) { is_expected.to eq(alias_table_name) }
+        end
+
         context 'with a row mapping' do
           let(:available_columns) { [:partition] }
           let(:select_columns) { [double_partition: {as: :double_partition}] }

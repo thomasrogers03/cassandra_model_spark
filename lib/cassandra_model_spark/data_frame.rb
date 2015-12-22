@@ -64,14 +64,15 @@ module CassandraModel
         spark_data_frame.unpersist
       end
 
-      def normalized
+      def normalized(alias_table_name = nil)
         return self unless rdd
 
         select_options = record_klass.columns.inject({}) do |memo, column|
           row_mapped_column = row_type_mapping.fetch(column) { {name: column} }[:name]
           memo.merge!(row_mapped_column => {as: row_mapped_column})
         end
-        select(select_options).as_data_frame(alias: :"normalized_#{table_name}")
+        alias_name = alias_table_name || :"normalized_#{table_name}"
+        select(select_options).as_data_frame(alias: alias_name)
       end
 
       def request_async(*_)
