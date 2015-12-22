@@ -314,6 +314,18 @@ module CassandraModel
 
           it { is_expected.to eq(normalized_frame) }
         end
+
+        context 'when created from another DataFrame' do
+          let(:duplicate_frame) { data_frame.select(:partition).as_data_frame(alias: :new_frame) }
+
+          subject { duplicate_frame.normalized }
+
+          before do
+            allow(data_frame).to receive(:query).with({}, select: [:partition]).and_return(query_frame)
+          end
+
+          it { is_expected.to eq(duplicate_frame) }
+        end
       end
 
       describe '#sql' do

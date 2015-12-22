@@ -65,6 +65,8 @@ module CassandraModel
       end
 
       def normalized
+        return self unless rdd
+
         select_options = record_klass.columns.inject({}) { |memo, column| memo.merge!(column => {as: column}) }
         select(select_options).as_data_frame(alias: :"normalized_#{table_name}")
       end
