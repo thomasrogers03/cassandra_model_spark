@@ -186,7 +186,7 @@ module CassandraModel
       def field_value(field, index, row)
         data_type = field.data_type
         if column_is_struct?(data_type)
-          row_to_record(data_type, row.get(index))
+          row_attributes(row.get(index), data_type)
         else
           decode_column_value(data_type, index, row)
         end
