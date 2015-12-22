@@ -48,20 +48,23 @@ module CassandraModel
         it { is_expected.to eq(quoted_string) }
       end
 
-      describe 'Symbol methods' do
-        subject { key.cast_as(type).quote(quote) }
+      [:*, :cast_as].each do |method|
+        describe 'Symbol methods' do
+          subject { key.public_send(method, type).quote(quote) }
 
-        it { is_expected.to eq(quoted_string) }
+          it { is_expected.to eq(quoted_string) }
+        end
+
+        describe 'KeyChild methods' do
+          let(:child) { Faker::Lorem.word.to_sym }
+          let(:quoted_string) { "CAST(#{quote}#{key}#{quote}.#{quote}#{child}#{quote} AS #{upcase_type})" }
+
+          subject { ThomasUtils::KeyChild.new(key, child).public_send(method, type).quote(quote) }
+
+          it { is_expected.to eq(quoted_string) }
+        end
       end
 
-      describe 'KeyChild methods' do
-        let(:child) { Faker::Lorem.word.to_sym }
-        let(:quoted_string) { "CAST(#{quote}#{key}#{quote}.#{quote}#{child}#{quote} AS #{upcase_type})" }
-
-        subject { ThomasUtils::KeyChild.new(key, child).cast_as(type).quote(quote) }
-
-        it { is_expected.to eq(quoted_string) }
-      end
     end
   end
 end
