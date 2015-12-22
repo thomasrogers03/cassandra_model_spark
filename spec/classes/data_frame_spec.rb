@@ -315,6 +315,25 @@ module CassandraModel
           it { is_expected.to eq(normalized_frame) }
         end
 
+        context 'with a row mapping' do
+          let(:available_columns) { [:partition] }
+          let(:select_columns) { [double_partition: {as: :double_partition}] }
+          let(:select_options) { select_columns.first }
+          let(:mapped_rdd) { double(:rdd) }
+          let(:row_mapper) { double(:row_mapper, mappedRDD: mapped_rdd) }
+          let(:rdd_mapper) do
+            {
+                mapper: row_mapper,
+                type_map: {
+                    partition: {type: SqlDoubleType, name: :double_partition}
+                }
+            }
+          end
+          let(:record_klass_rdd_mapper) { rdd_mapper }
+
+          it { is_expected.to eq(normalized_frame) }
+        end
+
         context 'when created from another DataFrame' do
           let(:duplicate_frame) { data_frame.select(:partition).as_data_frame(alias: :new_frame) }
 
