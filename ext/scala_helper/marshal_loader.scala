@@ -6,9 +6,14 @@ class MarshalLoader (dump: Array[Byte]) {
   private val bytes: Array[Byte] = dump
   private var parse_index: Int = 0
   private var symbol_table: List[String] = List()
+  private var object_table: List[AnyRef] = List()
 
   private def getBytes() = {
     bytes
+  }
+
+  private def recordObject(obj: AnyRef) = {
+    object_table :+= obj
   }
 
   private def nextBytes(amount: Int): Array[Byte] = {
@@ -47,12 +52,17 @@ class MarshalLoader (dump: Array[Byte]) {
     val length = decodeInt()
     val str_value = new String(nextBytes(length))
 
-    str_value.toDouble
+    val result: java.lang.Double = str_value.toDouble
+    recordObject(result)
+    result
   }
 
   private def decodeASCIIString(): String = {
     val length = decodeInt()
-    new String(nextBytes(length))
+
+    val result = new String(nextBytes(length))
+    recordObject(result)
+    result
   }
 
   private def decodeSymbol(): String = {
@@ -90,7 +100,9 @@ class MarshalLoader (dump: Array[Byte]) {
       val is_utf8 = decodeAny()
     }
 
-    new String(str_bytes)
+    val result = new String(str_bytes)
+    recordObject(result)
+    result
   }
 
   private def decodeMagic(): String = {
@@ -129,20 +141,29 @@ class MarshalLoader (dump: Array[Byte]) {
       result(key) = value
     }
 
+    recordObject(result)
     result
   }
 
   private def decodeArray(): Array[AnyRef] = {
-    var result: List[AnyRef] = List()
+    var list_result: List[AnyRef] = List()
     val length = decodeInt()
 
     var item = 0
     for (item <- 0 to length-1) {
       val value = decodeAny()
-      result :+= result
+      list_result :+= value
     }
 
-    return result.toArray
+    val result = list_result.toArray
+    recordObject(result)
+    result
+  }
+
+  private def decodeObjectReference(): AnyRef = {
+      val index = decodeInt()-1
+
+      object_table(index)
   }
 
   private def decodeAny(): AnyRef = {
@@ -160,6 +181,7 @@ class MarshalLoader (dump: Array[Byte]) {
       case 0x5b => decodeArray()
       case 0x22 => decodeASCIIString()
       case 0x49 => decodeString()
+      case 0x40 => decodeObjectReference()
       case _ => throw new IllegalArgumentException("Unsupported code type: " + code)
     }
   }
