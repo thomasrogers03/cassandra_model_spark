@@ -13,7 +13,7 @@ Inspired by the ruby-spark gem.}
   s.homepage = 'https://www.github.com/thomasrogers03/cassandra_model_spark'
   s.add_runtime_dependency 'cassandra_model', '~> 0.9.16'
   s.add_runtime_dependency 'thomas_utils', '~> 0.1.16'
-  if RUBY_ENGINE != 'jruby'
+  unless defined?(JRUBY_VERSION)
     s.add_runtime_dependency 'rjb', '~> 1.5.4'
   end
 end
