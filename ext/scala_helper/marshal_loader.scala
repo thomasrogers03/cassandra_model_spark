@@ -56,10 +56,11 @@ class MarshalLoader (dump: Array[Byte]) {
     if (num_bytes > 0) {
       value = scanIntBits(num_bytes)
     } else {
-      # note that -ve integers less than -(1<<24) seem to be off by 1
       num_bytes = -num_bytes
       value = scanIntBits(num_bytes)
-      value -= 1 << (num_bytes * 8)
+      val long_bytes = num_bytes
+      val long_value: Long = value - (1L << (long_bytes * 8L))
+      value = long_value.toInt
     }
 
     value
