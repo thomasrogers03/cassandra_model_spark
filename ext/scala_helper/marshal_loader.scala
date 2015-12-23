@@ -30,21 +30,37 @@ class MarshalLoader (dump: Array[Byte]) {
     result
   }
 
+  private def scanIntBits(num_bytes: Int) = {
+    var bit: Int = 0
+    var value: Int = 0
+
+    for (bit <- 0 to num_bytes-1) {
+      val next_value = 0xff & nextByte()
+      value += (next_value << (bit * 8))
+    }
+    value
+  }
+
   private def decodeInt(): java.lang.Integer = {
     val first_byte: Int = nextByte()
+    var value: Int = 0
 
     if (first_byte == 0)
       return 0
     if (first_byte >= 6)
       return first_byte - 5
+    if (first_byte <= -6)
+      return 5 + first_byte
 
-    var value: Int = 0
-    var num_bytes: Int = first_byte
-    var bit: Int = 0
-    for (bit <- 0 to num_bytes-1) {
-      val next_value = 0xff & nextByte()
-      value += (next_value << (bit * 8))
+    var num_bytes = first_byte
+    if (num_bytes > 0) {
+      value = scanIntBits(num_bytes)
+    } else {
+      num_bytes = -num_bytes
+      value = scanIntBits(num_bytes)
+      value -= 1 << (num_bytes * 8)
     }
+
     value
   }
 
