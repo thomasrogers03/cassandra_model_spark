@@ -81,20 +81,12 @@ class MarshalLoader (dump: Array[Byte]) {
     symbol_table(index)
   }
 
-  private def autoDecodeSymbol(): String = {
-    val symbol_code = nextByte()
-    symbol_code match {
-      case 0x3a => decodeSymbol()
-      case 0x3b => decodeSymLink()
-    }
-  }
-
   private def decodeString(): String = {
     val string_code = nextByte()
     val length = decodeInt()
     val str_bytes = nextBytes(length)
     val var_count = decodeInt()
-    val encoding = autoDecodeSymbol()
+    val encoding = decodeAny()
 
     if (encoding == "E") {
       val is_utf8 = decodeAny()
