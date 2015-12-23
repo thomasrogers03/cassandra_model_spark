@@ -56,6 +56,7 @@ class MarshalLoader (dump: Array[Byte]) {
     if (num_bytes > 0) {
       value = scanIntBits(num_bytes)
     } else {
+      # note that -ve integers less than -(1<<24) seem to be off by 1
       num_bytes = -num_bytes
       value = scanIntBits(num_bytes)
       value -= 1 << (num_bytes * 8)
