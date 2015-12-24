@@ -25,4 +25,4 @@ group :test do
   gem 'faker'
 end
 
-gemspec
+gemspec(name: 'cassandra_model_spark')
