@@ -6,8 +6,8 @@ name := "cmodel_scala_helper"
 version := "0.0.1"
 scalaVersion := "2.10.4"
 
-val sparkVersion = "1.5.0"
-val cassandraConnectionVersion = "1.5.0-M2"
+val sparkVersion = "1.5.2"
+val cassandraConnectionVersion = "1.5.0-M3"
 
 val _targetDir = scala.util.Properties.envOrElse("TARGET_DIR", "target")
 
