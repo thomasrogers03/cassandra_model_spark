@@ -18,7 +18,7 @@ object MapStringStringRowMapping {
       val value = decoder.getValue()
 
       value match {
-        case (m: Map[_, _]) => m map { case (key, value) => (key.toString, value.toString) }
+        case (m: Map[_, _]) => m map { case (key, value) => (String.valueOf(key), String.valueOf(value)) }
         case _ => new IllegalArgumentException("Unsupported Ruby Type")
       }
     } else {
