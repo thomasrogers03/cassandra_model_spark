@@ -13,6 +13,7 @@ module CassandraModel
     let(:updated_restriction) do
       restriction.inject({}) do |memo, (key, value)|
         updated_key = if value.is_a?(Array)
+                        value = value.to_java
                         updated_key = key.is_a?(ThomasUtils::KeyComparer) ? key.to_s : "#{key} IN"
                         "#{updated_key} (#{(%w(?)*value.count) * ', '})"
                       else

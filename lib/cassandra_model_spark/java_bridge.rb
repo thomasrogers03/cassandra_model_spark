@@ -14,6 +14,12 @@ else
       end
     end
   end
+
+  class Array
+    def to_java
+      self
+    end
+  end
 end
 
 module JavaBridge
