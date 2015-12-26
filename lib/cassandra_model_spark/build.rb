@@ -1,10 +1,5 @@
-module CassandraModel
-  NO_BRIDGE = true
-end
-
 require 'optparse'
-require 'bundler'
-Bundler.require :default
+require_relative 'spark'
 
 options = {}
 OptionParser.new do |opts|
@@ -18,5 +13,5 @@ Dir.chdir("#{CassandraModel::Spark.root}/ext/scala_helper") do
   puts '=> building extension...'
   cmd = 'sbt package'
   cmd << ' assemblyPackageDependency' unless options[:only_ext]
-  system(cmd)
+  system(ENV.to_hash.merge('TARGET_DIR' => CassandraModel::Spark.classpath), cmd)
 end

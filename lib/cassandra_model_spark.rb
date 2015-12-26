@@ -22,18 +22,11 @@ require 'thomas_utils'
 require 'batch_reactor'
 require 'cassandra_model'
 require 'rjb' unless RUBY_ENGINE == 'jruby' || CassandraModel.const_defined?('NO_BRIDGE')
-
-module CassandraModel
-  module Spark
-    def self.root
-      @gem_root ||= File.expand_path('../..', __FILE__)
-    end
-  end
-end
+require 'cassandra_model_spark/spark'
 
 unless CassandraModel.const_defined?('NO_BRIDGE')
   require 'cassandra_model_spark/java_bridge'
-  Dir["#{CassandraModel::Spark.root}/ext/scala_helper/target/*.jar"].each { |file| require file }
+  Dir["#{CassandraModel::Spark.classpath}/*.jar"].each { |file| require file }
   initialize_java_engine
   require 'cassandra_model_spark/java_classes'
 end
