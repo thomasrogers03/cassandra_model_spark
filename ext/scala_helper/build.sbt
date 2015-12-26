@@ -7,6 +7,7 @@ version := "0.0.1"
 scalaVersion := "2.10.4"
 
 val sparkVersion = "1.5.2"
+val hadoopClientVersion = "1.0.4"
 val cassandraConnectionVersion = "1.5.0-M3"
 
 val _targetDir = scala.util.Properties.envOrElse("TARGET_DIR", "target")
@@ -14,7 +15,7 @@ val _targetDir = scala.util.Properties.envOrElse("TARGET_DIR", "target")
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 artifactPath in Compile in packageBin := file(s"${_targetDir}/cmodel_scala_helper.jar")
-outputPath in packageDependency := file(s"${_targetDir}/cmodel_scala_helper-deps.jar")
+outputPath in packageDependency := file(s"${_targetDir}/spark-assembly-${sparkVersion}-cassandra_model-hadoop${hadoopClientVersion}.jar")
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion excludeAll(ExclusionRule(organization = "org.apache.hadoop")),
@@ -25,7 +26,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming-flume" % sparkVersion,
   "org.apache.spark" %% "spark-graphx" % sparkVersion,
   "org.apache.spark" %% "spark-mllib" % sparkVersion,
-  "org.apache.hadoop" %  "hadoop-client" % "1.0.4",
+  "org.apache.hadoop" %  "hadoop-client" % hadoopClientVersion,
   "com.datastax.spark" %% "spark-cassandra-connector" % cassandraConnectionVersion,
   "com.datastax.spark" %% "spark-cassandra-connector-java" % cassandraConnectionVersion,
   "com.github.fommil.netlib" % "all" % "1.1.2",
