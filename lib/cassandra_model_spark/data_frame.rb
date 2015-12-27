@@ -58,6 +58,14 @@ module CassandraModel
         end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name.to_s) }
       end
 
+      def cache
+        spark_data_frame.cache
+      end
+
+      def uncache
+        spark_data_frame.unpersist
+      end
+
       def cached(&block)
         spark_data_frame.cache
         instance_eval(&block)

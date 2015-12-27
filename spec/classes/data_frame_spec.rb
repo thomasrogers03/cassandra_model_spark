@@ -246,6 +246,21 @@ module CassandraModel
         end
       end
 
+      describe '#cache' do
+        it 'should cache the data frame' do
+          data_frame.cache
+          expect(data_frame.spark_data_frame).to be_cached
+        end
+      end
+
+      describe '#uncache' do
+        it 'should unpersist the data frame' do
+          data_frame.cache
+          data_frame.uncache
+          expect(data_frame.spark_data_frame).not_to be_cached
+        end
+      end
+
       describe '#cached' do
         it 'should yield' do
           expect { |block| data_frame.cached(&block) }.to yield_control
