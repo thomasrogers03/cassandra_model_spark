@@ -12,10 +12,7 @@ module CassandraModel
         raise NotImplementedError unless RUBY_ENGINE == 'jruby'
         validate_env!
 
-        master_thread = Thread.start { SparkMaster.main(to_argv(run_master_args)) }
-        sleep 1
-        add_master_jars
-        master_thread.value
+        SparkMaster.main(to_argv(run_master_args))
       end
 
       def start_slaves
