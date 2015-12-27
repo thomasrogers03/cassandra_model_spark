@@ -4,6 +4,13 @@ if RUBY_ENGINE == 'jruby'
       JavaHashMap.new(self)
     end
   end
+
+  class Array
+    def to_java_argv
+      to_java(:string)
+    end
+  end
+
 else
   class Hash
     def to_java
@@ -17,6 +24,10 @@ else
 
   class Array
     def to_java
+      self
+    end
+
+    def to_java_argv
       self
     end
   end
