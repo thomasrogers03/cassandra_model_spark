@@ -9,9 +9,15 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-Dir.chdir("#{CassandraModel::Spark.root}/ext/scala_helper") do
+ASSEMBLY_PATH = '/ext/scala_helper'
+
+Dir.chdir("#{CassandraModel::Spark.root}#{ASSEMBLY_PATH}") do
   puts '=> building extension...'
   cmd = 'sbt package'
   cmd << ' assemblyPackageDependency' unless options[:only_ext]
   system(ENV.to_hash.merge('TARGET_DIR' => CassandraModel::Spark.classpath), cmd)
+  %w(bin sbin).each do |path|
+    puts "=> copying #{path}/ to #{CassandraModel::Spark.home}/"
+    `cp -R #{CassandraModel::Spark.root}#{ASSEMBLY_PATH}/#{path}/ #{CassandraModel::Spark.home}/`
+  end
 end
