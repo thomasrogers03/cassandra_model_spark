@@ -27,9 +27,10 @@ module CassandraModel
       private
 
       def add_master_jars
-        spark_conf = ConnectionCache[nil].config[:spark]
-        spark_conf[:master] = master_url
-        ConnectionCache[nil].spark_context.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
+        ConnectionCache[nil].tap do |connection|
+          connection.config = {spark: {master: master_url}}
+          connection.spark_context.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
+        end
       end
 
       def workers
