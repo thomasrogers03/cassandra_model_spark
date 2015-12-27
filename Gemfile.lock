@@ -7,9 +7,9 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
-  revision: 2028e295fe71cf919c75446bf78503e0d7c38724
+  revision: 578162b9dbfd14bf9b1a87f2515fc22337e01b20
   specs:
-    cassandra_model (0.9.16)
+    cassandra_model (0.9.18)
       activesupport (~> 4.0)
       batch_reactor (~> 0.0.1)
       cassandra-driver (~> 1.1)
@@ -17,7 +17,7 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/thomas_utils.git
-  revision: 256501296d2f52ddccc512288060ee806969f375
+  revision: 2ef5242b83d95d0626fd295fd1e4147dd5b88021
   specs:
     thomas_utils (0.1.16)
       concurrent-ruby (~> 0.8)
@@ -88,7 +88,8 @@ GEM
     rb-fsevent (0.9.6)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    rdoc (4.2.0)
+    rdoc (4.2.1)
+      json (~> 1.4)
     rjb (1.5.4)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
