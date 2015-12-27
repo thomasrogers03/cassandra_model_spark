@@ -20,4 +20,5 @@ Dir.chdir("#{CassandraModel::Spark.root}#{ASSEMBLY_PATH}") do
     puts "=> copying #{path}/ to #{CassandraModel::Spark.home}/"
     `cp -R #{CassandraModel::Spark.root}#{ASSEMBLY_PATH}/#{path}/ #{CassandraModel::Spark.home}/`
   end
+  `touch #{CassandraModel::Spark.home}/RELEASE`
 end
