@@ -12,9 +12,11 @@ launcher = CassandraModel::Spark::Launcher.new
 case command
   when :start
     launcher.start_slaves
+  when :run
+    launcher.run_slave
   when :stop
     launcher.stop_slaves
   else
-    puts '=> only supports start or stop'
+    puts '=> only supports start, run, or stop'
 end
 
