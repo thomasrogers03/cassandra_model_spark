@@ -16,6 +16,8 @@ import_java_object 'org.apache.spark.api.cassandra_model.DataTypeHelper', as: 'S
 import_java_object 'org.apache.spark.api.cassandra_model.MarshalLoader', as: 'ScalaMarshalLoader'
 import_java_object 'org.apache.spark.api.cassandra_model.MapStringStringRowMapping', as: 'SparkMapStringStringRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.SparkRowRowMapping', as: 'SparkSparkRowRowMapping'
+import_java_object 'org.apache.spark.deploy.master.Master', as: 'SparkMaster'
+import_java_object 'org.apache.spark.deploy.worker.Worker', as: 'SparkWorker'
 
 %w(BinaryType BooleanType ByteType DataType
    DateType Decimal DecimalType DoubleType FloatType IntegerType

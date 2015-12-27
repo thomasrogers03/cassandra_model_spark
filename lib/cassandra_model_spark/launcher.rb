@@ -8,10 +8,20 @@ module CassandraModel
         add_master_jars
       end
 
+      def run_master
+        raise NotImplementedError unless RUBY_ENGINE == 'jruby'
+        SparkMaster.main(to_argv(run_master_args))
+      end
+
       def start_slaves
         workers.map do |worker|
           system(env, "#{spark_daemon} start #{start_slave_args(worker)}")
         end
+      end
+
+      def run_slave
+        raise NotImplementedError unless RUBY_ENGINE == 'jruby'
+        SparkWorker.main(to_argv(run_slave_args))
       end
 
       def stop_master
@@ -26,6 +36,10 @@ module CassandraModel
 
       private
 
+      def to_argv(args)
+        args.split.to_java_argv
+      end
+
       def add_master_jars
         ConnectionCache[nil].tap do |connection|
           connection.config = {spark: {master: master_url}}
@@ -38,11 +52,19 @@ module CassandraModel
       end
 
       def start_master_args
-        "#{master_args} --ip #{Socket.gethostname} --port #{master_config[:master_port]} --webui-port #{master_config[:ui_port]} -h #{master_config[:host]}"
+        "#{master_args} #{run_master_args}"
+      end
+
+      def run_master_args
+        "--ip #{Socket.gethostname} --port #{master_config[:master_port]} --webui-port #{master_config[:ui_port]} -h #{master_config[:host]}"
       end
 
       def start_slave_args(id)
-        "#{slave_args(id)} --webui-port #{slave_config[:ui_port]} #{master_url}"
+        "#{slave_args(id)} #{run_slave_args}"
+      end
+
+      def run_slave_args
+        "--webui-port #{slave_config[:ui_port]} #{master_url}"
       end
 
       def master_args
