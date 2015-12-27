@@ -29,6 +29,13 @@ class SparkConf
 end
 
 class InternalSparkContext < Struct.new(:config)
+  def addJar(path)
+    jars << path
+  end
+
+  def jars
+    @jars ||= []
+  end
 end
 
 class JavaSparkContext < Struct.new(:config)

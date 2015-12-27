@@ -2,12 +2,9 @@ module CassandraModel
   class RawConnection
     def java_spark_context
       @spark_context ||= begin
-        conf = SparkConf.new(true)
-        conf.set('spark.app.name', 'cassandra_model_spark')
-        conf.set('spark.master', 'local[*]')
-        conf.set('spark.cassandra.connection.host', config[:hosts].first)
-        flat_spark_config.each { |key, value| conf.set(key, value) }
-        JavaSparkContext.new(conf)
+        JavaSparkContext.new(spark_conf).tap do |java_spark_context|
+          java_spark_context.sc.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
+        end
       end
     end
 
@@ -16,6 +13,15 @@ module CassandraModel
     end
 
     private
+
+    def spark_conf
+      @spark_conf ||= SparkConf.new(true).tap do |conf|
+        conf.set('spark.app.name', 'cassandra_model_spark')
+        conf.set('spark.master', 'local[*]')
+        conf.set('spark.cassandra.connection.host', config[:hosts].first)
+        flat_spark_config.each { |key, value| conf.set(key, value) }
+      end
+    end
 
     def flat_spark_config(config = spark_config)
       config.inject({}) do |memo, (key, value)|

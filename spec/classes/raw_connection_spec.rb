@@ -25,6 +25,11 @@ module CassandraModel
         connection.java_spark_context
       end
 
+      it 'should add the helper jar' do
+        connection.java_spark_context
+        expect(subject.sc.jars).to include("#{Spark.classpath}/cmodel_scala_helper.jar")
+      end
+
       its(:config) { is_expected.to eq(default_config) }
 
       context 'with an overriding spark config' do
