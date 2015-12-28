@@ -14,6 +14,9 @@
 # limitations under the License.
 #++
 
+require 'yaml'
+require 'logger'
+
 require 'concurrent'
 require 'cassandra'
 require 'active_support/all'
