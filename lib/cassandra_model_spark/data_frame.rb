@@ -298,7 +298,7 @@ module CassandraModel
         elsif column.respond_to?(:quote)
           column.quote('`')
         else
-          "`#{record_klass.select_column(column)}`"
+          "`#{select_column(column)}`"
         end
       end
 
@@ -335,18 +335,18 @@ module CassandraModel
           restriction_clause = restriction.map do |key, value|
             updated_key = if key.is_a?(ThomasUtils::KeyComparer)
                             select_key = if key.key.respond_to?(:new_key)
-                                           select_key = record_klass.select_column(key.key.key)
+                                           select_key = select_column(key.key.key)
                                            key.key.new_key(select_key)
                                          else
-                                           record_klass.select_column(key.key)
+                                           select_column(key.key)
                                          end
                             key.new_key(select_key).quote('`')
                           elsif key.is_a?(ThomasUtils::KeyChild)
-                            new_key = record_klass.select_column(key.key)
+                            new_key = select_column(key.key)
                             updated_key = key.new_key(new_key)
                             quoted_restriction(updated_key)
                           else
-                            select_key = record_klass.select_column(key)
+                            select_key = select_column(key)
                             quoted_restriction(select_key)
                           end
             value = "'#{value}'" if value.is_a?(String) || value.is_a?(Time)
@@ -356,9 +356,14 @@ module CassandraModel
         end
       end
 
+      def select_column(key)
+        record_klass.select_column(key)
+      end
+
       def quoted_restriction(updated_key)
         ThomasUtils::KeyComparer.new(updated_key, '=').quote('`')
       end
+
     end
   end
 end
