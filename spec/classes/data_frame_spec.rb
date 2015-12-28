@@ -50,6 +50,10 @@ module CassandraModel
               expect { data_frame }.to raise_error(ArgumentError, 'DataFrames created from Spark DataFrames require aliases!')
             end
           end
+
+          it 'should save an attribute indicating that this is a derived DataFrame' do
+            expect(data_frame).to be_derived
+          end
         end
       end
 

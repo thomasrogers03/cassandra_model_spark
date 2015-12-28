@@ -31,6 +31,10 @@ module CassandraModel
         initialize_rdd(rdd)
       end
 
+      def derived?
+        !!@derived
+      end
+
       def sql_context
         @sql_context ||= create_sql_context
       end
@@ -153,6 +157,8 @@ module CassandraModel
                  else
                    rdd
                  end
+        else
+          @derived = true
         end
       end
 
