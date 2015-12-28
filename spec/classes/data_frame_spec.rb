@@ -408,10 +408,12 @@ module CassandraModel
         let(:options) { {} }
         let(:query_sql) { "SELECT * FROM #{table_name}" }
         let(:data_frame) { DataFrame.new(record_klass, rdd, sql_context: sql_context) }
+        let(:mock_schema) { SqlDataFrame.create_schema(rk_partition: :string, ck_partition: :string, ck_price: :double, partition: :string, price: :double) }
 
         subject { data_frame.query(restriction, options) }
 
         before do
+          allow(data_frame.spark_data_frame).to receive(:schema).and_return(mock_schema)
           allow(sql_context).to receive(:sql).with(query_sql).and_return(query)
         end
 
@@ -628,6 +630,13 @@ module CassandraModel
             end
 
             it { is_expected.to eq(query) }
+
+            context 'when the mapped column is not part of the DataFrame schema' do
+              let(:query_sql) { "SELECT `partition` FROM #{table_name}" }
+              let(:mock_schema) { SqlDataFrame.create_schema('partition' => 'string') }
+
+              it { is_expected.to eq(query) }
+            end
 
             context 'when columns are aliased' do
               let(:options) { {select: [{partition: {as: :part}}]} }

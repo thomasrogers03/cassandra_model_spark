@@ -357,7 +357,12 @@ module CassandraModel
       end
 
       def select_column(key)
-        record_klass.select_column(key)
+        new_key = record_klass.select_column(key)
+        available_columns.include?(new_key) ? new_key : key
+      end
+
+      def available_columns
+        @available_columns ||= spark_data_frame.schema.fields.map(&:name).map(&:to_sym)
       end
 
       def quoted_restriction(updated_key)
