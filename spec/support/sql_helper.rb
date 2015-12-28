@@ -49,10 +49,15 @@ end
 class SqlDataFrame
   attr_reader :sql_context, :rdd, :schema
 
+  def self.create_schema(schema_hash)
+    fields = schema_hash.map { |name, type| SqlStructField.new(name, type) }
+    SqlStructType.new(fields)
+  end
+
   def initialize(sql_context, rdd, schema)
     @sql_context = sql_context
     @rdd = rdd
-    @schema = schema
+    @schema = create_schema(schema)
   end
 
   def cache
@@ -76,6 +81,12 @@ class SqlDataFrame
         sql_context == rhs.sql_context &&
         rdd == rhs.rdd &&
         schema == rhs.schema
+  end
+
+  private
+
+  def create_schema(schema)
+    self.class.create_schema(schema)
   end
 end
 
@@ -152,7 +163,7 @@ end
 class SqlStringType < SqlDataType
 end
 class SqlStructField < SqlDataType
-  attr_reader :name
+  attr_reader :name, :type
 
   def initialize(name, type)
     @name = name
@@ -162,12 +173,22 @@ class SqlStructField < SqlDataType
   def data_type
     @type
   end
+
+  def ==(rhs)
+    rhs.is_a?(SqlStructField) &&
+        name == rhs.name &&
+        type == rhs.type
+  end
 end
 class SqlStructType < SqlDataType
   attr_reader :fields
 
   def initialize(fields)
     @fields = fields
+  end
+
+  def ==(rhs)
+    rhs.is_a?(SqlStructType) && fields == rhs.fields
   end
 end
 class SqlTimestampType < SqlDataType

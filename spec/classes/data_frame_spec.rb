@@ -141,6 +141,7 @@ module CassandraModel
 
       describe '#spark_data_frame' do
         let(:sql_columns) { {'partition' => SqlStringType} }
+        let(:sql_column_schema) { SqlDataFrame.create_schema(sql_columns) }
         subject { data_frame.spark_data_frame }
 
         it { is_expected.to be_a_kind_of(SqlDataFrame) }
@@ -181,20 +182,20 @@ module CassandraModel
           end
         end
 
-        its(:schema) { is_expected.to eq(sql_columns) }
+        its(:schema) { is_expected.to eq(sql_column_schema) }
 
         context 'with a different set of columns' do
           let(:cassandra_columns) { {partition: :text, clustering: :int} }
           let(:sql_columns) { {'partition' => SqlStringType, 'clustering' => SqlIntegerType} }
 
-          its(:schema) { is_expected.to eq(sql_columns) }
+          its(:schema) { is_expected.to eq(sql_column_schema) }
         end
 
         shared_examples_for 'mapping a cassandra column type to a spark sql type' do |cassandra_type, sql_type|
           let(:cassandra_columns) { {partition: cassandra_type} }
           let(:sql_columns) { {'partition' => sql_type} }
 
-          its(:schema) { is_expected.to eq(sql_columns) }
+          its(:schema) { is_expected.to eq(sql_column_schema) }
         end
 
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
@@ -219,7 +220,7 @@ module CassandraModel
             let(:cassandra_columns) { {mapped_column => :blob} }
             let(:sql_columns) { {mapped_column_alias.to_s => SqlStringStringMapType} }
 
-            its(:schema) { is_expected.to eq(sql_columns) }
+            its(:schema) { is_expected.to eq(sql_column_schema) }
 
             context 'when the Record class maps column names' do
               let(:cassandra_columns) { {"rk_#{mapped_column}" => :blob} }
@@ -231,7 +232,7 @@ module CassandraModel
                 end
               end
 
-              its(:schema) { is_expected.to eq(sql_columns) }
+              its(:schema) { is_expected.to eq(sql_column_schema) }
             end
           end
         end
