@@ -17,8 +17,8 @@ Inspired by the ruby-spark gem.}
 
   s.executables << 'cmodel-spark-build'
   s.executables << 'cmodel-spark-env.rb'
-  s.executables << 'cmodel-spark-master.rb'
-  s.executables << 'cmodel-spark-slaves.rb'
+  s.executables << 'cmodel-spark-master'
+  s.executables << 'cmodel-spark-slaves'
   s.executables << 'cmodel-spark-run-master'
   s.executables << 'cmodel-spark-run-slave'
 end
