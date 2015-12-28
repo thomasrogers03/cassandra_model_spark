@@ -5,4 +5,4 @@ if [ -z "${CMODEL_SPARK_HOME}" ]; then
 fi
 
 `"${CMODEL_SPARK_HOME}/bin/cmodel-spark-env.rb"`
-"${CMODEL_SPARK_HOME}/bin/cmodel-spark-slaves.rb" run
+"${CMODEL_SPARK_HOME}/bin/cmodel-spark-slaves" run
