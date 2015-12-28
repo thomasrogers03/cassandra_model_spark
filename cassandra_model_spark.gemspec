@@ -15,7 +15,7 @@ Inspired by the ruby-spark gem.}
   s.add_runtime_dependency 'thomas_utils', '~> 0.1.16'
   s.add_runtime_dependency 'rjb', '~> 1.5.4'
 
-  s.executables << 'cmodel-spark-build.rb'
+  s.executables << 'cmodel-spark-build'
   s.executables << 'cmodel-spark-env.rb'
   s.executables << 'cmodel-spark-master.rb'
   s.executables << 'cmodel-spark-slaves.rb'
