@@ -9,10 +9,14 @@ module CassandraModel
       end
 
       def run_master
-        raise NotImplementedError unless RUBY_ENGINE == 'jruby'
         validate_env!
 
-        SparkMaster.main(to_argv(run_master_args))
+        conf = ConnectionCache[nil].send(:spark_conf)
+        result = SparkMaster.startRpcEnvAndEndpoint(Socket.gethostname, master_config[:master_port], master_config[:ui_port], conf)._1
+        wait_for_shutdown do
+          result.shutdown
+          result.awaitTermination
+        end
       end
 
       def start_slaves
@@ -39,6 +43,14 @@ module CassandraModel
       end
 
       private
+
+      def wait_for_shutdown
+        begin
+          loop { sleep 0.2 }
+        rescue Interrupt
+          yield
+        end
+      end
 
       def to_argv(args)
         args.split.to_java_argv
