@@ -1,8 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-if [ -z "${CMODEL_SPARK_HOME}" ]; then
-  export CMODEL_SPARK_HOME="$(cd "`dirname "$0"`"/..; pwd)"
-fi
-
-`"${CMODEL_SPARK_HOME}/bin/cmodel-spark-env.rb"`
-"${CMODEL_SPARK_HOME}/bin/cmodel-spark-master.rb" run
+bin_path = File.expand_path('../', __FILE__)
+`#{bin_path}/cmodel-spark-run-master.sh`
