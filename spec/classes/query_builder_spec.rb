@@ -73,6 +73,13 @@ module CassandraModel
 
       it { expect(frame_klass).to eq(record_klass) }
 
+      describe 'overriding the Record class of the DataFrame' do
+        let(:klass) { double(:class, table_name: nil, rdd_row_mapping: nil) }
+        let(:data_frame) { query_builder.as_data_frame(class: klass) }
+
+        it { expect(frame_klass).to eq(klass) }
+      end
+
       describe 'filtering the rdd' do
         subject { frame_rdd }
 
