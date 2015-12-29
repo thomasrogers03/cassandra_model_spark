@@ -401,6 +401,28 @@ module CassandraModel
         end
       end
 
+      describe '#sql_frame' do
+        let(:new_frame) { double(:frame) }
+        let(:query_result) { double(:query, register_temp_table: nil, sql_context: data_frame.sql_context) }
+        let(:query) { "SELECT * FROM #{table_name}" }
+        let(:new_class) { double(:class, table_name: nil, rdd_row_mapping: nil) }
+        let(:alias_table_name) { Faker::Lorem.word.to_sym }
+        let(:derived_frame) { DataFrame.new(new_class, nil, spark_data_frame: query_result, alias: alias_table_name) }
+
+        subject { data_frame.sql_frame(query, class: new_class, alias: alias_table_name) }
+
+        before { allow(data_frame.sql_context).to receive(:sql).with(query).and_return(query_result) }
+
+        it { is_expected.to eq(derived_frame) }
+
+        context 'without a record klass provided' do
+          let(:new_class) { nil }
+          let(:derived_frame) { DataFrame.new(data_frame.record_klass, nil, spark_data_frame: query_result, alias: alias_table_name) }
+
+          it { is_expected.to eq(derived_frame) }
+        end
+      end
+
       describe '#query' do
         let(:sql_context) { double(:sql_context) }
         let(:query) { double(:query) }
