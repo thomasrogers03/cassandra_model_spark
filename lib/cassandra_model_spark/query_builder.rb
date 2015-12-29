@@ -16,7 +16,7 @@ module CassandraModel
 
     def data_frame_from_frame(options)
       query_frame = @record_klass.query(@params, @options)
-      Spark::DataFrame.new(@record_klass.record_klass, nil, options.merge(spark_data_frame: query_frame))
+      Spark::DataFrame.new(options.delete(:class) || @record_klass.record_klass, nil, options.merge(spark_data_frame: query_frame))
     end
 
     def data_frame_from_model(options)

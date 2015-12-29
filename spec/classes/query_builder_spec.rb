@@ -142,6 +142,13 @@ module CassandraModel
         its(:table_name) { is_expected.to eq(frame_alias) }
         its(:sql_context) { is_expected.to eq(sql_context) }
         its(:spark_data_frame) { is_expected.to eq(spark_data_frame) }
+
+        describe 'overriding the Record class of the DataFrame' do
+          let(:klass) { double(:class, table_name: nil, rdd_row_mapping: nil) }
+          let(:data_frame) { query_builder.as_data_frame(alias: frame_alias, class: klass) }
+
+          it { expect(frame_klass).to eq(klass) }
+        end
       end
     end
   end
