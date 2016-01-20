@@ -421,6 +421,11 @@ module CassandraModel
 
           it { is_expected.to eq(derived_frame) }
         end
+
+        it 'should ensure that the data_frame has been created' do
+          expect(data_frame).to receive(:spark_data_frame)
+          subject
+        end
       end
 
       describe '#query' do

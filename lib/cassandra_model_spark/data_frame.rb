@@ -105,6 +105,7 @@ module CassandraModel
       end
 
       def sql_frame(query, options)
+        spark_data_frame
         new_frame = sql_context.sql(query)
         self.class.new(options.delete(:class) || record_klass, nil, options.merge(spark_data_frame: new_frame))
       end
