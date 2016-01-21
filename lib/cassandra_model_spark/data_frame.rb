@@ -154,6 +154,14 @@ module CassandraModel
                        query({}, select: select_clause)
                      end
         save_frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
+        save_record_klass.composite_defaults.each do |row|
+          updated_column_map = column_map.merge(row)
+          select_clause = updated_column_map.map do |target, source|
+            {source => {as: target}}
+          end
+          frame = query({}, select: select_clause)
+          frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
+        end
       end
 
       def ==(rhs)

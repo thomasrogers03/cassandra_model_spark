@@ -935,8 +935,9 @@ module CassandraModel
           let(:save_connection) { double(:raw_connection, config: save_connection_config) }
           let(:save_table) { double(:table, connection: save_connection) }
           let(:save_column_map) { symbolized_field_names.inject({}) { |memo, column| memo.merge!(column => column) } }
+          let(:composite_defaults) { [] }
           let(:save_record_klass) do
-            double(:klass, table: save_table, table_name: save_table_name)
+            double(:klass, table: save_table, table_name: save_table_name, composite_defaults: composite_defaults)
           end
           let(:field_names) { Faker::Lorem.words }
           let(:symbolized_field_names) { field_names.map(&:to_sym) }
@@ -987,11 +988,34 @@ module CassandraModel
                 memo.merge!(:"rk_#{column}" => column)
               end
             end
-            let(:saver) { mock_frame_save_variation(select: select_clause) }
+            let!(:saver) { mock_frame_save_variation(select: select_clause) }
 
             it 'should save using the mapped columns from a sql query' do
               expect(saver).to receive(:save)
               data_frame.save_to(save_record_klass)
+            end
+
+            context 'when the target model provides a truth table' do
+              let(:composite_defaults) { [{rk_pk3: ''}, {rk_pk1: 0, rk_pk2: -1}] }
+              let(:field_names) { %w(pk1 pk2 pk3) }
+              let(:select_clause_two) do
+                [{pk1: {as: :rk_pk1}}, {pk2: {as: :rk_pk2}}, {'' => {as: :rk_pk3}}]
+              end
+              let!(:saver_two) { mock_frame_save_variation(select: select_clause_two) }
+              let(:select_clause_three) do
+                [{0 => {as: :rk_pk1}}, {-1 => {as: :rk_pk2}}, {pk3: {as: :rk_pk3}}]
+              end
+              let!(:saver_three) { mock_frame_save_variation(select: select_clause_three) }
+
+              it 'should save the truth table values for the first set of defaults' do
+                expect(saver_two).to receive(:save)
+                data_frame.save_to(save_record_klass)
+              end
+
+              it 'should save the truth table values for the second set of defaults' do
+                expect(saver_three).to receive(:save)
+                data_frame.save_to(save_record_klass)
+              end
             end
           end
         end
