@@ -642,6 +642,29 @@ module CassandraModel
             it { is_expected.to eq(query) }
           end
 
+          context 'when selecting a constant' do
+            let(:options) { {select: [4]} }
+            let(:query_sql) { "SELECT 4 FROM #{table_name}" }
+
+            it { is_expected.to eq(query) }
+
+            context 'when that constant is a string' do
+              let(:select_constant) { Faker::Lorem.word }
+              let(:options) { {select: [select_constant]} }
+              let(:query_sql) { "SELECT '#{select_constant}' FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+
+            context 'when the constant contains quotes' do
+              let(:select_constant) { "'; DROP TABLE some_table; SELECT '" }
+              let(:options) { {select: [select_constant]} }
+              let(:query_sql) { "SELECT '\\'; DROP TABLE some_table; SELECT \\'' FROM #{table_name}" }
+
+              it { is_expected.to eq(query) }
+            end
+          end
+
           context 'with multiple columns' do
             let(:options) { {select: [:partition, :clustering]} }
             let(:query_sql) { "SELECT `partition`, `clustering` FROM #{table_name}" }

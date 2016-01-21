@@ -324,8 +324,12 @@ module CassandraModel
           '*'
         elsif column.respond_to?(:quote)
           column.quote('`')
-        else
+        elsif column.is_a?(Symbol)
           "`#{select_column(column)}`"
+        elsif column.is_a?(String)
+          "'#{column.gsub(/'/, "\\\\'")}'"
+        else
+          column
         end
       end
 
