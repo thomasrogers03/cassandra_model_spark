@@ -76,6 +76,10 @@ class SqlDataFrame
   def register_temp_table(name)
   end
 
+  def write
+    raise NotImplementedError.new
+  end
+
   def ==(rhs)
     rhs.is_a?(SqlDataFrame) &&
         sql_context == rhs.sql_context &&

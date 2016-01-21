@@ -136,11 +136,24 @@ module CassandraModel
       end
 
       def save_to(save_record_klass)
+        #noinspection RubyStringKeysInHashInspection
         java_options = {
             'table' => save_record_klass.table_name,
             'keyspace' => save_record_klass.table.connection.config[:keyspace]
         }.to_java
-        spark_data_frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
+
+        available_columns = spark_data_frame.schema.fields.map(&:name).map(&:to_sym)
+        column_map = save_record_klass.denormalized_column_map(available_columns)
+
+        save_frame = if available_columns == column_map.keys
+                       spark_data_frame
+                     else
+                       select_clause = column_map.map do |target, source|
+                         {source => {as: target}}
+                       end
+                       query({}, select: select_clause)
+                     end
+        save_frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
       end
 
       def ==(rhs)

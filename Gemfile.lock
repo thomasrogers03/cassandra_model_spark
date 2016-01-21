@@ -1,15 +1,15 @@
 GIT
   remote: git://github.com/thomasrogers03/batch_reactor.git
-  revision: f4e812bac1bbafdca90a63e80d2b64e2231025a5
+  revision: e3cd2ebd332d94bdfb010568b4a6dc503b92a7a8
   specs:
-    batch_reactor (0.0.1)
+    batch_reactor (0.0.2)
       ione (~> 1.2)
 
 GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
-  revision: 578162b9dbfd14bf9b1a87f2515fc22337e01b20
+  revision: d7a0cbc8c7d7df9edf9d624a8d3958029607a86c
   specs:
-    cassandra_model (0.9.18)
+    cassandra_model (0.9.22)
       activesupport (~> 4.0)
       batch_reactor (~> 0.0.1)
       cassandra-driver (~> 1.1)
@@ -17,9 +17,9 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/thomas_utils.git
-  revision: 2ef5242b83d95d0626fd295fd1e4147dd5b88021
+  revision: 017b77f4982d9a2e47a8324937618887a35d5196
   specs:
-    thomas_utils (0.1.16)
+    thomas_utils (0.1.18)
       concurrent-ruby (~> 0.8)
       workers (~> 0.3)
 
@@ -27,8 +27,11 @@ PATH
   remote: .
   specs:
     cassandra_model_spark (0.0.2)
-      cassandra_model (~> 0.9.16)
+      cassandra_model (~> 0.9.22)
       rjb (~> 1.5.4)
+      thomas_utils (~> 0.1.16)
+    cassandra_model_spark (0.0.2-java)
+      cassandra_model (~> 0.9.22)
       thomas_utils (~> 0.1.16)
 
 GEM

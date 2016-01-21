@@ -795,166 +795,194 @@ module CassandraModel
             end
           end
         end
+      end
 
-        describe 'pulling data from the data set' do
-          shared_examples_for 'a method mapping a query result to a Record' do |method, collect_method|
-            let(:result_sql_type) { SqlTypeWrapper.new(SqlStringType) }
-            let(:result_value) { Faker::Lorem.word }
+      describe 'pulling data from the data set' do
+        shared_examples_for 'a method mapping a query result to a Record' do |method, collect_method|
+          let(:result_sql_type) { SqlTypeWrapper.new(SqlStringType) }
+          let(:result_value) { Faker::Lorem.word }
 
-            let(:key) { Faker::Lorem.word }
-            let(:attributes) { {key => Faker::Lorem.word} }
-            let(:result) { {select_key => result_value} }
-            let(:select_key) { Faker::Lorem.word }
-            let(:options) { {select: [select_key]} }
-            let(:available_columns) { [select_key.to_sym] }
-            let(:deferred_columns) { [] }
+          let(:key) { Faker::Lorem.word }
+          let(:attributes) { {key => Faker::Lorem.word} }
+          let(:result) { {select_key => result_value} }
+          let(:select_key) { Faker::Lorem.word }
+          let(:options) { {select: [select_key]} }
+          let(:available_columns) { [select_key.to_sym] }
+          let(:deferred_columns) { [] }
 
-            let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
-            let(:query_schema) { SqlStructType.new(fields) }
-            let(:query) { double(:query, schema: query_schema, first: RDDRow[result], collect: [RDDRow[result]]) }
-            let(:record_attributes) { {select_key.to_sym => result_value} }
+          let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
+          let(:query_schema) { SqlStructType.new(fields) }
+          let(:query) { double(:query, schema: query_schema, first: RDDRow[result], collect: [RDDRow[result]]) }
+          let(:record_attributes) { {select_key.to_sym => result_value} }
 
-            before do
-              allow(data_frame).to receive(:query).with(attributes, options).and_return(query)
-              allow(record_klass).to receive(:new) do |attributes|
-                MockRecord.new(attributes)
-              end
-              allow(record_klass).to receive(:normalized_attributes) do |attributes|
-                attributes.symbolize_keys
-              end
-              allow(record_klass).to receive(:columns).and_return(available_columns)
-              allow(record_klass).to receive(:deferred_columns).and_return(deferred_columns)
+          before do
+            allow(data_frame).to receive(:query).with(attributes, options).and_return(query)
+            allow(record_klass).to receive(:new) do |attributes|
+              MockRecord.new(attributes)
             end
-
-            it 'should support default values' do
-              allow(data_frame).to receive(:query).and_return(query)
-              expect { data_frame.public_send(method) }.not_to raise_error
+            allow(record_klass).to receive(:normalized_attributes) do |attributes|
+              attributes.symbolize_keys
             end
+            allow(record_klass).to receive(:columns).and_return(available_columns)
+            allow(record_klass).to receive(:deferred_columns).and_return(deferred_columns)
+          end
+
+          it 'should support default values' do
+            allow(data_frame).to receive(:query).and_return(query)
+            expect { data_frame.public_send(method) }.not_to raise_error
+          end
+
+          it 'should return the result mapped to a CassandraModel::Record' do
+            expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
+          end
+
+          shared_examples_for 'converting sql types back to ruby types' do |value, sql_type|
+            let(:result_sql_type) { SqlTypeWrapper.new(sql_type) }
+            let(:result_value) { value }
 
             it 'should return the result mapped to a CassandraModel::Record' do
               expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
             end
+          end
 
-            shared_examples_for 'converting sql types back to ruby types' do |value, sql_type|
-              let(:result_sql_type) { SqlTypeWrapper.new(sql_type) }
-              let(:result_value) { value }
+          it_behaves_like 'converting sql types back to ruby types', 15, SqlIntegerType
+          it_behaves_like 'converting sql types back to ruby types', SqlLong.new(153), SqlLongType
+          it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
+          it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
+          it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
 
-              it 'should return the result mapped to a CassandraModel::Record' do
-                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
-              end
+          context 'when a type is a StructType' do
+            let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType)]) }
+            let(:result_sql_type) { sql_type }
+            let(:result_value) { RDDRow[description: Faker::Lorem.word] }
+
+            it 'should recursively map the results' do
+              expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
             end
+          end
 
-            it_behaves_like 'converting sql types back to ruby types', 15, SqlIntegerType
-            it_behaves_like 'converting sql types back to ruby types', SqlLong.new(153), SqlLongType
-            it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
-            it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
-            it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
+          context 'with a type we cannot handle' do
+            let(:result_sql_type) { SqlTypeWrapper.new(SqlFakeType) }
+            let(:result_value) { '1239333-33333' }
 
-            context 'when a type is a StructType' do
-              let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType)]) }
-              let(:result_sql_type) { sql_type }
-              let(:result_value) { RDDRow[description: Faker::Lorem.word] }
-
-              it 'should recursively map the results' do
-                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
-              end
+            it 'should convert to a string' do
+              expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
             end
+          end
 
-            context 'with a type we cannot handle' do
-              let(:result_sql_type) { SqlTypeWrapper.new(SqlFakeType) }
-              let(:result_value) { '1239333-33333' }
+          context 'when the record maps result columns' do
+            let(:result) { {"rk_#{select_key}" => result_value} }
+            let(:fields) { [SqlStructField.new("rk_#{select_key}", result_sql_type)] }
 
-              it 'should convert to a string' do
-                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
-              end
-            end
-
-            context 'when the record maps result columns' do
-              let(:result) { {"rk_#{select_key}" => result_value} }
-              let(:fields) { [SqlStructField.new("rk_#{select_key}", result_sql_type)] }
-
-              before do
-                allow(record_klass).to receive(:normalized_attributes) do |attributes|
-                  attributes.inject({}) do |memo, (key, value)|
-                    memo.merge!(key.match(/^rk_(.+)$/)[1].to_sym => value)
-                  end
+            before do
+              allow(record_klass).to receive(:normalized_attributes) do |attributes|
+                attributes.inject({}) do |memo, (key, value)|
+                  memo.merge!(key.match(/^rk_(.+)$/)[1].to_sym => value)
                 end
               end
-
-              it 'should map the columns' do
-                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
-              end
             end
 
-            context 'when a returned column is not part of the cassandra table' do
+            it 'should map the columns' do
+              expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
+            end
+          end
+
+          context 'when a returned column is not part of the cassandra table' do
+            let(:available_columns) { [Faker::Lorem.word.to_sym] }
+
+            it 'should return a hash instead of the Record class' do
+              expect(data_frame.public_send(method, attributes, options)).to include(record_attributes)
+            end
+
+            context 'when it is part of the deferred columns' do
               let(:available_columns) { [Faker::Lorem.word.to_sym] }
+              let(:deferred_columns) { [select_key.to_sym] }
 
-              it 'should return a hash instead of the Record class' do
-                expect(data_frame.public_send(method, attributes, options)).to include(record_attributes)
-              end
-
-              context 'when it is part of the deferred columns' do
-                let(:available_columns) { [Faker::Lorem.word.to_sym] }
-                let(:deferred_columns) { [select_key.to_sym] }
-
-                it 'should give back a record instance' do
-                  expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
-                end
+              it 'should give back a record instance' do
+                expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
               end
             end
           end
-
-          describe '#save_to' do
-            let(:save_cassandra_columns) { {partition: :text} }
-            let(:save_table_name) { Faker::Lorem.word }
-            let(:save_keyspace) { Faker::Lorem.word }
-            let(:save_connection_config) { {keyspace: save_keyspace} }
-            let(:save_connection) { double(:raw_connection, config: save_connection_config) }
-            let(:save_table) { double(:table, connection: save_connection) }
-            let(:save_record_klass) do
-              double(:klass, cassandra_columns: save_cassandra_columns, table: save_table, table_name: save_table_name)
-            end
-
-            def mock_frame_save_variation(query = nil)
-              double(:result_saver, save: nil).tap do |saver|
-                cassandra_writer = double(:writer)
-                allow(cassandra_writer).to receive(:mode).with('Append').and_return(saver)
-                formatted_writer = double(:writer)
-                java_options = {'table' => save_table_name, 'keyspace' => save_keyspace}.to_java
-                allow(formatted_writer).to receive(:options).with(java_options).and_return(cassandra_writer)
-                writer = double(:writer)
-                allow(writer).to receive(:format).with('org.apache.spark.sql.cassandra').and_return(formatted_writer)
-                frame = double(:frame, write: writer)
-                if query
-                  allow(data_frame).to receive(:sql_frame).with(query, {}).and_return(frame)
-                else
-                  allow(data_frame).to receive(:spark_data_frame).and_return(frame)
-                end
-              end
-            end
-
-            describe 'a simple one-to-one save' do
-              let(:saver) { mock_frame_save_variation }
-
-              it 'should save using the spark data frame' do
-                expect(saver).to receive(:save)
-                data_frame.save_to(save_record_klass)
-              end
-            end
-
-          end
-
-          describe '#first' do
-            let(:record_result) { MockRecord.new(record_attributes) }
-            it_behaves_like 'a method mapping a query result to a Record', :first, :first
-          end
-
-          describe '#request' do
-            let(:record_result) { [MockRecord.new(record_attributes)] }
-            it_behaves_like 'a method mapping a query result to a Record', :request, :collect
-          end
-
         end
+
+        describe '#save_to' do
+          let(:save_table_name) { Faker::Lorem.word }
+          let(:save_keyspace) { Faker::Lorem.word }
+          let(:save_connection_config) { {keyspace: save_keyspace} }
+          let(:save_connection) { double(:raw_connection, config: save_connection_config) }
+          let(:save_table) { double(:table, connection: save_connection) }
+          let(:save_column_map) { symbolized_field_names.inject({}) { |memo, column| memo.merge!(column => column) } }
+          let(:save_record_klass) do
+            double(:klass, table: save_table, table_name: save_table_name)
+          end
+          let(:field_names) { Faker::Lorem.words }
+          let(:symbolized_field_names) { field_names.map(&:to_sym) }
+          let(:fields) { field_names.map { |name| SqlStructField.new(name, nil) } }
+          let(:schema) { SqlStructType.new(fields) }
+
+          before do
+            allow(data_frame.spark_data_frame).to receive(:schema).and_return(schema)
+            allow(save_record_klass).to receive(:denormalized_column_map).with(symbolized_field_names).and_return(save_column_map)
+          end
+
+          def mock_frame_save_variation(query_options = nil)
+            double(:result_saver, save: nil).tap do |saver|
+              cassandra_writer = double(:writer)
+              allow(cassandra_writer).to receive(:mode).with('Append').and_return(saver)
+              formatted_writer = double(:writer)
+              #noinspection RubyStringKeysInHashInspection
+              java_options = {'table' => save_table_name, 'keyspace' => save_keyspace}.to_java
+              allow(formatted_writer).to receive(:options).with(java_options).and_return(cassandra_writer)
+              writer = double(:writer)
+              allow(writer).to receive(:format).with('org.apache.spark.sql.cassandra').and_return(formatted_writer)
+              if query_options
+                frame = double(:frame, write: writer)
+                allow(data_frame).to receive(:query).with({}, query_options).and_return(frame)
+              else
+                allow(data_frame.spark_data_frame).to receive(:write).and_return(writer)
+              end
+            end
+          end
+
+          describe 'a simple one-to-one save' do
+            let(:saver) { mock_frame_save_variation }
+
+            it 'should save using the spark data frame' do
+              expect(saver).to receive(:save)
+              data_frame.save_to(save_record_klass)
+            end
+          end
+
+          context 'when the columns need mapping' do
+            let(:select_clause) do
+              save_column_map.map do |target, source|
+                {source => {as: target}}
+              end
+            end
+            let(:save_column_map) do
+              field_names.map(&:to_sym).inject({}) do |memo, column|
+                memo.merge!(:"rk_#{column}" => column)
+              end
+            end
+            let(:saver) { mock_frame_save_variation(select: select_clause) }
+
+            it 'should save using the mapped columns from a sql query' do
+              expect(saver).to receive(:save)
+              data_frame.save_to(save_record_klass)
+            end
+          end
+        end
+
+        describe '#first' do
+          let(:record_result) { MockRecord.new(record_attributes) }
+          it_behaves_like 'a method mapping a query result to a Record', :first, :first
+        end
+
+        describe '#request' do
+          let(:record_result) { [MockRecord.new(record_attributes)] }
+          it_behaves_like 'a method mapping a query result to a Record', :request, :collect
+        end
+
       end
     end
   end
