@@ -135,6 +135,14 @@ module CassandraModel
         row_to_record(query.schema, row)
       end
 
+      def save_to(save_record_klass)
+        java_options = {
+            'table' => save_record_klass.table_name,
+            'keyspace' => save_record_klass.table.connection.config[:keyspace]
+        }.to_java
+        spark_data_frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
+      end
+
       def ==(rhs)
         rhs.is_a?(DataFrame) &&
             record_klass == rhs.record_klass &&

@@ -904,6 +904,46 @@ module CassandraModel
             end
           end
 
+          describe '#save_to' do
+            let(:save_cassandra_columns) { {partition: :text} }
+            let(:save_table_name) { Faker::Lorem.word }
+            let(:save_keyspace) { Faker::Lorem.word }
+            let(:save_connection_config) { {keyspace: save_keyspace} }
+            let(:save_connection) { double(:raw_connection, config: save_connection_config) }
+            let(:save_table) { double(:table, connection: save_connection) }
+            let(:save_record_klass) do
+              double(:klass, cassandra_columns: save_cassandra_columns, table: save_table, table_name: save_table_name)
+            end
+
+            def mock_frame_save_variation(query = nil)
+              double(:result_saver, save: nil).tap do |saver|
+                cassandra_writer = double(:writer)
+                allow(cassandra_writer).to receive(:mode).with('Append').and_return(saver)
+                formatted_writer = double(:writer)
+                java_options = {'table' => save_table_name, 'keyspace' => save_keyspace}.to_java
+                allow(formatted_writer).to receive(:options).with(java_options).and_return(cassandra_writer)
+                writer = double(:writer)
+                allow(writer).to receive(:format).with('org.apache.spark.sql.cassandra').and_return(formatted_writer)
+                frame = double(:frame, write: writer)
+                if query
+                  allow(data_frame).to receive(:sql_frame).with(query, {}).and_return(frame)
+                else
+                  allow(data_frame).to receive(:spark_data_frame).and_return(frame)
+                end
+              end
+            end
+
+            describe 'a simple one-to-one save' do
+              let(:saver) { mock_frame_save_variation }
+
+              it 'should save using the spark data frame' do
+                expect(saver).to receive(:save)
+                data_frame.save_to(save_record_klass)
+              end
+            end
+
+          end
+
           describe '#first' do
             let(:record_result) { MockRecord.new(record_attributes) }
             it_behaves_like 'a method mapping a query result to a Record', :first, :first
