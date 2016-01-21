@@ -1,5 +1,6 @@
 module CassandraModel
   module Spark
+    #noinspection RubyStringKeysInHashInspection
     class DataFrame
       include QueryHelper
 
@@ -137,31 +138,14 @@ module CassandraModel
 
       def save_to(save_record_klass)
         #noinspection RubyStringKeysInHashInspection
-        java_options = {
-            'table' => save_record_klass.table_name,
-            'keyspace' => save_record_klass.table.connection.config[:keyspace]
-        }.to_java
+        java_options = save_options_for_model(save_record_klass)
 
         available_columns = spark_data_frame.schema.fields.map(&:name).map(&:to_sym)
         column_map = save_record_klass.denormalized_column_map(available_columns)
 
-        save_frame = if available_columns == column_map.keys
-                       spark_data_frame
-                     else
-                       select_clause = column_map.map do |target, source|
-                         {source => {as: target}}
-                       end
-                       query({}, select: select_clause)
-                     end
-        save_frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
-        save_record_klass.composite_defaults.each do |row|
-          updated_column_map = column_map.merge(row)
-          select_clause = updated_column_map.map do |target, source|
-            {source => {as: target}}
-          end
-          frame = query({}, select: select_clause)
-          frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
-        end
+        save_frame = frame_to_save(available_columns, column_map)
+        save_frame(java_options, save_frame)
+        save_truth_table(column_map, java_options, save_record_klass)
       end
 
       def ==(rhs)
@@ -406,6 +390,40 @@ module CassandraModel
 
       def quoted_restriction(updated_key)
         ThomasUtils::KeyComparer.new(updated_key, '=').quote('`')
+      end
+
+      def frame_to_save(available_columns, column_map)
+        if available_columns == column_map.keys
+          spark_data_frame
+        else
+          select_clause = save_select_clause(column_map)
+          query({}, select: select_clause)
+        end
+      end
+
+      def save_options_for_model(save_record_klass)
+        {
+            'table' => save_record_klass.table_name,
+            'keyspace' => save_record_klass.table.connection.config[:keyspace]
+        }.to_java
+      end
+
+      def save_truth_table(column_map, java_options, save_record_klass)
+        save_record_klass.composite_defaults.each do |row|
+          select_clause = save_select_clause(column_map.merge(row))
+          frame = query({}, select: select_clause)
+          save_frame(java_options, frame)
+        end
+      end
+
+      def save_frame(java_options, save_frame)
+        save_frame.write.format('org.apache.spark.sql.cassandra').options(java_options).mode('Append').save
+      end
+
+      def save_select_clause(updated_column_map)
+        updated_column_map.map do |target, source|
+          {source => {as: target}}
+        end
       end
 
     end
