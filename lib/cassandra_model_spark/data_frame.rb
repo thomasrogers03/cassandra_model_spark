@@ -22,6 +22,23 @@ module CassandraModel
 
       attr_reader :table_name, :record_klass
 
+      def self.from_csv(record_klass, path, options = {})
+        sql_context = options.delete(:sql_context) || create_sql_context(record_klass)
+        updated_options = options.inject({'header' => 'true'}) do |memo, (key, value)|
+          memo.merge!(key.to_s.camelize(:lower) => value)
+        end.to_java
+        csv_frame = sql_context.read.format('com.databricks.spark.csv').options(updated_options).load(path)
+
+        table_name = File.basename(path).gsub(/\./, '_') + "_#{SecureRandom.hex(2)}"
+        new(record_klass, nil, spark_data_frame: csv_frame, alias: table_name)
+      end
+
+      def self.create_sql_context(record_klass)
+        CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
+          context.setKeyspace(record_klass.table.connection.config[:keyspace])
+        end
+      end
+
       def initialize(record_klass, rdd, options = {})
         @table_name = options.fetch(:alias) { record_klass.table_name }
         @sql_context = options[:sql_context]
@@ -37,7 +54,7 @@ module CassandraModel
       end
 
       def sql_context
-        @sql_context ||= create_sql_context
+        @sql_context ||= self.class.create_sql_context(record_klass)
       end
 
       def union(rhs)
@@ -189,12 +206,6 @@ module CassandraModel
 
       def row_type_mapping
         @row_mapping[:type_map] ||= {}
-      end
-
-      def create_sql_context
-        CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
-          context.setKeyspace(record_klass.table.connection.config[:keyspace])
-        end
       end
 
       def row_to_record(schema, row)

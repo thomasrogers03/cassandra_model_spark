@@ -41,6 +41,9 @@ class CassandraSQLContext
   def sql(*_)
   end
 
+  def read
+  end
+
   protected
 
   attr_reader :spark_context

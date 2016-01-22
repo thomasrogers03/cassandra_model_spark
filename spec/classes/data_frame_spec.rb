@@ -57,6 +57,57 @@ module CassandraModel
         end
       end
 
+      describe '.from_csv' do
+        let(:path_extension) { %w(csv tsv txt tab bin blah stuff).sample }
+        let(:path) { "#{Faker::Internet.url}.#{path_extension}" }
+        let(:table_id) { SecureRandom.hex(2) }
+        let(:table_name) { File.basename(path).gsub(/\./, '_') + "_#{table_id}" }
+        let!(:csv_frame) { mock_frame_load_variation(path) }
+        let(:data_frame) { DataFrame.from_csv(record_klass, path) }
+
+        subject { data_frame }
+
+        before { allow(SecureRandom).to receive(:hex).with(2).and_return(table_id) }
+
+        def mock_frame_load_variation(path, read_options = {'header' => 'true'})
+          double(:frame, register_temp_table: nil).tap do |csv_frame|
+            loader = double(:result_loader)
+            allow(loader).to receive(:load).with(path).and_return(csv_frame)
+            formatted_reader = double(:reader)
+            #noinspection RubyStringKeysInHashInspection
+            java_options = read_options.to_java
+            allow(formatted_reader).to receive(:options).with(java_options).and_return(loader)
+            reader = double(:reader)
+            allow(reader).to receive(:format).with('com.databricks.spark.csv').and_return(formatted_reader)
+            allow_any_instance_of(CassandraSQLContext).to receive(:read) do |context|
+              allow(csv_frame).to receive(:sql_context).and_return(context)
+              reader
+            end
+          end
+        end
+
+        its(:record_klass) { is_expected.to eq(record_klass) }
+        its(:spark_data_frame) { is_expected.to eq(csv_frame) }
+        its(:table_name) { is_expected.to eq(table_name) }
+
+        context 'with different csv options' do
+          let(:options) { {infer_schema: 'true'} }
+          let!(:csv_frame) { mock_frame_load_variation(path, {'inferSchema' => 'true', 'header' => 'true'}) }
+          let(:data_frame) { DataFrame.from_csv(record_klass, path, options) }
+
+          its(:spark_data_frame) { is_expected.to eq(csv_frame) }
+
+          context 'with an existing sql context' do
+            let!(:csv_frame) { mock_frame_load_variation(path) }
+            let(:frame_context) { CassandraSQLContext.new(nil) }
+            let(:options) { {sql_context: frame_context} }
+
+            its(:sql_context) { is_expected.to eq(frame_context) }
+          end
+        end
+
+      end
+
       describe '#record_klass' do
         subject { data_frame.record_klass }
 
