@@ -22,20 +22,26 @@ module CassandraModel
 
       attr_reader :table_name, :record_klass
 
-      def self.from_csv(record_klass, path, options = {})
-        sql_context = options.delete(:sql_context) || create_sql_context(record_klass)
-        updated_options = options.inject({'header' => 'true'}) do |memo, (key, value)|
-          memo.merge!(key.to_s.camelize(:lower) => value)
-        end.to_java
-        csv_frame = sql_context.read.format('com.databricks.spark.csv').options(updated_options).load(path)
+      class << self
+        def from_csv(record_klass, path, options = {})
+          sql_context = options.delete(:sql_context) || create_sql_context(record_klass)
+          updated_options = csv_options(options)
+          csv_frame = sql_context.read.format('com.databricks.spark.csv').options(updated_options).load(path)
 
-        table_name = File.basename(path).gsub(/\./, '_') + "_#{SecureRandom.hex(2)}"
-        new(record_klass, nil, spark_data_frame: csv_frame, alias: table_name)
-      end
+          table_name = File.basename(path).gsub(/\./, '_') + "_#{SecureRandom.hex(2)}"
+          new(record_klass, nil, spark_data_frame: csv_frame, alias: table_name)
+        end
 
-      def self.create_sql_context(record_klass)
-        CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
-          context.setKeyspace(record_klass.table.connection.config[:keyspace])
+        def create_sql_context(record_klass)
+          CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
+            context.setKeyspace(record_klass.table.connection.config[:keyspace])
+          end
+        end
+
+        def csv_options(options)
+          options.inject('header' => 'true') do |memo, (key, value)|
+            memo.merge!(key.to_s.camelize(:lower) => value)
+          end.to_java
         end
       end
 
@@ -154,9 +160,7 @@ module CassandraModel
       end
 
       def to_csv(path, options = {})
-        updated_options = options.inject({'header' => 'true'}) do |memo, (key, value)|
-          memo.merge!(key.to_s.camelize(:lower) => value)
-        end.to_java
+        updated_options = csv_options(options)
         spark_data_frame.write.format('com.databricks.spark.csv').options(updated_options).save(path)
       end
 
@@ -417,6 +421,10 @@ module CassandraModel
           select_clause = save_select_clause(column_map)
           query({}, select: select_clause)
         end
+      end
+
+      def csv_options(options)
+        self.class.csv_options(options)
       end
 
       def save_options_for_model(save_record_klass)
