@@ -153,6 +153,13 @@ module CassandraModel
         row_to_record(query.schema, row)
       end
 
+      def to_csv(path, options = {})
+        updated_options = options.inject({'header' => 'true'}) do |memo, (key, value)|
+          memo.merge!(key.to_s.camelize(:lower) => value)
+        end.to_java
+        spark_data_frame.write.format('com.databricks.spark.csv').options(updated_options).save(path)
+      end
+
       def save_to(save_record_klass)
         #noinspection RubyStringKeysInHashInspection
         java_options = save_options_for_model(save_record_klass)

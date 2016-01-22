@@ -62,14 +62,14 @@ module CassandraModel
         let(:path) { "#{Faker::Internet.url}.#{path_extension}" }
         let(:table_id) { SecureRandom.hex(2) }
         let(:table_name) { File.basename(path).gsub(/\./, '_') + "_#{table_id}" }
-        let!(:csv_frame) { mock_frame_load_variation(path) }
+        let!(:csv_frame) { mock_csv_frame_load_variation(path) }
         let(:data_frame) { DataFrame.from_csv(record_klass, path) }
 
         subject { data_frame }
 
         before { allow(SecureRandom).to receive(:hex).with(2).and_return(table_id) }
 
-        def mock_frame_load_variation(path, read_options = {'header' => 'true'})
+        def mock_csv_frame_load_variation(path, read_options = {'header' => 'true'})
           double(:frame, register_temp_table: nil).tap do |csv_frame|
             loader = double(:result_loader)
             allow(loader).to receive(:load).with(path).and_return(csv_frame)
@@ -92,13 +92,13 @@ module CassandraModel
 
         context 'with different csv options' do
           let(:options) { {infer_schema: 'true'} }
-          let!(:csv_frame) { mock_frame_load_variation(path, {'inferSchema' => 'true', 'header' => 'true'}) }
+          let!(:csv_frame) { mock_csv_frame_load_variation(path, {'inferSchema' => 'true', 'header' => 'true'}) }
           let(:data_frame) { DataFrame.from_csv(record_klass, path, options) }
 
           its(:spark_data_frame) { is_expected.to eq(csv_frame) }
 
           context 'with an existing sql context' do
-            let!(:csv_frame) { mock_frame_load_variation(path) }
+            let!(:csv_frame) { mock_csv_frame_load_variation(path) }
             let(:frame_context) { CassandraSQLContext.new(nil) }
             let(:options) { {sql_context: frame_context} }
 
@@ -977,6 +977,39 @@ module CassandraModel
               end
             end
           end
+        end
+
+        describe '#to_csv' do
+          let(:path) { "#{Faker::Internet.url}" }
+          let!(:csv_saver) { mock_csv_frame_save_variation }
+
+          def mock_csv_frame_save_variation(write_options = {'header' => 'true'})
+            double(:result_saver).tap do |saver|
+              formatted_writer = double(:writer)
+              #noinspection RubyStringKeysInHashInspection
+              java_options = write_options.to_java
+              allow(formatted_writer).to receive(:options).with(java_options).and_return(saver)
+              writer = double(:writer)
+              allow(writer).to receive(:format).with('com.databricks.spark.csv').and_return(formatted_writer)
+              allow(data_frame.spark_data_frame).to receive(:write).and_return(writer)
+            end
+          end
+
+          it 'should save the DataFrame to the specified path as a csv' do
+            expect(csv_saver).to receive(:save).with(path)
+            data_frame.to_csv(path)
+          end
+
+          context 'with different csv options' do
+            let(:options) { {null_value: '|'} }
+            let!(:csv_saver) { mock_csv_frame_save_variation('nullValue' => '|', 'header' => 'true') }
+
+            it 'should save the DataFrame to the specified path as a csv using the specified options' do
+              expect(csv_saver).to receive(:save).with(path)
+              data_frame.to_csv(path, options)
+            end
+          end
+
         end
 
         describe '#save_to' do
