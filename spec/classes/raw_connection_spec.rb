@@ -64,6 +64,18 @@ module CassandraModel
       it { is_expected.to eq(context.sc) }
     end
 
+    describe '#has_spark_context?' do
+      subject { connection.has_spark_context? }
+
+      it { is_expected.to eq(false) }
+
+      context 'when the context has been created' do
+        before { connection.java_spark_context }
+
+        it { is_expected.to eq(true) }
+      end
+    end
+
     describe '#create_java_spark_streaming_context' do
       let!(:context) { connection.java_spark_context }
 
