@@ -1,6 +1,8 @@
 import_java_object 'java.util.ArrayList'
 import_java_object 'org.apache.spark.SparkConf'
 import_java_object 'org.apache.spark.api.java.JavaSparkContext'
+import_java_object 'org.apache.spark.streaming.api.java.JavaStreamingContext', as: 'JavaSparkStreamingContext'
+import_java_object 'org.apache.spark.streaming.Duration', as: 'SparkDuration'
 import_java_object 'org.apache.spark.sql.cassandra.CassandraSQLContext'
 import_java_object 'java.util.HashMap', as: 'JavaHashMap'
 import_java_object 'org.apache.spark.sql.SQLContext', as: 'SparkSQLContext'

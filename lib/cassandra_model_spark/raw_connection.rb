@@ -12,6 +12,11 @@ module CassandraModel
       java_spark_context.sc
     end
 
+    #noinspection RubyInstanceMethodNamingConvention
+    def create_java_spark_streaming_context
+      JavaSparkStreamingContext.new(java_spark_context, SparkDuration.new(2000))
+    end
+
     private
 
     def spark_conf

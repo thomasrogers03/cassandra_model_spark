@@ -29,6 +29,7 @@ class SparkConf
 end
 
 class InternalSparkContext < Struct.new(:config)
+  #noinspection RubyInstanceMethodNamingConvention
   def addJar(path)
     jars << path
   end
@@ -45,4 +46,10 @@ class JavaSparkContext < Struct.new(:config)
 
   def stop
   end
+end
+
+class JavaSparkStreamingContext < Struct.new(:sparkContext, :duration)
+end
+
+class SparkDuration < Struct.new(:milliseconds)
 end

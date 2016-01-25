@@ -64,5 +64,15 @@ module CassandraModel
       it { is_expected.to eq(context.sc) }
     end
 
+    describe '#create_java_spark_streaming_context' do
+      let!(:context) { connection.java_spark_context }
+
+      subject { connection.create_java_spark_streaming_context }
+
+      it { is_expected.to be_a_kind_of(JavaSparkStreamingContext) }
+      its(:sparkContext) { is_expected.to eq(context) }
+      its(:duration) { is_expected.to eq(SparkDuration.new(2000)) }
+    end
+
   end
 end
