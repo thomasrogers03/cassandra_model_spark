@@ -13,13 +13,20 @@ module CassandraModel
     describe '.clear' do
       before do
         ConnectionCache[nil]
-        ConnectionCache['counters'].config = { hosts: %w(athena) }
+        ConnectionCache['counters'].config = {hosts: %w(athena)}
       end
 
-      it 'should shutdown all active spark contexts' do
-        expect(ConnectionCache[nil].java_spark_context).to receive(:stop)
-        expect(ConnectionCache['counters'].java_spark_context).to receive(:stop)
+      it 'should not shutdown spark contexts that have not been created yet' do
+        expect_any_instance_of(JavaSparkContext).not_to receive(:stop)
         ConnectionCache.clear
+      end
+
+      context 'when there are spark contexts' do
+        it 'should shutdown all active spark contexts' do
+          expect(ConnectionCache[nil].java_spark_context).to receive(:stop)
+          expect(ConnectionCache['counters'].java_spark_context).to receive(:stop)
+          ConnectionCache.clear
+        end
       end
 
       it 'should shutdown all active connections' do
