@@ -24,4 +24,6 @@ object DataTypeHelper {
   def getStructField = StructField
   def getStructType = StructType
   def getTimestampType = TimestampType
+  def getUUIDType = UUIDType
+  def getTimeUUIDType = TimeUUIDType
 }

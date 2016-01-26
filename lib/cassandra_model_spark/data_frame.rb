@@ -9,6 +9,8 @@ module CassandraModel
           text: SqlStringType,
           double: SqlDoubleType,
           timestamp: SqlTimestampType,
+          uuid: SqlUUIDType,
+          timeuuid: SqlTimeUUIDType,
       }.freeze
       #noinspection RubyStringKeysInHashInspection
       SQL_RUBY_TYPE_FUNCTIONS = {

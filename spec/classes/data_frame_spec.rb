@@ -251,6 +251,8 @@ module CassandraModel
 
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
+        it_behaves_like 'mapping a cassandra column type to a spark sql type', :uuid, SqlUUIDType
+        it_behaves_like 'mapping a cassandra column type to a spark sql type', :timeuuid, SqlTimeUUIDType
 
         shared_examples_for 'mapping an rdd' do
           let(:rdd_mapper) { {mapper: row_mapper, type_map: type_map} }

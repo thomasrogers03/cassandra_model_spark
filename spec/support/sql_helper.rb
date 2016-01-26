@@ -169,6 +169,10 @@ class SqlShortType < SqlDataType
 end
 class SqlStringType < SqlDataType
 end
+class SqlUUIDType < SqlDataType
+end
+class SqlTimeUUIDType < SqlDataType
+end
 class SqlStructField < SqlDataType
   attr_reader :name, :type
 
