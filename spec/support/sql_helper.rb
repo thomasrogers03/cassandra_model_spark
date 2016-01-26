@@ -130,6 +130,23 @@ class SqlDataType
   end
 end
 
+#noinspection RubyClassMethodNamingConvention
+class SparkSqlDataTypeHelper
+  def self.getUUIDFromRow(row, index)
+    UUIDWrapper.new(row.get(index))
+  end
+
+  def self.getTimeUUIDFromRow(row, index)
+    UUIDWrapper.new(row.get(index))
+  end
+end
+
+class UUIDWrapper < Struct.new(:uuid)
+  def to_string
+    uuid.to_s
+  end
+end
+
 class SqlFakeType < SqlDataType
 end
 class SqlStringArrayType < SqlDataType
@@ -170,8 +187,15 @@ end
 class SqlStringType < SqlDataType
 end
 class SqlUUIDType < SqlDataType
+  def initialize(val)
+    @val = val
+  end
+
+  def to_s
+    @val
+  end
 end
-class SqlTimeUUIDType < SqlDataType
+class SqlTimeUUIDType < SqlUUIDType
 end
 class SqlStructField < SqlDataType
   attr_reader :name, :type

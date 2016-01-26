@@ -926,6 +926,8 @@ module CassandraModel
           it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
           it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
           it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
+          it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlUUIDType
+          it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000011'), SqlTimeUUIDType
 
           context 'when a type is a StructType' do
             let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType)]) }

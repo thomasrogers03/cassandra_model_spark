@@ -20,6 +20,8 @@ module CassandraModel
           'DoubleType' => :getDouble,
           'TimestampType' => :getTimestamp,
           'MapType(StringType,StringType,true)' => :getMap,
+          'UUIDType' => :getUUIDFromRow,
+          'TimeUUIDType' => :getTimeUUIDFromRow,
       }
 
       attr_reader :table_name, :record_klass
@@ -258,7 +260,16 @@ module CassandraModel
       def decode_column_value(data_type, index, row)
         sql_type = data_type.to_string
         converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
-        value = row.public_send(converter, index)
+        value = case converter
+                  when :getUUIDFromRow
+                    uuid = SparkSqlDataTypeHelper.getUUIDFromRow(row, index)
+                    Cassandra::Uuid.new(uuid.to_string)
+                  when :getTimeUUIDFromRow
+                    uuid = SparkSqlDataTypeHelper.getTimeUUIDFromRow(row, index)
+                    Cassandra::TimeUuid.new(uuid.to_string)
+                  else
+                    row.public_send(converter, index)
+                end
 
         value = decode_hash(value) if column_is_string_map?(sql_type)
         value
