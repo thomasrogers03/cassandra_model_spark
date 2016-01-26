@@ -25,6 +25,8 @@ class TimeUUIDType extends UserDefinedType[SqlTimeUUID] {
   override def userClass: Class[SqlTimeUUID] = classOf[SqlTimeUUID]
 
   private[spark] override def asNullable: TimeUUIDType = this
+
+  override def defaultSize: Int = 36
 }
 
 case object TimeUUIDType extends TimeUUIDType

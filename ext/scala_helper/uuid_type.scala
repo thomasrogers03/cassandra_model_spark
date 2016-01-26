@@ -24,6 +24,8 @@ class UUIDType extends UserDefinedType[SqlUUID] {
   override def userClass: Class[SqlUUID] = classOf[SqlUUID]
 
   private[spark] override def asNullable: UUIDType = this
+
+  override def defaultSize: Int = 36
 }
 
 case object UUIDType extends UUIDType
