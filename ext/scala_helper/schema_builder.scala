@@ -17,6 +17,7 @@ class SchemaBuilder {
         p.columnValues.map{
           p => p match {
               case (d: java.util.Date) => new java.sql.Timestamp(d.getTime())
+              case (u: java.util.UUID) => new SqlUUID(u.toString())
               case _ => p
             }
           }

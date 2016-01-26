@@ -263,10 +263,10 @@ module CassandraModel
         value = case converter
                   when :getUUIDFromRow
                     uuid = SparkSqlDataTypeHelper.getUUIDFromRow(row, index)
-                    Cassandra::Uuid.new(uuid.to_string)
+                    Cassandra::Uuid.new(uuid)
                   when :getTimeUUIDFromRow
                     uuid = SparkSqlDataTypeHelper.getTimeUUIDFromRow(row, index)
-                    Cassandra::TimeUuid.new(uuid.to_string)
+                    Cassandra::TimeUuid.new(uuid)
                   else
                     row.public_send(converter, index)
                 end

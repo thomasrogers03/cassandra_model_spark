@@ -30,10 +30,10 @@ object DataTypeHelper {
   def getTimeUUIDType = TimeUUIDType
 
   def getUUIDFromRow(row: Row, index: Int) = {
-    row.getAs[UUID](index)
+    row.getAs[SqlUUID](index).uuid
   }
 
   def getTimeUUIDFromRow(row: Row, index: Int) = {
-    row.getAs[UUID](index)
+    row.getAs[SqlTimeUUID](index).uuid
   }
 }

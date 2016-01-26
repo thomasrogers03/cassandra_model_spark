@@ -133,11 +133,11 @@ end
 #noinspection RubyClassMethodNamingConvention
 class SparkSqlDataTypeHelper
   def self.getUUIDFromRow(row, index)
-    UUIDWrapper.new(row.get(index))
+    UUIDWrapper.new(row.get(index)).to_string
   end
 
   def self.getTimeUUIDFromRow(row, index)
-    UUIDWrapper.new(row.get(index))
+    UUIDWrapper.new(row.get(index)).to_string
   end
 end
 

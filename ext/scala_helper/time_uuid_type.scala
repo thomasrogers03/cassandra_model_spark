@@ -1,19 +1,28 @@
-package org.apache.spark.sql.types
+package org.apache.spark.api.cassandra_model
 
-import scala.math.Ordering
-import scala.reflect.runtime.universe.typeTag
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.Row
 
-import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.catalyst.ScalaReflectionLock
-import java.util.UUID
+@SQLUserDefinedType(udt = classOf[TimeUUIDType])
+class SqlTimeUUID(val uuid: String) extends Serializable
 
-@DeveloperApi
-class TimeUUIDType private() extends AtomicType {
-  private[sql] type InternalType = UUID
-  @transient private[sql] lazy val tag = ScalaReflectionLock.synchronized { typeTag[InternalType] }
-  private[sql] val ordering = implicitly[Ordering[InternalType]]
+class TimeUUIDType extends UserDefinedType[SqlTimeUUID] {
+  override def sqlType: DataType = StringType
 
-  override def defaultSize: Int = 36
+  override def serialize(obj: Any) = {
+    obj match {
+      case t: SqlTimeUUID => Row(t.uuid)
+      case u: SqlUUID => Row(u.uuid)
+    }
+  }
+
+  override def deserialize(datum: Any): SqlTimeUUID = {
+    datum match {
+      case Row(s: String) => new SqlTimeUUID(s)
+    }
+  }
+
+  override def userClass: Class[SqlTimeUUID] = classOf[SqlTimeUUID]
 
   private[spark] override def asNullable: TimeUUIDType = this
 }
