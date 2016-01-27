@@ -13,6 +13,7 @@ val cassandraConnectionVersion = "1.5.0-M3"
 val _targetDir = scala.util.Properties.envOrElse("TARGET_DIR", "target")
 
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+scalacOptions ++= Seq("-feature")
 
 artifactPath in Compile in packageBin := file(s"${_targetDir}/cmodel_scala_helper.jar")
 outputPath in packageDependency := file(s"${_targetDir}/spark-assembly-${sparkVersion}-cassandra_model-hadoop${hadoopClientVersion}.jar")
