@@ -7,9 +7,9 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
-  revision: d7a0cbc8c7d7df9edf9d624a8d3958029607a86c
+  revision: f58c37714bc8b28b4e6ae38d0ce075e7b373ae9c
   specs:
-    cassandra_model (0.9.22)
+    cassandra_model (0.10.0)
       activesupport (~> 4.0)
       batch_reactor (~> 0.0.1)
       cassandra-driver (~> 1.1)
@@ -27,17 +27,17 @@ PATH
   remote: .
   specs:
     cassandra_model_spark (0.0.2)
-      cassandra_model (~> 0.9.22)
+      cassandra_model (~> 0.10.0)
       rjb (~> 1.5.4)
       thomas_utils (~> 0.1.16)
     cassandra_model_spark (0.0.2-java)
-      cassandra_model (~> 0.9.22)
+      cassandra_model (~> 0.10.0)
       thomas_utils (~> 0.1.16)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.5)
+    activesupport (4.2.5.1)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -84,7 +84,7 @@ GEM
       rb-inotify (>= 0.9)
     lumberjack (1.0.9)
     method_source (0.8.2)
-    minitest (5.8.3)
+    minitest (5.8.4)
     nenv (0.2.0)
     notiffany (0.0.8)
       nenv (~> 0.1)
