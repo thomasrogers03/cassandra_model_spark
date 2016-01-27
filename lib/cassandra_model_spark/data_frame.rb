@@ -9,8 +9,6 @@ module CassandraModel
           text: SqlStringType,
           double: SqlDoubleType,
           timestamp: SqlTimestampType,
-          uuid: SqlUUIDType,
-          timeuuid: SqlTimeUUIDType,
       }.freeze
       #noinspection RubyStringKeysInHashInspection
       SQL_RUBY_TYPE_FUNCTIONS = {
@@ -20,8 +18,6 @@ module CassandraModel
           'DoubleType' => :getDouble,
           'TimestampType' => :getTimestamp,
           'MapType(StringType,StringType,true)' => :getMap,
-          'UUIDType' => :getUUIDFromRow,
-          'TimeUUIDType' => :getTimeUUIDFromRow,
       }
 
       attr_reader :table_name, :record_klass
@@ -253,23 +249,22 @@ module CassandraModel
         if column_is_struct?(data_type)
           row_attributes(row.get(index), data_type)
         else
-          decode_column_value(data_type, index, row)
+          decode_column_value(field, index, row)
         end
       end
 
-      def decode_column_value(data_type, index, row)
-        sql_type = data_type.to_string
+      def decode_column_value(field, index, row)
+        sql_type = field.data_type.to_string
         converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
-        value = case converter
-                  when :getUUIDFromRow
-                    uuid = SparkSqlDataTypeHelper.getUUIDFromRow(row, index)
-                    Cassandra::Uuid.new(uuid)
-                  when :getTimeUUIDFromRow
-                    uuid = SparkSqlDataTypeHelper.getTimeUUIDFromRow(row, index)
-                    Cassandra::TimeUuid.new(uuid)
-                  else
-                    row.public_send(converter, index)
-                end
+        value = row.public_send(converter, index)
+
+        data_column_name = record_klass.select_column(field.name.to_sym)
+        case record_klass.cassandra_columns[data_column_name]
+          when :uuid
+            value = Cassandra::Uuid.new(value)
+          when :timeuuid
+            value = Cassandra::TimeUuid.new(value)
+        end
 
         value = decode_hash(value) if column_is_string_map?(sql_type)
         value

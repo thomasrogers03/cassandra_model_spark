@@ -251,8 +251,6 @@ module CassandraModel
 
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
-        it_behaves_like 'mapping a cassandra column type to a spark sql type', :uuid, SqlUUIDType
-        it_behaves_like 'mapping a cassandra column type to a spark sql type', :timeuuid, SqlTimeUUIDType
 
         shared_examples_for 'mapping an rdd' do
           let(:rdd_mapper) { {mapper: row_mapper, type_map: type_map} }
@@ -926,8 +924,30 @@ module CassandraModel
           it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
           it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
           it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
-          it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlUUIDType
-          it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000011'), SqlTimeUUIDType
+
+          describe 'converting uuid types' do
+            let(:cassandra_columns) { {select_key.to_sym => :uuid} }
+            it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
+
+            context 'when the columns are mapped' do
+              let(:mapped_column) { :"rk_#{select_key}" }
+              let(:cassandra_columns) { {mapped_column => :uuid} }
+              before { allow(record_klass).to receive(:select_column).with(select_key.to_sym).and_return(mapped_column) }
+              it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
+            end
+          end
+
+          describe 'converting timeuuid types' do
+            let(:cassandra_columns) { {select_key.to_sym => :timeuuid} }
+            it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
+
+            context 'when the columns are mapped' do
+              let(:mapped_column) { :"rk_#{select_key}" }
+              let(:cassandra_columns) { {mapped_column => :timeuuid} }
+              before { allow(record_klass).to receive(:select_column).with(select_key.to_sym).and_return(mapped_column) }
+              it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
+            end
+          end
 
           context 'when a type is a StructType' do
             let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType)]) }

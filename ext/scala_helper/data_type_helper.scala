@@ -1,8 +1,6 @@
 package org.apache.spark.api.cassandra_model
 
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.Row
-import java.util.UUID
 
 object DataTypeHelper {
   def getArrayType(key_type: DataType) = ArrayType(key_type)
@@ -26,14 +24,4 @@ object DataTypeHelper {
   def getStructField = StructField
   def getStructType = StructType
   def getTimestampType = TimestampType
-  def getUUIDType = UUIDType
-  def getTimeUUIDType = TimeUUIDType
-
-  def getUUIDFromRow(row: Row, index: Int) = {
-    row.getAs[SqlUUID](index).uuid
-  }
-
-  def getTimeUUIDFromRow(row: Row, index: Int) = {
-    row.getAs[SqlTimeUUID](index).uuid
-  }
 }
