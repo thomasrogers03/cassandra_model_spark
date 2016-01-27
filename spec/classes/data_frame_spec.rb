@@ -1124,6 +1124,33 @@ module CassandraModel
                 expect(saver_three).to receive(:save)
                 data_frame.save_to(save_record_klass)
               end
+
+              describe 'defaulting uuid columns' do
+                let(:default_uuid) { SecureRandom.uuid }
+                let(:composite_defaults) { [{rk_pk3: uuid_klass.new(default_uuid)}] }
+                let(:select_clause_two) do
+                  [{pk1: {as: :rk_pk1}}, {pk2: {as: :rk_pk2}}, {default_uuid => {as: :rk_pk3}}]
+                end
+                let!(:saver_three) { nil }
+
+                describe 'Cassandra::Uuid' do
+                  let(:uuid_klass) { Cassandra::Uuid }
+
+                  it 'should convert the uuid to a string before saving' do
+                    expect(saver_two).to receive(:save)
+                    data_frame.save_to(save_record_klass)
+                  end
+                end
+
+                describe 'Cassandra::TimeUuid' do
+                  let(:uuid_klass) { Cassandra::TimeUuid }
+
+                  it 'should convert the uuid to a string before saving' do
+                    expect(saver_two).to receive(:save)
+                    data_frame.save_to(save_record_klass)
+                  end
+                end
+              end
             end
           end
         end

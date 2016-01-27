@@ -444,7 +444,12 @@ module CassandraModel
 
       def save_truth_table(column_map, java_options, save_record_klass)
         save_record_klass.composite_defaults.each do |row|
-          select_clause = save_select_clause(column_map.merge(row))
+          updated_map = row.inject({}.merge(column_map)) do |memo, (column, value)|
+            value = value.to_s if value.is_a?(Cassandra::Uuid)
+            memo.merge!(column => value)
+          end
+
+          select_clause = save_select_clause(updated_map)
           frame = query({}, select: select_clause)
           save_frame(java_options, frame)
         end
