@@ -32,6 +32,7 @@ libraryDependencies ++= Seq(
   "com.datastax.spark" %% "spark-cassandra-connector-java" % cassandraConnectionVersion,
   "com.github.fommil.netlib" % "all" % "1.1.2",
   "com.databricks" % "spark-csv_2.10" % "1.3.0",
+  "org.luaj" % "luaj-jse" % "3.0.1",
   "org.scalatest" % "scalatest_2.10" % "2.2.1" % "test"
 )
 
