@@ -11,6 +11,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import java.io._
+import scala.reflect.ClassTag
 
 class LuaRDDLib(val env: LuaValue) extends OneArgFunction {
   override def call(arg: LuaValue): LuaValue = {
@@ -22,22 +23,27 @@ class LuaRDDLib(val env: LuaValue) extends OneArgFunction {
 }
 
 object LuaRowValue {
-  def luaTableToRow(table: LuaTable): Row = {
+  def luaTableToArray[T](table: LuaTable)(implicit m: ClassTag[T]): Array[T] = {
     val keys = table.keys()
     val length = keys.length
-    val row = new Array[Any](length)
+    val result = new Array[T](length)
     var index = 0
 
     keys.foreach { table_key =>
       val value = table.get(table_key)
-      row(index) = value match {
+      val result_value = value match {
         case str: LuaString => str.toString()
         case num: LuaInteger => num.toint()
         case fnum: LuaDouble => fnum.tofloat()
       }
+      result(index) = result_value match { case t_value: T => t_value }
       index += 1
     }
+    result
+  }
 
+  def luaTableToRow(table: LuaTable): Row = {
+    val row: Array[Any] = luaTableToArray(table)
     return new GenericRow(row)
   }
 }
@@ -102,6 +108,14 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     new LuaRDD(new_schema, grouped_rdd)
   }
 
+  def groupByStringArray(lua_code: String): LuaRDD = {
+    val new_schema = groupBySchema(ArrayType(StringType))
+    val new_rdd = rdd.groupBy(callGroupByStringArrayScript(lua_code, _))
+    val grouped_rdd = groupedRDD(new_rdd)
+
+    new LuaRDD(new_schema, grouped_rdd)
+  }
+
   def groupByInt(lua_code: String): LuaRDD = {
     val new_schema = groupBySchema(IntegerType)
     val new_rdd = rdd.groupBy(callGroupByIntScript(lua_code, _))
@@ -156,6 +170,12 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
   private def callGroupByStringScript(lua_code: String, row: Row): String = {
     callScript(lua_code, row) match {
       case str: LuaString => str.toString()
+    }
+  }
+
+  private def callGroupByStringArrayScript(lua_code: String, row: Row): Array[String] = {
+    callScript(lua_code, row) match {
+      case table: LuaTable => LuaRowValue.luaTableToArray(table)
     }
   }
 
