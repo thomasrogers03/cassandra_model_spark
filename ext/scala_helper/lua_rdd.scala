@@ -64,6 +64,25 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
   }
 }
 
+object LuaRDD {
+  private val thread_local_globals = new ThreadLocal[Globals]
+
+  def getGlobals(): Globals = thread_local_globals.get()
+  def newGlobals(): Globals = {
+    val globals = new Globals()
+    LuaC.install(globals)
+    thread_local_globals.set(globals)
+    globals
+  }
+
+  def getGlobalsOrNew(): Globals = {
+    var globals = getGlobals()
+    if(globals == null)
+      globals = newGlobals()
+    globals
+  }
+}
+
 class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
   def map(new_schema: StructType, lua_code: String): LuaRDD = {
     val new_rdd = rdd.map(callMapScript(lua_code, _))
@@ -114,8 +133,7 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
   }
 
   private def callScript(lua_code: String, row: Row): LuaValue = {
-    val globals = new Globals()
-    LuaC.install(globals)
+    val globals = LuaRDD.getGlobalsOrNew()
     globals.set("ROW", new LuaRowValue(schema, row))
 
     val chunk = globals.load(lua_code)
