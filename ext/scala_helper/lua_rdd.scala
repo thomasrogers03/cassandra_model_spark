@@ -70,6 +70,25 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
   }
 }
 
+class PartitionableStringArray(val items: Array[String]) extends Serializable{
+  override val hashCode = {
+    val some_prime = 31
+    var result = 1
+
+    for(str <- items) {
+      result = result * some_prime + str.hashCode
+    }
+    result
+  }
+
+  override def equals(rhs: Any) = {
+    rhs match {
+      case string_array: PartitionableStringArray => items == string_array.items
+      case _ => false
+    }
+  }
+}
+
 object LuaRDD {
   private val thread_local_globals = new ThreadLocal[Globals]
 
@@ -110,7 +129,10 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
 
   def groupByStringArray(lua_code: String): LuaRDD = {
     val new_schema = groupBySchema(ArrayType(StringType))
-    val new_rdd = rdd.groupBy(callGroupByStringArrayScript(lua_code, _))
+    val pre_rdd = rdd.groupBy(callGroupByStringArrayScript(lua_code, _))
+    val new_rdd: RDD[(Array[String], Iterable[Row])] = pre_rdd.map { case(key, values) =>
+      (key.items, values)
+    }
     val grouped_rdd = groupedRDD(new_rdd)
 
     new LuaRDD(new_schema, grouped_rdd)
@@ -135,13 +157,13 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
   def toDF(sql_context: SQLContext) = sql_context.createDataFrame(rdd, schema)
 
   private def groupBySchema(data_type: DataType): StructType = {
-    val fields = Array(StructField("key", data_type), StructField("values", schema))
+    val fields = Array(StructField("key", data_type), StructField("values", ArrayType(schema)))
     StructType(fields)
   }
 
   private def groupedRDD[T](rdd: RDD[(T, Iterable[Row])]): RDD[Row] = {
     rdd.map { case (key, values) =>
-      val row: Array[Any] = Array(key, values)
+      val row: Array[Any] = Array(key, values.toArray)
       new GenericRow(row)
     }
   }
@@ -173,9 +195,9 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     }
   }
 
-  private def callGroupByStringArrayScript(lua_code: String, row: Row): Array[String] = {
+  private def callGroupByStringArrayScript(lua_code: String, row: Row): PartitionableStringArray = {
     callScript(lua_code, row) match {
-      case table: LuaTable => LuaRowValue.luaTableToArray(table)
+      case table: LuaTable => new PartitionableStringArray(LuaRowValue.luaTableToArray(table))
     }
   }
 
