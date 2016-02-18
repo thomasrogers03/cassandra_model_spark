@@ -3,14 +3,12 @@ package org.apache.spark.api.cassandra_model
 import org.luaj.vm2.Globals
 import org.luaj.vm2.compiler.LuaC
 import org.luaj.vm2._
-import org.luaj.vm2.lib.OneArgFunction
-import org.luaj.vm2.lib.VarArgFunction
-import org.luaj.vm2.LuaTable
+import org.luaj.vm2.lib.jse.JseBaseLib
+import org.luaj.vm2.lib._
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import java.io._
 import scala.reflect.ClassTag
 
 class LuaRDDLib(val env: LuaValue) extends OneArgFunction {
@@ -57,16 +55,47 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
 
   override def get(key: LuaValue): LuaValue = {
     val column_index = schema.fieldIndex(key.toString())
-    valueOf(row.get(column_index))
+    val field = schema(column_index)
+    valueOf(field.dataType, column_index)
   }
-  override def get(key: Int): LuaValue = valueOf(row.get(key))
+  override def get(column_index: Int): LuaValue = {
+    val field = schema(column_index)
+    valueOf(field.dataType, column_index)
+  }
 
-  def valueOf(arg: Any) = {
-    arg match {
-      case str: String => LuaValue.valueOf(str)
-      case num: Int => LuaValue.valueOf(num)
-      case fnum: Float => LuaValue.valueOf(fnum)
+  private def valueOf(data_type: DataType, index: Int): LuaValue = {
+    data_type match {
+      case StringType => LuaValue.valueOf(row.getString(index))
+      case IntegerType => LuaValue.valueOf(row.getInt(index))
+      case FloatType => LuaValue.valueOf(row.getFloat(index))
+      case ArrayType(StringType, true) => arrayValueOf[String](index)
+      case ArrayType(IntegerType, true) => arrayValueOf[Int](index)
+      case ArrayType(FloatType, true) => arrayValueOf[Float](index)
+      case array_type: ArrayType => objectArrayValueOf(array_type, index)
+      case inner_schema: StructType => new LuaRowValue(inner_schema, row.getAs[Row](index))
     }
+  }
+
+  private def objectArrayValueOf(array_type: ArrayType, index: Int): LuaValue = {
+    array_type.elementType match {
+      case inner_schema: StructType => rowArrayValueOf(inner_schema, index)
+    }
+  }
+
+  private def rowArrayValueOf(inner_schema: StructType, index: Int): LuaValue = {
+    val values: Array[LuaValue] = row.getAs[Array[Row]](index).map(new LuaRowValue(inner_schema, _)).toArray
+    new LuaTable(null, values, null)
+  }
+
+  private def arrayValueOf[T](index: Int)(implicit m: ClassTag[T]): LuaValue = {
+    val values: Array[LuaValue] = row.getSeq[T](index).map {
+      _ match {
+        case str: String => LuaValue.valueOf(str)
+        case num: Int => LuaValue.valueOf(num)
+        case fnum: Float => LuaValue.valueOf(fnum)
+      }
+    }.toArray
+    new LuaTable(null, values, null)
   }
 }
 
@@ -95,7 +124,12 @@ object LuaRDD {
   def getGlobals(): Globals = thread_local_globals.get()
   def newGlobals(): Globals = {
     val globals = new Globals()
+
     LuaC.install(globals)
+    globals.load(new JseBaseLib())
+    globals.load(new PackageLib())
+    globals.load(new TableLib())
+
     thread_local_globals.set(globals)
     globals
   }
