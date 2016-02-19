@@ -33,4 +33,8 @@ class SchemaBuilder {
   def addColumn(name: String, sql_type: DataType) = {
     fields :+= StructField(name, sql_type, true)
   }
+
+  def addColumn(field: StructField) = {
+    fields :+= field
+  }
 }
