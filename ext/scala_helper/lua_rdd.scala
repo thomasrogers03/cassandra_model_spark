@@ -36,6 +36,8 @@ object LuaRowValue {
         case str: LuaString => str.toString()
         case num: LuaInteger => num.toint()
         case fnum: LuaDouble => fnum.tofloat()
+        case inner_table: LuaTable => luaTableToArray[T](inner_table)
+        case inner_row: LuaRowValue => inner_row.row
       }
       result(index) = result_value match { case t_value: T => t_value }
       index += 1
