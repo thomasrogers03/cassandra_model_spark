@@ -117,7 +117,7 @@ class PartitionableStringArray(val items: Array[String]) extends Serializable{
 
   override def equals(rhs: Any) = {
     rhs match {
-      case string_array: PartitionableStringArray => items == string_array.items
+      case string_array: PartitionableStringArray => items.sameElements(string_array.items)
       case _ => false
     }
   }
