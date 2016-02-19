@@ -93,7 +93,7 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
   }
 
   private def arrayValueOf[T](index: Int)(implicit m: ClassTag[T]): LuaValue = {
-    val values: Array[LuaValue] = row.getSeq[T](index).map {
+    val values: Array[LuaValue] = row.getAs[Array[T]](index).map {
       _ match {
         case str: String => LuaValue.valueOf(str)
         case num: Int => LuaValue.valueOf(num)
