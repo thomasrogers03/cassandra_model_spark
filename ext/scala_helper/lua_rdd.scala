@@ -236,6 +236,18 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     val globals = LuaRDD.getGlobalsOrNew()
     globals.set("ROW", new LuaRowValue(schema, row))
 
+    loadAndCallChunk(globals, lua_byte_code)
+  }
+
+  private def callPairScript(lua_byte_code: LuaMetaData, lhs: Row, rhs: Row): LuaValue = {
+    val globals = LuaRDD.getGlobalsOrNew()
+    globals.set("LHS", new LuaRowValue(schema, lhs))
+    globals.set("RHS", new LuaRowValue(schema, rhs))
+
+    loadAndCallChunk(globals, lua_byte_code)
+  }
+
+  private def loadAndCallChunk(globals: Globals, lua_byte_code: LuaMetaData): LuaValue = {
     val prototype = globals.loadPrototype(new ByteArrayInputStream(lua_byte_code.byte_code), lua_byte_code.name, "b")
     val chunk = new LuaClosure(prototype, globals)
     chunk.call()
