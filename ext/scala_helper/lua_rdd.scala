@@ -35,7 +35,7 @@ object LuaRowValue {
       val result_value = value match {
         case str: LuaString => str.toString()
         case num: LuaInteger => num.toint()
-        case fnum: LuaDouble => fnum.tofloat()
+        case dfnum: LuaDouble => dfnum.todouble()
         case inner_table: LuaTable => luaTableToArray[T](inner_table)
         case inner_row: LuaRowValue => inner_row.row
       }
@@ -73,9 +73,11 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
       case StringType => LuaValue.valueOf(row.getString(index))
       case IntegerType => LuaValue.valueOf(row.getInt(index))
       case FloatType => LuaValue.valueOf(row.getFloat(index))
+      case DoubleType => LuaValue.valueOf(row.getDouble(index))
       case ArrayType(StringType, true) => arrayValueOf[String](index)
       case ArrayType(IntegerType, true) => arrayValueOf[Int](index)
       case ArrayType(FloatType, true) => arrayValueOf[Float](index)
+      case ArrayType(DoubleType, true) => arrayValueOf[Double](index)
       case array_type: ArrayType => objectArrayValueOf(array_type, index)
       case inner_schema: StructType => new LuaRowValue(inner_schema, row.getAs[Row](index))
     }
@@ -98,6 +100,7 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
         case str: String => LuaValue.valueOf(str)
         case num: Int => LuaValue.valueOf(num)
         case fnum: Float => LuaValue.valueOf(fnum)
+        case dfnum: Double => LuaValue.valueOf(dfnum)
       }
     }.toArray
     new LuaTable(null, values, null)
@@ -169,6 +172,20 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     new LuaRDD(schema, new_rdd)
   }
 
+  def reduceByKeys(key_columns: Array[String], lua_code: String): LuaRDD = {
+    val lua_byte_code = getLuaByteCode(lua_code)
+    val field_indices = key_columns.map(schema.fieldIndex(_))
+    val keys_rdd: RDD[Tuple2[Any, Row]] = rdd.map { case row =>
+      val keys = field_indices.map(row(_))
+      Tuple2(keys, row)
+    }
+    val reduced_rdd: RDD[Tuple2[Any, Row]] = keys_rdd.reduceByKey { case (lhs, rhs) =>
+      callReduceScript(lua_byte_code, lhs, rhs)
+    }
+    val new_rdd = reduced_rdd.map(_._2)
+    new LuaRDD(schema, new_rdd)
+  }
+
   def groupByString(lua_code: String): LuaRDD = {
     val lua_byte_code = getLuaByteCode(lua_code)
     val new_schema = groupBySchema(StringType)
@@ -203,6 +220,15 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     val lua_byte_code = getLuaByteCode(lua_code)
     val new_schema = groupBySchema(FloatType)
     val new_rdd = rdd.groupBy(callGroupByFloatScript(lua_byte_code, _))
+    val grouped_rdd = groupedRDD(new_rdd)
+
+    new LuaRDD(new_schema, grouped_rdd)
+  }
+
+  def groupByDouble(lua_code: String): LuaRDD = {
+    val lua_byte_code = getLuaByteCode(lua_code)
+    val new_schema = groupBySchema(DoubleType)
+    val new_rdd = rdd.groupBy(callGroupByDoubleScript(lua_byte_code, _))
     val grouped_rdd = groupedRDD(new_rdd)
 
     new LuaRDD(new_schema, grouped_rdd)
@@ -266,6 +292,13 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     }
   }
 
+  private def callReduceScript(lua_byte_code: LuaMetaData, lhs: Row, rhs: Row): Row = {
+    callPairScript(lua_byte_code, lhs, rhs) match {
+      case row: LuaRowValue => row.row
+      case table: LuaTable => LuaRowValue.luaTableToRow(table)
+    }
+  }
+
   private def callGroupByStringScript(lua_byte_code: LuaMetaData, row: Row): String = {
     callScript(lua_byte_code, row) match {
       case str: LuaString => str.toString()
@@ -287,6 +320,12 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
   private def callGroupByFloatScript(lua_byte_code: LuaMetaData, row: Row): Float = {
     callScript(lua_byte_code, row) match {
       case fnum: LuaDouble => fnum.tofloat()
+    }
+  }
+
+  private def callGroupByDoubleScript(lua_byte_code: LuaMetaData, row: Row): Double = {
+    callScript(lua_byte_code, row) match {
+      case fnum: LuaDouble => fnum.todouble()
     }
   }
 
