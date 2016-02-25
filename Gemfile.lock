@@ -27,12 +27,9 @@ GIT
 PATH
   remote: .
   specs:
-    cassandra_model_spark (0.0.2)
+    cassandra_model_spark (0.0.3)
       cassandra_model (>= 0.10.0, <= 1.1)
       rjb (~> 1.5.4)
-      thomas_utils (~> 0.1.16)
-    cassandra_model_spark (0.0.2-java)
-      cassandra_model (>= 0.10.0, <= 1.1)
       thomas_utils (~> 0.1.16)
 
 GEM
