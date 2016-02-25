@@ -7,31 +7,32 @@ GIT
 
 GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
-  revision: f58c37714bc8b28b4e6ae38d0ce075e7b373ae9c
+  revision: 444c618e9d1794023e91bbcb015370d4a420d0cd
   specs:
-    cassandra_model (0.10.0)
+    cassandra_model (1.0.2)
       activesupport (~> 4.0)
       batch_reactor (~> 0.0.1)
-      cassandra-driver (~> 1.1)
+      cassandra-driver (>= 1.1, <= 2.0.1)
+      concurrent-ruby (~> 1.0.0)
       thomas_utils (~> 0.1.13)
 
 GIT
   remote: git://github.com/thomasrogers03/thomas_utils.git
-  revision: 017b77f4982d9a2e47a8324937618887a35d5196
+  revision: 928398f713acba53229fbadc2797184613831e95
   specs:
     thomas_utils (0.1.18)
-      concurrent-ruby (~> 0.8)
+      concurrent-ruby (~> 1.0.0)
       workers (~> 0.3)
 
 PATH
   remote: .
   specs:
     cassandra_model_spark (0.0.2)
-      cassandra_model (~> 0.10.0)
+      cassandra_model (>= 0.10.0, <= 1.1)
       rjb (~> 1.5.4)
       thomas_utils (~> 0.1.16)
     cassandra_model_spark (0.0.2-java)
-      cassandra_model (~> 0.10.0)
+      cassandra_model (>= 0.10.0, <= 1.1)
       thomas_utils (~> 0.1.16)
 
 GEM
@@ -48,8 +49,8 @@ GEM
     cassandra-driver (1.2.0-java)
       ione (~> 1.2)
     coderay (1.1.0)
-    concurrent-ruby (0.9.2)
-    concurrent-ruby (0.9.2-java)
+    concurrent-ruby (1.0.0)
+    concurrent-ruby (1.0.0-java)
     diff-lcs (1.2.5)
     docile (1.1.5)
     faker (1.6.1)
