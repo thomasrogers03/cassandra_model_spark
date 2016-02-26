@@ -14,12 +14,37 @@ import scala.reflect.ClassTag
 import java.io._
 import java.security.MessageDigest
 
-class LuaRDDLib(val env: LuaValue) extends OneArgFunction {
-  override def call(arg: LuaValue): LuaValue = {
+class LuaRowLib extends TwoArgFunction {
+  override def call(mod_name: LuaValue, env: LuaValue): LuaValue = {
     val fn_table = new LuaTable()
 
-    env.set("rdd", fn_table)
+    fn_table.set("append", new append())
+
+    env.set("row", fn_table)
     return fn_table
+  }
+
+  class append extends LibFunction {
+    override def call(lua_row: LuaValue, lua_key: LuaValue, lua_value: LuaValue): LuaValue = {
+      val row = lua_row match { case row: LuaRowValue => row }
+      val key: String = lua_key match { case str: LuaString => str.toString() }
+      val value = lua_value match {
+        case str: LuaString => str.toString()
+        case num: LuaInteger => num.toint()
+        case dfnum: LuaDouble => dfnum.todouble()
+      }
+      val data_type = value match {
+        case str: String => StringType
+        case num: Int => IntegerType
+        case dfnum: Double => DoubleType
+      }
+      val fields = row.schema.fields :+ StructField(key, data_type)
+      val new_schema = StructType(fields)
+      val new_values = row.row.toSeq :+ value
+      val new_row = Row.fromSeq(new_values)
+
+      new LuaRowValue(new_schema, new_row)
+    }
   }
 }
 
@@ -139,6 +164,7 @@ object LuaRDD {
     globals.load(new JseBaseLib())
     globals.load(new PackageLib())
     globals.load(new TableLib())
+    globals.load(new LuaRowLib())
 
     thread_local_globals.set(globals)
     globals
