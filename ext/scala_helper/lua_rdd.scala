@@ -20,6 +20,7 @@ class LuaRowLib extends TwoArgFunction {
 
     fn_table.set("append", new append())
     fn_table.set("replace", new replace())
+    fn_table.set("slice", new slice())
 
     env.set("row", fn_table)
     return fn_table
@@ -65,6 +66,25 @@ class LuaRowLib extends TwoArgFunction {
       val schema = row.schema
       val column_index = schema.fieldIndex(key)
       val new_values = row.row.toSeq.updated(column_index, value)
+      val new_row = Row.fromSeq(new_values)
+
+      new LuaRowValue(schema, new_row)
+    }
+  }
+
+  class slice extends LibFunction {
+    override def call(lua_row: LuaValue, lua_keys: LuaValue): LuaValue = {
+      val row = lua_row match { case row: LuaRowValue => row }
+      val key_list = lua_keys match { case list: LuaTable => list }
+      val keys = (1 to key_list.length).map {
+        index: Int => key_list.get(index) match {
+          case str: LuaString => str.toString()
+        }
+      }
+      val schema = row.schema
+      val new_schema = StructType(keys.map(schema(_)))
+      val field_indices = keys.map(schema.fieldIndex(_))
+      val new_values = field_indices.map(row.row(_))
       val new_row = Row.fromSeq(new_values)
 
       new LuaRowValue(schema, new_row)
