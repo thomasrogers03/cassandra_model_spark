@@ -19,6 +19,7 @@ class LuaRowLib extends TwoArgFunction {
     val fn_table = new LuaTable()
 
     fn_table.set("append", new append())
+    fn_table.set("replace", new replace())
 
     env.set("row", fn_table)
     return fn_table
@@ -44,6 +45,29 @@ class LuaRowLib extends TwoArgFunction {
       val new_row = Row.fromSeq(new_values)
 
       new LuaRowValue(new_schema, new_row)
+    }
+  }
+
+  class replace extends LibFunction {
+    override def call(lua_row: LuaValue, lua_key: LuaValue, lua_value: LuaValue): LuaValue = {
+      val row = lua_row match { case row: LuaRowValue => row }
+      val key: String = lua_key match { case str: LuaString => str.toString() }
+      val value = lua_value match {
+        case str: LuaString => str.toString()
+        case num: LuaInteger => num.toint()
+        case dfnum: LuaDouble => dfnum.todouble()
+      }
+      val data_type = value match {
+        case str: String => StringType
+        case num: Int => IntegerType
+        case dfnum: Double => DoubleType
+      }
+      val schema = row.schema
+      val column_index = schema.fieldIndex(key)
+      val new_values = row.row.toSeq.updated(column_index, value)
+      val new_row = Row.fromSeq(new_values)
+
+      new LuaRowValue(schema, new_row)
     }
   }
 }
