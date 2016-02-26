@@ -226,7 +226,7 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     val lua_byte_code = getLuaByteCode(lua_code)
     val field_indices = key_columns.map(schema.fieldIndex(_))
     val keys_rdd: RDD[Tuple2[Any, Row]] = rdd.map { case row =>
-      val keys = field_indices.map(row(_))
+      val keys: Seq[Any] = field_indices.map(row(_))
       Tuple2(keys, row)
     }
     val reduced_rdd: RDD[Tuple2[Any, Row]] = keys_rdd.reduceByKey { case (lhs, rhs) =>
