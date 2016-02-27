@@ -208,6 +208,7 @@ object LuaRDD {
     globals.load(new JseBaseLib())
     globals.load(new PackageLib())
     globals.load(new TableLib())
+    globals.load(new StringLib())
     globals.load(new LuaRowLib())
 
     thread_local_globals.set(globals)
