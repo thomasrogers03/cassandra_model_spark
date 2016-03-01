@@ -237,6 +237,12 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     new LuaRDD(new_schema, new_rdd)
   }
 
+  def flatMap(new_schema: StructType, lua_code: String): LuaRDD = {
+    val lua_byte_code = getLuaByteCode(lua_code)
+    val new_rdd = rdd.flatMap(callFlatMapScript(lua_byte_code, _))
+    new LuaRDD(new_schema, new_rdd)
+  }
+
   def filter(lua_code: String): LuaRDD = {
     val lua_byte_code = getLuaByteCode(lua_code)
     val new_rdd = rdd.filter(callFilterScript(lua_byte_code, _))
@@ -354,6 +360,18 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     callScript(lua_byte_code, row) match {
       case row: LuaRowValue => row.row
       case table: LuaTable => LuaRowValue.luaTableToRow(table)
+    }
+  }
+
+  private def callFlatMapScript(lua_byte_code: LuaMetaData, row: Row) = {
+    callScript(lua_byte_code, row) match {
+      case list: LuaTable => {
+        (1 to list.length).map {
+          index: Int => list.get(index) match {
+            case row: LuaRowValue => row.row
+          }
+        }
+      }
     }
   }
 
