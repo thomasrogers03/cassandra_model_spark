@@ -15,3 +15,4 @@ ext/scala_helper/target
 ext/scala_helper/project/project
 ext/scala_helper/project/target
 lib/cassandra_model_spark/local_build.rb
+*.iml
