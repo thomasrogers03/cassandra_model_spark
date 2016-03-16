@@ -6,8 +6,18 @@ if RUBY_ENGINE == 'jruby'
   end
 
   class Array
+    def self.from_java_array_list(array_list)
+      array_list.to_a
+    end
+
     def to_java_argv
       to_java(:string)
+    end
+  end
+
+  class String
+    def self.from_java_string(string)
+      string
     end
   end
 
@@ -23,12 +33,22 @@ else
   end
 
   class Array
+    def self.from_java_array_list(array_list)
+      array_list.toArray
+    end
+
     def to_java
       self
     end
 
     def to_java_argv
       self
+    end
+  end
+
+  class String
+    def self.from_java_string(string)
+      string.toString
     end
   end
 end
