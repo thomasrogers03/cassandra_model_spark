@@ -10,11 +10,12 @@ object CassandraHelper {
   def cassandraTable(sc: SparkContext, keyspace: String, table: String) = {
     sc.cassandraTable(keyspace, table)
   }
+
   def filterRDD(rdd: CassandraRDD[CassandraRow], restriction: HashMap[String, Any]) = {
     var result = rdd
-    for ((k,v) <- restriction) {
+    for ((k, v) <- restriction) {
       result = v match {
-        case (a: Array[Any]) => result.where(k, a : _*)
+        case (a: Array[Any]) => result.where(k, a: _*)
         case _ => result.where(k, v)
       }
     }

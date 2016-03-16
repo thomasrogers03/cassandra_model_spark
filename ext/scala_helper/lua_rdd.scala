@@ -28,8 +28,12 @@ class LuaRowLib extends TwoArgFunction {
 
   class append extends LibFunction {
     override def call(lua_row: LuaValue, lua_key: LuaValue, lua_value: LuaValue): LuaValue = {
-      val row = lua_row match { case row: LuaRowValue => row }
-      val key: String = lua_key match { case str: LuaString => str.toString() }
+      val row = lua_row match {
+        case row: LuaRowValue => row
+      }
+      val key: String = lua_key match {
+        case str: LuaString => str.toString()
+      }
       val value = lua_value match {
         case str: LuaString => str.toString()
         case num: LuaInteger => num.toint()
@@ -51,8 +55,12 @@ class LuaRowLib extends TwoArgFunction {
 
   class replace extends LibFunction {
     override def call(lua_row: LuaValue, lua_key: LuaValue, lua_value: LuaValue): LuaValue = {
-      val row = lua_row match { case row: LuaRowValue => row }
-      val key: String = lua_key match { case str: LuaString => str.toString() }
+      val row = lua_row match {
+        case row: LuaRowValue => row
+      }
+      val key: String = lua_key match {
+        case str: LuaString => str.toString()
+      }
       val value = lua_value match {
         case str: LuaString => str.toString()
         case num: LuaInteger => num.toint()
@@ -74,8 +82,12 @@ class LuaRowLib extends TwoArgFunction {
 
   class slice extends LibFunction {
     override def call(lua_row: LuaValue, lua_keys: LuaValue): LuaValue = {
-      val row = lua_row match { case row: LuaRowValue => row }
-      val key_list = lua_keys match { case list: LuaTable => list }
+      val row = lua_row match {
+        case row: LuaRowValue => row
+      }
+      val key_list = lua_keys match {
+        case list: LuaTable => list
+      }
       val keys = (1 to key_list.length).map {
         index: Int => key_list.get(index) match {
           case str: LuaString => str.toString()
@@ -90,6 +102,7 @@ class LuaRowLib extends TwoArgFunction {
       new LuaRowValue(schema, new_row)
     }
   }
+
 }
 
 object LuaRowValue {
@@ -108,7 +121,9 @@ object LuaRowValue {
         case inner_table: LuaTable => luaTableToArray[T](inner_table)
         case inner_row: LuaRowValue => inner_row.row
       }
-      result(index) = result_value match { case t_value: T => t_value }
+      result(index) = result_value match {
+        case t_value: T => t_value
+      }
       index += 1
     }
     result
@@ -122,9 +137,11 @@ object LuaRowValue {
 
 class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
   def `type`(): Int = 999
+
   def typename(): String = "Row"
 
   override def tostring() = LuaValue.valueOf(row.toString())
+
   override def toString() = row.toString()
 
   override def get(key: LuaValue): LuaValue = {
@@ -132,6 +149,7 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
     val field = schema(column_index)
     valueOf(field.dataType, column_index)
   }
+
   override def get(column_index: Int): LuaValue = {
     val field = schema(column_index)
     valueOf(field.dataType, column_index)
@@ -176,12 +194,12 @@ class LuaRowValue(val schema: StructType, val row: Row) extends LuaValue {
   }
 }
 
-class PartitionableStringArray(val items: Array[String]) extends Serializable{
+class PartitionableStringArray(val items: Array[String]) extends Serializable {
   override val hashCode = {
     val some_prime = 31
     var result = 1
 
-    for(str <- items) {
+    for (str <- items) {
       result = result * some_prime + str.hashCode
     }
     result
@@ -200,6 +218,7 @@ object LuaRDD {
   private val digest = MessageDigest.getInstance("SHA-1")
 
   def getGlobals(): Globals = thread_local_globals.get()
+
   def newGlobals(): Globals = {
     val globals = new Globals()
 
@@ -217,7 +236,7 @@ object LuaRDD {
 
   def getGlobalsOrNew(): Globals = {
     var globals = getGlobals()
-    if(globals == null)
+    if (globals == null)
       globals = newGlobals()
     globals
   }
@@ -228,7 +247,8 @@ object LuaRDD {
   }
 }
 
-class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
+class LuaRDD(val schema: StructType, val rdd: RDD[Row]) extends Serializable {
+
   private class LuaMetaData(val name: String, val byte_code: Array[Byte]) extends Serializable
 
   def map(new_schema: StructType, lua_code: String): LuaRDD = {
@@ -276,7 +296,7 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     val lua_byte_code = getLuaByteCode(lua_code)
     val new_schema = groupBySchema(ArrayType(StringType))
     val pre_rdd = rdd.groupBy(callGroupByStringArrayScript(lua_byte_code, _))
-    val new_rdd: RDD[(Array[String], Iterable[Row])] = pre_rdd.map { case(key, values) =>
+    val new_rdd: RDD[(Array[String], Iterable[Row])] = pre_rdd.map { case (key, values) =>
       (key.items, values)
     }
     val grouped_rdd = groupedRDD(new_rdd)
@@ -320,7 +340,9 @@ class LuaRDD (val schema: StructType, val rdd: RDD[Row]) extends Serializable {
     val success = DumpState.dump(prototype, output_stream, true)
 
     output_stream.flush()
-    success match { case 0 => new LuaMetaData(name, output_stream.toByteArray()) }
+    success match {
+      case 0 => new LuaMetaData(name, output_stream.toByteArray())
+    }
   }
 
   private def groupBySchema(data_type: DataType): StructType = {

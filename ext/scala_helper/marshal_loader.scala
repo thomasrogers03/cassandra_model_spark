@@ -2,7 +2,7 @@ package org.apache.spark.api.cassandra_model
 
 import scala.collection.mutable._
 
-class MarshalLoader (dump: Array[Byte]) {
+class MarshalLoader(dump: Array[Byte]) {
   private val bytes: Array[Byte] = dump
   private var parse_index: Int = 0
   private var symbol_table: List[String] = List()
@@ -34,7 +34,7 @@ class MarshalLoader (dump: Array[Byte]) {
     var bit: Int = 0
     var value: Int = 0
 
-    for (bit <- 0 to num_bytes-1) {
+    for (bit <- 0 to num_bytes - 1) {
       val next_value = 0xff & nextByte()
       value += (next_value << (bit * 8))
     }
@@ -145,7 +145,7 @@ class MarshalLoader (dump: Array[Byte]) {
     val length = decodeInt()
 
     var item = 0
-    for (item <- 0 to length-1) {
+    for (item <- 0 to length - 1) {
       val key = decodeAny()
       val value = decodeAny()
       result(key) = value
@@ -160,7 +160,7 @@ class MarshalLoader (dump: Array[Byte]) {
     val length = decodeInt()
 
     var item = 0
-    for (item <- 0 to length-1) {
+    for (item <- 0 to length - 1) {
       val value = decodeAny()
       list_result :+= value
     }
@@ -171,9 +171,9 @@ class MarshalLoader (dump: Array[Byte]) {
   }
 
   private def decodeObjectReference(): AnyRef = {
-      val index = decodeInt()-1
+    val index = decodeInt() - 1
 
-      object_table(index)
+    object_table(index)
   }
 
   private def decodeAny(): AnyRef = {

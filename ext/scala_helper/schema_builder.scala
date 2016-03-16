@@ -14,14 +14,14 @@ class SchemaBuilder {
   def cassandraRDDToRDD(rdd: RDD[CassandraRow]) = {
     rdd.map(
       p => Row.fromSeq(
-        p.columnValues.map{
+        p.columnValues.map {
           p => p match {
-              case (d: java.util.Date) => new java.sql.Timestamp(d.getTime())
-              case (u: java.util.UUID) => u.toString()
-              case _ => p
-            }
+            case (d: java.util.Date) => new java.sql.Timestamp(d.getTime())
+            case (u: java.util.UUID) => u.toString()
+            case _ => p
           }
-        )
+        }
+      )
     )
   }
 

@@ -36,7 +36,7 @@ object MapStringStringRowMapping {
 
   private def updatedRow(row: CassandraRow): CassandraRow = {
     val columns = row.columnNames
-    val values = row.columnValues.map{
+    val values = row.columnValues.map {
       value => value match {
         case (blob: Array[Byte]) => decodeValue(blob)
         case _ => value
@@ -75,7 +75,7 @@ object SparkRowRowMapping {
 
   private def updatedRow(row: CassandraRow): CassandraRow = {
     val columns = row.columnNames
-    val values = row.columnValues.map{
+    val values = row.columnValues.map {
       value => value match {
         case (blob: Array[Byte]) => decodeValue(blob)
         case _ => value
