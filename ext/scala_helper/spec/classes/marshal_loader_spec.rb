@@ -1,4 +1,4 @@
-require 'rspec'
+require 'scala_spec_helper'
 
 describe ScalaMarshalLoader do
   let(:value) { nil }

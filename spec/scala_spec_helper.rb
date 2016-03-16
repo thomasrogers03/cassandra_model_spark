@@ -1,3 +1,5 @@
+require 'rspec'
+
 require 'bundler'
 Bundler.require(:default, :development, :test)
 

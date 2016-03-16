@@ -1,3 +1,5 @@
+require 'rspec'
+
 if ENV['COVERAGE'].to_i > 0
   require 'simplecov'
   SimpleCov.start do

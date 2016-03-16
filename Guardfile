@@ -14,7 +14,7 @@ guard :rspec, cmd: 'bundle exec rspec' do
   watch(%r{^lib/(.+)\.rb$}) { |m| "spec/lib/#{m[1]}_spec.rb" }
   watch(%r{^lib/cassandra_model_spark\.rb$}) { "spec" }
   watch(%r{^lib/cassandra_model_spark/(.+)\.rb}) { |m| "spec/classes/#{m[1]}_spec.rb" }
-  watch('spec/spec_helper.rb') { "spec" }
+  watch('spec/scala_spec_helper.rb') { "spec" }
   watch(%r{^spec/shared_examples/(.+)\.rb}) { "spec" }
   watch(%r{^spec/helpers/(.+)\.rb}) { "spec" }
   watch(%r{^spec/support/(.+)\.rb}) { "spec" }
