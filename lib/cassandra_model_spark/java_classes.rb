@@ -25,6 +25,7 @@ import_java_object 'org.apache.spark.deploy.worker.RubyWorkerStarter', as: 'Spar
 %w(BinaryType BooleanType ByteType DataType
    DateType Decimal DecimalType DoubleType FloatType IntegerType
    LongType Metadata NullType PrecisionInfo ShortType
+   ArrayType MapType
    StringType StructField StructType TimestampType).each do |sql_type|
   Object.const_set(:"Sql#{sql_type}", import_quiet { SparkSqlDataTypeHelper.public_send(:"get#{sql_type}") })
 end

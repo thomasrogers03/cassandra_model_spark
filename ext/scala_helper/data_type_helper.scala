@@ -4,6 +4,7 @@ import org.apache.spark.sql.types._
 
 object DataTypeHelper {
   def getArrayType(key_type: DataType) = ArrayType(key_type)
+  def getArrayType = ArrayType
   def getBinaryType = BinaryType
   def getBooleanType = BooleanType
   def getByteType = ByteType
@@ -16,6 +17,7 @@ object DataTypeHelper {
   def getIntegerType = IntegerType
   def getLongType = LongType
   def getMapType(key_type: DataType, value_type: DataType) = MapType(key_type, value_type)
+  def getMapType = MapType
   def getMetadata = Metadata
   def getNullType = NullType
   def getPrecisionInfo = PrecisionInfo
