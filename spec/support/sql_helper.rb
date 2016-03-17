@@ -53,7 +53,7 @@ class SqlDataFrame
   attr_reader :sql_context, :rdd, :schema
 
   def self.create_schema(schema_hash)
-    fields = schema_hash.map { |name, type| SqlStructField.new(name, type) }
+    fields = schema_hash.map { |name, type| SqlStructField.apply(name, type, true, nil) }
     SqlStructType.new(fields)
   end
 
@@ -121,7 +121,7 @@ class SqlDataType
     SqlDataTypeClass.new(to_s.match(/^Sql(.+)$/)[1])
   end
 
-  def self.to_string
+  def self.toString
     to_s.match(/^Sql(.+)$/)[1]
   end
 
@@ -131,8 +131,6 @@ class SqlDataType
 end
 
 class SqlFakeType < SqlDataType
-end
-class SqlStringArrayType < SqlDataType
 end
 class SqlBinaryType < SqlDataType
 end
@@ -154,11 +152,6 @@ class SqlIntegerType < SqlDataType
 end
 class SqlLongType < SqlDataType
 end
-class SqlStringStringMapType < SqlDataType
-  def self.to_s
-    'SqlMapType(StringType,StringType,true)'
-  end
-end
 class SqlMetadata < SqlDataType
 end
 class SqlNullType < SqlDataType
@@ -169,26 +162,80 @@ class SqlShortType < SqlDataType
 end
 class SqlStringType < SqlDataType
 end
-class SqlStructField < SqlDataType
-  attr_reader :name, :type
+class SqlArrayType < SqlDataType
+  attr_reader :elementType, :containsNull
 
-  def initialize(name, type)
-    @name = name
-    @type = type
+  def self.apply(element_type, contains_null)
+    new(element_type, contains_null)
   end
 
-  def data_type
-    @type
+  def initialize(element_type, contains_null)
+    @elementType = element_type
+    @containsNull = contains_null
+  end
+
+  def toString
+    "ArrayType(#{elementType.toString},#{!!containsNull})"
+  end
+
+  def ==(rhs)
+    rhs.is_a?(SqlArrayType) &&
+        elementType == rhs.elementType &&
+        containsNull == rhs.containsNull
+  end
+end
+class SqlMapType < SqlDataType
+  attr_reader :keyType, :valueType, :valueContainsNull
+
+  def self.apply(key_type, value_type, value_contains_null)
+    new(key_type, value_type, value_contains_null)
+  end
+
+  def initialize(key_type, value_type, value_contains_null)
+    @keyType = key_type
+    @valueType = value_type
+    @valueContainsNull = value_contains_null
+  end
+
+  def toString
+    "MapType(#{keyType.toString},#{valueType.toString},#{!!valueContainsNull})"
+  end
+
+  def ==(rhs)
+    rhs.is_a?(SqlMapType) &&
+        keyType == rhs.keyType &&
+        valueType == rhs.valueType &&
+        valueContainsNull == rhs.valueContainsNull
+  end
+end
+class SqlStructField < SqlDataType
+  attr_reader :name, :dataType, :nullable, :metadata
+
+  def self.apply(name, data_type, contains_null, meta_data)
+    new(name, data_type, contains_null, meta_data)
+  end
+
+  def initialize(name, data_type, contains_null, meta_data)
+    @name = name
+    @dataType = data_type
+    @nullable = contains_null
+    @metadata = meta_data
   end
 
   def ==(rhs)
     rhs.is_a?(SqlStructField) &&
         name == rhs.name &&
-        type == rhs.type
+        dataType == rhs.dataType &&
+        nullable == rhs.nullable &&
+        metadata == rhs.metadata
   end
 end
 class SqlStructType < SqlDataType
   attr_reader :fields
+
+  def self.apply(fields)
+    new(fields)
+  end
 
   def initialize(fields)
     @fields = fields
@@ -200,12 +247,13 @@ class SqlStructType < SqlDataType
 end
 class SqlTimestampType < SqlDataType
 end
+
 class SqlTypeWrapper < SqlDataType
   def initialize(internal_type)
     @internal_type = internal_type
   end
 
-  def to_string
-    @internal_type.to_string
+  def toString
+    @internal_type.toString
   end
 end

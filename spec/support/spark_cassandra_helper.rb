@@ -11,7 +11,7 @@ class ScalaSeq < Struct.new(:array)
 end
 
 class ScalaValueWrapper < Struct.new(:value)
-  def to_string
+  def toString
     value
   end
 end

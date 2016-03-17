@@ -245,7 +245,7 @@ module CassandraModel
       end
 
       def field_value(field, index, row)
-        data_type = field.data_type
+        data_type = field.dataType
         if column_is_struct?(data_type)
           row_attributes(row.get(index), data_type)
         else
@@ -254,7 +254,7 @@ module CassandraModel
       end
 
       def decode_column_value(field, index, row)
-        sql_type = field.data_type.to_string
+        sql_type = field.dataType.toString
         converter = SQL_RUBY_TYPE_FUNCTIONS.fetch(sql_type) { :getString }
         value = row.public_send(converter, index)
 
@@ -271,7 +271,7 @@ module CassandraModel
       end
 
       def decode_hash(value)
-        Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.to_string, pair._2.to_string] }]
+        Hash[value.toSeq.array.to_a.map! { |pair| [pair._1.toString, pair._2.toString] }]
       end
 
       def column_is_string_map?(sql_type)

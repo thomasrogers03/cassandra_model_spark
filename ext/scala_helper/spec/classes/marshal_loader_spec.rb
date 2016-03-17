@@ -72,7 +72,7 @@ describe ScalaMarshalLoader do
 
     context 'with a hash' do
       let(:value) { {} }
-      subject { Hash[loader.getValue.toSeq.array.map! { |pair| [pair._1.to_string, pair._2.to_string] if pair }.compact] }
+      subject { Hash[loader.getValue.toSeq.array.map! { |pair| [pair._1.toString, pair._2.toString] if pair }.compact] }
       it { is_expected.to eq({}) }
 
       context 'having content' do

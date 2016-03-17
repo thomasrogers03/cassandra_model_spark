@@ -267,15 +267,15 @@ module CassandraModel
           context 'when a column type map is provided' do
             let(:mapped_column) { Faker::Lorem.word.to_sym }
             let(:mapped_column_alias) { Faker::Lorem.word.to_sym }
-            let(:type_map) { {mapped_column => {type: SqlStringStringMapType, name: mapped_column_alias}} }
+            let(:type_map) { {mapped_column => {type: SqlMapType.apply(SqlStringType, SqlStringType, true), name: mapped_column_alias}} }
             let(:cassandra_columns) { {mapped_column => :blob} }
-            let(:sql_columns) { {mapped_column_alias.to_s => SqlStringStringMapType} }
+            let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
 
             its(:schema) { is_expected.to eq(sql_column_schema) }
 
             context 'when the Record class maps column names' do
               let(:cassandra_columns) { {"rk_#{mapped_column}" => :blob} }
-              let(:sql_columns) { {mapped_column_alias.to_s => SqlStringStringMapType} }
+              let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
 
               before do
                 allow(record_klass).to(receive(:normalized_column)) do |column|
@@ -430,7 +430,7 @@ module CassandraModel
         let(:select_key) { Faker::Lorem.word }
         let(:result_sql_type) { SqlStringType }
         let(:result) { {select_key.to_sym => Faker::Lorem.word} }
-        let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
+        let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, nil)] }
         let(:query_schema) { SqlStructType.new(fields) }
         let(:query_result) { double(:query, collect: [RDDRow[result]], schema: query_schema) }
         let(:query) { "SELECT * FROM #{table_name}" }
@@ -884,7 +884,7 @@ module CassandraModel
           let(:available_columns) { [select_key.to_sym] }
           let(:deferred_columns) { [] }
 
-          let(:fields) { [SqlStructField.new(select_key, result_sql_type)] }
+          let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, nil)] }
           let(:query_schema) { SqlStructType.new(fields) }
           let(:query) { double(:query, schema: query_schema, first: RDDRow[result], collect: [RDDRow[result]]) }
           let(:record_attributes) { {select_key.to_sym => result_value} }
@@ -923,7 +923,7 @@ module CassandraModel
           it_behaves_like 'converting sql types back to ruby types', SqlLong.new(153), SqlLongType
           it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
           it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
-          it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlStringStringMapType
+          it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlMapType.apply(SqlStringType, SqlStringType, true)
 
           describe 'converting uuid types' do
             let(:cassandra_columns) { {select_key.to_sym => :uuid} }
@@ -950,7 +950,7 @@ module CassandraModel
           end
 
           context 'when a type is a StructType' do
-            let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType)]) }
+            let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType, true, nil)]) }
             let(:result_sql_type) { sql_type }
             let(:result_value) { RDDRow[description: Faker::Lorem.word] }
 
@@ -970,7 +970,7 @@ module CassandraModel
 
           context 'when the record maps result columns' do
             let(:result) { {"rk_#{select_key}" => result_value} }
-            let(:fields) { [SqlStructField.new("rk_#{select_key}", result_sql_type)] }
+            let(:fields) { [SqlStructField.new("rk_#{select_key}", result_sql_type, true, nil)] }
 
             before do
               allow(record_klass).to receive(:normalized_attributes) do |attributes|
@@ -1049,7 +1049,7 @@ module CassandraModel
           end
           let(:field_names) { Faker::Lorem.words }
           let(:symbolized_field_names) { field_names.map(&:to_sym) }
-          let(:fields) { field_names.map { |name| SqlStructField.new(name, nil) } }
+          let(:fields) { field_names.map { |name| SqlStructField.new(name, nil, true, nil) } }
           let(:schema) { SqlStructType.new(fields) }
 
           before do
