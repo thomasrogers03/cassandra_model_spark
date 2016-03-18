@@ -9,6 +9,8 @@ describe LuaRDD do
         Faker::Lorem.word
       end
 
+      self.table_name = :people
+
       model_data do |inquirer, data_set|
         inquirer.knows_about(:id)
         data_set.is_defined_by(:name)
