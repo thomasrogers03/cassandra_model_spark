@@ -10,6 +10,8 @@ module CassandraModel
         @schema = SqlStructType.apply(fields)
       end
 
+      private
+
       def sql_type(type)
         case type
           when Array
