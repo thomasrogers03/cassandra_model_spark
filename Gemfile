@@ -9,6 +9,7 @@ group :development do
   gem 'batch_reactor', github: 'thomasrogers03/batch_reactor', require: false
   gem 'cassandra_model', github: 'thomasrogers03/cassandra_model', require: false
   gem 'rjb', platform: :ruby, require: false
+  gem 'pry'
 end
 
 group :test do
@@ -17,7 +18,6 @@ group :test do
   gem 'guard-rspec'
   gem 'guard-bundler'
   gem 'guard'
-  gem 'pry'
   gem 'timecop'
   gem 'simplecov', require: false
   gem 'faker'

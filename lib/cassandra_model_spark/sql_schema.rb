@@ -20,7 +20,7 @@ module CassandraModel
               when :map
                 SqlMapType.apply(sql_type(first_type), sql_type(second_type), true)
               else
-                SqlArrayType.apply(sql_type(first_type), true)
+                SqlArrayType.apply(sql_type(first_type))
             end
           when :int
             SqlIntegerType

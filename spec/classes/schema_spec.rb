@@ -46,8 +46,8 @@ module CassandraModel
           it_behaves_like 'mapping a type to a sql type', :int, SqlIntegerType
           it_behaves_like 'mapping a type to a sql type', :timestamp, SqlTimestampType
           it_behaves_like 'mapping a type to a sql type', :blob, SqlBinaryType
-          it_behaves_like 'mapping a type to a sql type', [:list, :int], SqlArrayType.apply(SqlIntegerType, true)
-          it_behaves_like 'mapping a type to a sql type', [:list, :text], SqlArrayType.apply(SqlStringType, true)
+          it_behaves_like 'mapping a type to a sql type', [:list, :int], SqlArrayType.apply(SqlIntegerType)
+          it_behaves_like 'mapping a type to a sql type', [:list, :text], SqlArrayType.apply(SqlStringType)
           it_behaves_like 'mapping a type to a sql type', [:map, :int, :text], SqlMapType.apply(SqlIntegerType, SqlStringType, true)
           it_behaves_like 'mapping a type to a sql type', [:map, :text, :int], SqlMapType.apply(SqlStringType, SqlIntegerType, true)
         end

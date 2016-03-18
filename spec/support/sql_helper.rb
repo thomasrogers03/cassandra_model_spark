@@ -165,13 +165,13 @@ end
 class SqlArrayType < SqlDataType
   attr_reader :elementType, :containsNull
 
-  def self.apply(element_type, contains_null)
-    new(element_type, contains_null)
+  def self.apply(element_type)
+    new(element_type)
   end
 
-  def initialize(element_type, contains_null)
+  def initialize(element_type)
     @elementType = element_type
-    @containsNull = contains_null
+    @containsNull = true
   end
 
   def toString
