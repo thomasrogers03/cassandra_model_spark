@@ -17,24 +17,40 @@ class LuaRowLib extends TwoArgFunction {
     fn_table
   }
 
+  private def toLuaRowValue(lua_row: LuaValue): LuaRowValue = {
+    lua_row match {
+      case row: LuaRowValue => row
+    }
+  }
+
+  private def toLuaString(lua_key: LuaValue): String = {
+    lua_key match {
+      case str: LuaString => str.toString()
+    }
+  }
+
+  private def convertedValue(lua_value: LuaValue): Any = {
+    lua_value match {
+      case str: LuaString => str.toString()
+      case num: LuaInteger => num.toint()
+      case dfnum: LuaDouble => dfnum.todouble()
+    }
+  }
+
+  private def guessedDataType(value: Any): DataType = {
+    value match {
+      case str: String => StringType
+      case num: Int => IntegerType
+      case dfnum: Double => DoubleType
+    }
+  }
+
   class append extends LibFunction {
     override def call(lua_row: LuaValue, lua_key: LuaValue, lua_value: LuaValue): LuaValue = {
-      val row = lua_row match {
-        case row: LuaRowValue => row
-      }
-      val key: String = lua_key match {
-        case str: LuaString => str.toString()
-      }
-      val value = lua_value match {
-        case str: LuaString => str.toString()
-        case num: LuaInteger => num.toint()
-        case dfnum: LuaDouble => dfnum.todouble()
-      }
-      val data_type = value match {
-        case str: String => StringType
-        case num: Int => IntegerType
-        case dfnum: Double => DoubleType
-      }
+      val row = toLuaRowValue(lua_row)
+      val key = toLuaString(lua_key)
+      val value = convertedValue(lua_value)
+      val data_type = guessedDataType(value)
       val fields = row.schema.fields :+ StructField(key, data_type)
       val new_schema = StructType(fields)
       val new_values = row.row.toSeq :+ value
@@ -46,22 +62,10 @@ class LuaRowLib extends TwoArgFunction {
 
   class replace extends LibFunction {
     override def call(lua_row: LuaValue, lua_key: LuaValue, lua_value: LuaValue): LuaValue = {
-      val row = lua_row match {
-        case row: LuaRowValue => row
-      }
-      val key: String = lua_key match {
-        case str: LuaString => str.toString()
-      }
-      val value = lua_value match {
-        case str: LuaString => str.toString()
-        case num: LuaInteger => num.toint()
-        case dfnum: LuaDouble => dfnum.todouble()
-      }
-      val data_type = value match {
-        case str: String => StringType
-        case num: Int => IntegerType
-        case dfnum: Double => DoubleType
-      }
+      val row = toLuaRowValue(lua_row)
+      val key = toLuaString(lua_key)
+      val value = convertedValue(lua_value)
+      val data_type = guessedDataType(value)
       val schema = row.schema
       val column_index = schema.fieldIndex(key)
       val new_values = row.row.toSeq.updated(column_index, value)
@@ -73,17 +77,11 @@ class LuaRowLib extends TwoArgFunction {
 
   class slice extends LibFunction {
     override def call(lua_row: LuaValue, lua_keys: LuaValue): LuaValue = {
-      val row = lua_row match {
-        case row: LuaRowValue => row
-      }
+      val row = toLuaRowValue(lua_row)
       val key_list = lua_keys match {
         case list: LuaTable => list
       }
-      val keys = (1 to key_list.length).map {
-        index: Int => key_list.get(index) match {
-          case str: LuaString => str.toString()
-        }
-      }
+      val keys = tableToArray(key_list)
       val schema = row.schema
       val new_schema = StructType(keys.map(schema(_)))
       val field_indices = keys.map(schema.fieldIndex(_))
@@ -91,6 +89,14 @@ class LuaRowLib extends TwoArgFunction {
       val new_row = Row.fromSeq(new_values)
 
       new LuaRowValue(schema, new_row)
+    }
+
+    private def tableToArray(key_list: LuaValue): IndexedSeq[String] = {
+      (1 to key_list.length).map {
+        index: Int => key_list.get(index) match {
+          case str: LuaString => str.toString()
+        }
+      }
     }
   }
 
