@@ -9,14 +9,14 @@ describe LuaRowLib do
   let(:schema) { SqlStructType.apply(fields) }
   let(:lua_row) { LuaRowValue.new(schema, row) }
   let(:script) { '' }
+  let(:result) { globals.load(script).call }
+
+  subject { result }
 
   before { globals.set('ROW', lua_row) }
 
   describe '#append' do
     let(:script) { "return row.append(ROW, 'hello', 'world')" }
-    let(:result) { globals.load(script).call }
-
-    subject { result }
 
     it { expect(subject.row.apply(0).toString).to eq('world') }
     it { expect(subject.schema.fields[0].name).to eq('hello') }
@@ -49,6 +49,25 @@ describe LuaRowLib do
       it { expect(subject.row.apply(1).toString.to_f).to eq(33.7) }
       it { expect(subject.schema.fields[1].name).to eq('bob') }
       it { expect(subject.schema.fields[1].dataType.toString).to eq('DoubleType') }
+    end
+  end
+
+  describe '#replace' do
+    let(:key) { 'the lost key' }
+    let(:row_values) { ['tony bobas'] }
+    let(:fields) { [SqlStructField.apply(key, SqlStringType, true, nil)] }
+    let(:script) { "return row.replace(ROW, '#{key}', 'johny')" }
+
+    it { expect(subject.row.apply(0).toString).to eq('johny') }
+
+    context 'with a different row' do
+      let(:key) { 'the found key' }
+      let(:row_values) { ['tony bobas', Faker::Lorem.sentence] }
+      let(:fields) do
+        [SqlStructField.apply('a different key', SqlStringType, true, nil), SqlStructField.apply(key, SqlStringType, true, nil)]
+      end
+
+      it { expect(subject.row.apply(1).toString).to eq('johny') }
     end
   end
 
