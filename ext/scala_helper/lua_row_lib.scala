@@ -78,9 +78,7 @@ class LuaRowLib extends TwoArgFunction {
   class slice extends LibFunction {
     override def call(lua_row: LuaValue, lua_keys: LuaValue): LuaValue = {
       val row = toLuaRowValue(lua_row)
-      val key_list = lua_keys match {
-        case list: LuaTable => list
-      }
+      val key_list = toLuaTable(lua_keys)
       val keys = tableToArray(key_list)
       val schema = row.schema
       val new_schema = StructType(keys.map(schema(_)))
@@ -89,6 +87,12 @@ class LuaRowLib extends TwoArgFunction {
       val new_row = Row.fromSeq(new_values)
 
       new LuaRowValue(new_schema, new_row)
+    }
+
+    private def toLuaTable(lua_keys: LuaValue): LuaTable = {
+      lua_keys match {
+        case list: LuaTable => list
+      }
     }
 
     private def tableToArray(key_list: LuaValue): IndexedSeq[String] = {
