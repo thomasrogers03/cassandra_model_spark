@@ -17,32 +17,24 @@ class LuaRowLib extends TwoArgFunction {
     fn_table
   }
 
-  private def toLuaRowValue(lua_row: LuaValue): LuaRowValue = {
-    lua_row match {
-      case row: LuaRowValue => row
-    }
+  private def toLuaRowValue(lua_row: LuaValue): LuaRowValue = lua_row match {
+    case row: LuaRowValue => row
   }
 
-  private def toLuaString(lua_key: LuaValue): String = {
-    lua_key match {
-      case str: LuaString => str.toString()
-    }
+  private def toLuaString(lua_key: LuaValue): String = lua_key match {
+    case str: LuaString => str.toString()
   }
 
-  private def convertedValue(lua_value: LuaValue): Any = {
-    lua_value match {
-      case str: LuaString => str.toString()
-      case num: LuaInteger => num.toint()
-      case dfnum: LuaDouble => dfnum.todouble()
-    }
+  private def convertedValue(lua_value: LuaValue): Any = lua_value match {
+    case str: LuaString => str.toString()
+    case num: LuaInteger => num.toint()
+    case dfnum: LuaDouble => dfnum.todouble()
   }
 
-  private def guessedDataType(value: Any): DataType = {
-    value match {
-      case str: String => StringType
-      case num: Int => IntegerType
-      case dfnum: Double => DoubleType
-    }
+  private def guessedDataType(value: Any): DataType = value match {
+    case str: String => StringType
+    case num: Int => IntegerType
+    case dfnum: Double => DoubleType
   }
 
   class append extends LibFunction {
@@ -89,17 +81,13 @@ class LuaRowLib extends TwoArgFunction {
       new LuaRowValue(new_schema, new_row)
     }
 
-    private def toLuaTable(lua_keys: LuaValue): LuaTable = {
-      lua_keys match {
-        case list: LuaTable => list
-      }
+    private def toLuaTable(lua_keys: LuaValue): LuaTable = lua_keys match {
+      case list: LuaTable => list
     }
 
-    private def tableToArray(key_list: LuaValue): IndexedSeq[String] = {
-      (1 to key_list.length).map {
-        index: Int => key_list.get(index) match {
-          case str: LuaString => str.toString()
-        }
+    private def tableToArray(key_list: LuaValue): IndexedSeq[String] = (1 to key_list.length).map {
+      index: Int => key_list.get(index) match {
+        case str: LuaString => str.toString()
       }
     }
   }
