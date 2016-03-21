@@ -88,7 +88,7 @@ class LuaRowLib extends TwoArgFunction {
       val new_values = field_indices.map(row.row(_))
       val new_row = Row.fromSeq(new_values)
 
-      new LuaRowValue(schema, new_row)
+      new LuaRowValue(new_schema, new_row)
     }
 
     private def tableToArray(key_list: LuaValue): IndexedSeq[String] = {

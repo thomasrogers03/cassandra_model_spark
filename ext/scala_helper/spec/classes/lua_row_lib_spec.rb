@@ -71,4 +71,23 @@ describe LuaRowLib do
     end
   end
 
+  describe '#slice' do
+    let(:row_data) { 10.times.inject({}) { |memo, _| memo.merge!(Faker::Lorem.word => Faker::Lorem.sentence) } }
+    let(:keys) { row_data.keys }
+    let(:slice_keys) { keys.sample(2) }
+    let(:row_values) { row_data.values }
+    let(:fields) { keys.map { |column| SqlStructField.apply(column, SqlStringType, true, nil) } }
+    let(:slice_param) { "{#{slice_keys.map { |column| "'#{column}'" } * ', '}}" }
+    let(:script) { "return row.slice(ROW, #{slice_param})" }
+
+    it 'should update the schema with the new keys' do
+      expect(subject.schema.fields.map(&:name)).to eq(slice_keys)
+    end
+
+    it 'should pull out a slice of values from the row' do
+      result_slice = subject.row.toSeq.array.map(&:toString)
+      expect(result_slice).to eq(row_data.slice(*slice_keys).values)
+    end
+  end
+
 end
