@@ -3,8 +3,8 @@ module CassandraModel
     class Schema
       attr_reader :schema
 
-      def initialize(cassandra_schema)
-        @schema = cassandra_schema.fields.inject({}) do |memo, field|
+      def initialize(sql_schema)
+        @schema = sql_schema.fields.inject({}) do |memo, field|
           column = field.name
           type = field.dataType
           memo.merge!(column.to_sym => sql_type(type))
