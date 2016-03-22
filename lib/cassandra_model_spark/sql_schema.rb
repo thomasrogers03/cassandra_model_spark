@@ -10,6 +10,10 @@ module CassandraModel
         @schema = SqlStructType.apply(fields)
       end
 
+      def ==(rhs)
+        rhs.is_a?(SqlSchema) && rhs.schema == schema
+      end
+
       private
 
       def sql_type(type)
