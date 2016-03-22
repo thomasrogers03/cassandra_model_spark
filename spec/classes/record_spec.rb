@@ -2,30 +2,31 @@ require 'spec_helper'
 
 module CassandraModel
   describe Record do
-    class Record
-      def self.reset!
-        @spark_rdd = nil
+    let(:record_klass) do
+      Class.new(Record) do
+        extend DataModelling
+        self.table_name = Faker::Lorem.word
+        model_data do |inquirer, data_set|
+          inquirer.knows_about(:key)
+          data_set.knows_about(:value)
+        end
       end
     end
-
-    let(:table_name) { Faker::Lorem.word }
+    let(:table_name) { record_klass.table_name }
     let(:spark_context) { ConnectionCache[nil].spark_context }
     let(:keyspace) { ConnectionCache[nil].config[:keyspace] }
     let(:rdd_count) { rand(0..12345) }
     let(:rdd) { double(:rdd, count: rdd_count) }
 
-    subject { Record }
+    subject { record_klass }
 
     before do
-      allow(Record).to receive(:table_name).and_return(table_name)
       allow(SparkCassandraHelper).to receive(:cassandra_table).with(spark_context, keyspace, table_name).and_return(rdd)
     end
 
-    after { Record.reset! }
-
     describe '.rdd' do
 
-      subject { Record.rdd }
+      subject { record_klass.rdd }
 
       it { is_expected.to eq(rdd) }
     end

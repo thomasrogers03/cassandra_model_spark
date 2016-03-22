@@ -14,8 +14,8 @@ end
 
 require 'bundler'
 Dir['./spec/support/**.rb'].each { |file| require file }
-Bundler.require(:default, :development, :test)
 require 'cassandra_mocks'
+Bundler.require(:default, :development, :test)
 Dir['./spec/helpers/**.rb'].each { |file| require file }
 Dir['./spec/shared_examples/**.rb'].each { |file| require file }
 
@@ -60,6 +60,8 @@ RSpec.configure do |config|
     # `true` in RSpec 4.
     mocks.verify_partial_doubles = true
   end
+
+  config.before(:suite) { CassandraModel::TableDescriptor.create_descriptor_table }
 
   config.order = :random
 
