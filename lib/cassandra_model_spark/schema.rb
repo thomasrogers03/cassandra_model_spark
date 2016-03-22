@@ -11,6 +11,10 @@ module CassandraModel
         end
       end
 
+      def ==(rhs)
+        rhs.is_a?(Schema) && rhs.schema == schema
+      end
+
       private
 
       def sql_type(type)

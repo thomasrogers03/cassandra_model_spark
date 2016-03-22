@@ -53,6 +53,30 @@ module CassandraModel
         end
       end
 
+      describe '#==' do
+        let(:column) { Faker::Lorem.word.to_sym }
+        let(:type) { SqlStringType }
+        let(:sql_schema) { SqlStructType.apply([SqlStructField.apply(column, type, true, nil)]) }
+        let(:sql_schema_two) { sql_schema }
+        let(:cassandra_schema_two) { Schema.new(sql_schema_two) }
+
+        subject { cassandra_schema }
+
+        it { is_expected.to eq(cassandra_schema_two) }
+
+        context 'with different types' do
+          let(:cassandra_schema_two) { sql_schema_two }
+
+          it { is_expected.not_to eq(cassandra_schema_two) }
+        end
+
+        context 'with different schemas' do
+          let(:sql_schema_two) { SqlStructType.apply([]) }
+
+          it { is_expected.not_to eq(cassandra_schema_two) }
+        end
+      end
+
     end
   end
 end
