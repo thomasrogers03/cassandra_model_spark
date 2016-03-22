@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'connection_spec_helper'
 
 module CassandraModel
   describe ConnectionCache do
