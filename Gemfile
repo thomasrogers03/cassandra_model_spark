@@ -13,6 +13,7 @@ group :development do
 end
 
 group :test do
+  gem 'cassandra_mocks', github: 'thomasrogers03/cassandra_mocks', require: false
   gem 'rspec', '~> 3.1.0', require: false
   gem 'rspec-its'
   gem 'guard-rspec'

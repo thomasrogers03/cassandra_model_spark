@@ -15,6 +15,7 @@ end
 require 'bundler'
 Dir['./spec/support/**.rb'].each { |file| require file }
 Bundler.require(:default, :development, :test)
+require 'cassandra_mocks'
 Dir['./spec/helpers/**.rb'].each { |file| require file }
 Dir['./spec/shared_examples/**.rb'].each { |file| require file }
 

@@ -6,6 +6,15 @@ GIT
       ione (~> 1.2)
 
 GIT
+  remote: git://github.com/thomasrogers03/cassandra_mocks.git
+  revision: 8f4fa20996b4a45cb7163f947c130f70aa153cab
+  specs:
+    cassandra_mocks (1.0.3)
+      activesupport (~> 4.0)
+      cassandra-driver (>= 1.1, <= 2.0.1)
+      concurrent-ruby (~> 1.0.0)
+
+GIT
   remote: git://github.com/thomasrogers03/cassandra_model.git
   revision: 444c618e9d1794023e91bbcb015370d4a420d0cd
   specs:
@@ -145,6 +154,7 @@ DEPENDENCIES
   activesupport
   batch_reactor!
   cassandra-driver (~> 1.1)
+  cassandra_mocks!
   cassandra_model!
   cassandra_model_spark!
   concurrent-ruby
