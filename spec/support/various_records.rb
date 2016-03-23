@@ -6,6 +6,8 @@ module VariousRecords
     CassandraModel::ConnectionCache[nil].session.execute(create_query)
     Class.new(CassandraModel::Record) do
       self.table_name = :super_basic
+      table.allow_truncation!
+      table.truncate!
     end
   end
   let(:basic_record_klass) do
@@ -21,6 +23,8 @@ module VariousRecords
           remaining_columns: fields
       )
       self.table = CassandraModel::MetaTable.new(table_definition)
+      table.allow_truncation!
+      table.truncate!
     end
   end
   let(:composite_record_klass) do
@@ -33,6 +37,8 @@ module VariousRecords
         data_set.knows_about(:description, :extra_data)
         data_set.change_type_of(:extra_data).to(:blob)
       end
+      table.allow_truncation!
+      table.truncate!
     end
   end
 
@@ -44,6 +50,8 @@ module VariousRecords
     CassandraModel::ConnectionCache[nil].session.execute(create_query)
     Class.new(CassandraModel::Record) do
       self.table_name = name
+      table.allow_truncation!
+      table.truncate!
     end
   end
 
