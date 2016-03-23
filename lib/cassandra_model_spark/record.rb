@@ -14,5 +14,9 @@ module CassandraModel
     def self.count
       rdd.count
     end
+
+    def self.sql_schema
+      Spark::SqlSchema.new(cassandra_columns)
+    end
   end
 end

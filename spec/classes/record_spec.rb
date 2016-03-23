@@ -33,6 +33,7 @@ module CassandraModel
 
     its(:count) { is_expected.to eq(rdd_count) }
     its(:rdd_row_mapping) { is_expected.to be_nil }
+    its(:sql_schema) { is_expected.to eq(Spark::SqlSchema.new(record_klass.cassandra_columns)) }
 
   end
 end
