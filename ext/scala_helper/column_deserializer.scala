@@ -1,11 +1,8 @@
 package org.apache.spark.api.cassandra_model
 
-import scala.collection.mutable._
 import org.apache.spark.rdd._
-import org.apache.spark.sql._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd._
-import org.apache.spark.sql.types._
 
 object ColumnDeserializer {
   def mappedRDD(rdd: RDD[CassandraRow], column: Int): RDD[CassandraRow] = {
