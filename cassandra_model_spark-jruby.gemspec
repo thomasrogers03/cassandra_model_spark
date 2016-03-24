@@ -18,7 +18,7 @@ Inspired by the ruby-spark gem.}
   s.require_path = 'lib'
   s.homepage = 'https://www.github.com/thomasrogers03/cassandra_model_spark'
   s.add_runtime_dependency 'cassandra_model', '>= 0.10.0', '<= 1.1'
-  s.add_runtime_dependency 'thomas_utils', '~> 0.1.16'
+  s.add_runtime_dependency 'thomas_utils', '>= 0.1.16', '< 0.3.0'
   s.platform = 'java'
 
   s.executables << 'cmodel-spark-build'
