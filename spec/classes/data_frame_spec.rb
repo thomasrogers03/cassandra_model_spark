@@ -384,7 +384,7 @@ module CassandraModel
         it { is_expected.to eq(normalized_frame) }
 
         context 'with multiple columns' do
-          let(:available_columns) { 2.times.map { Faker::Lorem.word.to_sym } }
+          let(:available_columns) { 2.times.map { "#{Faker::Lorem.word}_#{Faker::Lorem.word}".to_sym } }
 
           it { is_expected.to eq(normalized_frame) }
         end
