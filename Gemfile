@@ -18,6 +18,7 @@ group :test do
   gem 'rspec-its'
   gem 'guard-rspec'
   gem 'guard-bundler'
+  gem 'notifier'
   gem 'guard'
   gem 'timecop'
   gem 'simplecov', require: false
