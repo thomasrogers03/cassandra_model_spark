@@ -42,16 +42,53 @@ module VariousRecords
     end
   end
 
-  def generate_simple_model(name, partition, clustering, fields)
-    column_types = (partition + clustering + fields).map { |key| "#{key} text" } * ', '
-    partition = "(#{partition * ', '})"
-    clustering = "#{clustering * ', '}"
+  def generate_simple_model(name, partition, clustering, fields, rdd_row_mapping = nil, deferred_columns = [], &block)
+    column_types = (partition.merge(clustering).merge(fields)).map { |column, type| "#{column} #{type}" } * ', '
+    partition = "(#{partition.keys * ', '})"
+    clustering = "#{clustering.keys * ', '}"
     create_query = "CREATE TABLE IF NOT EXISTS #{name} (#{column_types}, PRIMARY KEY (#{partition}, #{clustering}))"
     CassandraModel::ConnectionCache[nil].session.execute(create_query)
     Class.new(CassandraModel::Record) do
       self.table_name = name
       table.allow_truncation!
       table.truncate!
+      @rdd_row_mapping = rdd_row_mapping
+
+      deferred_columns.each { |column| deferred_column column, on_load: ->() {} }
+
+      def self.rdd_row_mapping
+        @rdd_row_mapping
+      end
+
+      block.call if block
+    end
+  end
+
+  def generate_composite_model(name, partition, clustering, fields, rdd_row_mapping = nil, deferred_columns = [], &block)
+    Class.new(CassandraModel::Record) do
+      extend CassandraModel::DataModelling
+      self.table_name = name
+
+      model_data do |inquirer, data_set|
+        inquirer.knows_about(*partition.keys)
+        partition.each { |column, type| inquirer.change_type_of(column).to(type) }
+
+        data_set.is_defined_by(*clustering.keys)
+        data_set.knows_about(*fields.keys)
+        clustering.merge(fields).each { |column, type| data_set.change_type_of(column).to(type) }
+      end
+
+      deferred_columns.each { |column| deferred_column column, on_load: ->() {} }
+
+      table.allow_truncation!
+      table.truncate!
+      @rdd_row_mapping = rdd_row_mapping
+
+      def self.rdd_row_mapping
+        @rdd_row_mapping
+      end
+
+      block.call if block
     end
   end
 

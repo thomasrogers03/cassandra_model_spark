@@ -7,26 +7,38 @@ module CassandraModel
       let(:clustering_columns) { {} }
       let(:record_fields) { {} }
       let(:cassandra_columns) { partition_key.merge(clustering_columns).merge(record_fields) }
-      let(:table_name) { Faker::Lorem.word }
+      let(:table_name) { record_klass.table_name }
       let(:table) { TableRedux.new(table_name) }
       let(:record_klass_rdd_mapper) { nil }
+      let(:deferred_columns) { [] }
+
       let(:record_klass) do
-        double(:klass, table: table, cassandra_columns: cassandra_columns, table_name: table_name, rdd_row_mapping: record_klass_rdd_mapper)
+        generate_simple_model(
+            Faker::Lorem.word,
+            partition_key,
+            clustering_columns,
+            record_fields,
+            record_klass_rdd_mapper,
+            deferred_columns
+        )
       end
+      let(:composite_record_klass) do
+        generate_composite_model(
+            Faker::Lorem.word,
+            partition_key,
+            clustering_columns,
+            record_fields,
+            record_klass_rdd_mapper,
+            deferred_columns
+        )
+      end
+
       let(:rdd) { double(:rdd) }
       let(:data_frame) { DataFrame.new(record_klass, rdd) }
 
       let(:frame_context) { double(:sql_context) }
       let(:spark_frame) { double(:frame, sql_context: frame_context, register_temp_table: nil) }
       let(:spark_frame_alias) { Faker::Lorem.word }
-
-      before do
-        allow(record_klass).to(receive(:normalized_column)) { |column| column }
-        allow(record_klass).to(receive(:select_column)) { |column| column }
-        allow(record_klass).to(receive(:select_columns)) do |columns|
-          columns.map { |column| record_klass.select_column(column) }
-        end
-      end
 
       describe 'initialization' do
         context 'when a spark data frame is provided to the initializer' do
@@ -211,15 +223,6 @@ module CassandraModel
           data_frame.spark_data_frame
         end
 
-        context 'when the table name is a symbol' do
-          let(:table_name) { Faker::Lorem.word.to_sym }
-
-          it 'should register a temp using the stringified table name' do
-            expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(table_name.to_s)
-            data_frame.spark_data_frame
-          end
-        end
-
         context 'when a spark data frame is provided to the initializer' do
           let(:data_frame) { DataFrame.new(record_klass, nil, spark_data_frame: spark_frame, alias: spark_frame_alias) }
 
@@ -277,14 +280,8 @@ module CassandraModel
             its(:schema) { is_expected.to eq(sql_column_schema) }
 
             context 'when the Record class maps column names' do
-              let(:partition_key) { {"rk_#{mapped_column}" => :blob} }
               let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
-
-              before do
-                allow(record_klass).to(receive(:normalized_column)) do |column|
-                  column.match(/^rk_(.+)$/)[1].to_sym
-                end
-              end
+              let(:record_klass) { composite_record_klass }
 
               its(:schema) { is_expected.to eq(sql_column_schema) }
             end
@@ -366,6 +363,8 @@ module CassandraModel
       it_behaves_like 'an async method not yet implemented', :first_async
 
       describe '#normalized' do
+        let(:partition_key) { available_columns.inject({}) { |memo, column| memo.merge!(column => :text) } }
+
         let(:available_columns) { [Faker::Lorem.word.to_sym] }
         let(:select_options) do
           available_columns.inject({}) { |memo, key| memo.merge!(key => {as: key}) }
@@ -377,7 +376,6 @@ module CassandraModel
         subject { data_frame.normalized }
 
         before do
-          allow(record_klass).to receive(:columns).and_return(available_columns)
           allow(data_frame).to receive(:query).with({}, select: select_columns).and_return(query_frame)
         end
 
@@ -441,9 +439,6 @@ module CassandraModel
         subject { data_frame.sql(query) }
 
         before do
-          allow(record_klass).to receive(:normalized_attributes) { |attributes| attributes.symbolize_keys }
-          allow(record_klass).to receive(:columns).and_return([select_key])
-          allow(record_klass).to receive(:deferred_columns).and_return([])
           allow(data_frame.sql_context).to receive(:sql).with(query).and_return(query_result)
         end
 
@@ -534,6 +529,7 @@ module CassandraModel
           end
 
           context 'when the key is a KeyComparer' do
+            let(:clustering_columns) { {price: :double} }
             let(:restriction) { {:price.gt => 50.49} }
             let(:query_sql) { "SELECT * FROM #{table_name} WHERE `price` > 50.49" }
 
@@ -541,7 +537,7 @@ module CassandraModel
 
             context 'when the columns are mapped' do
               let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_price` > 50.49" }
-              before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+              let(:record_klass) { composite_record_klass }
 
               it { is_expected.to eq(query) }
             end
@@ -562,7 +558,7 @@ module CassandraModel
 
               context 'when the columns are mapped' do
                 let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_price`.`#{child_key}` < 43.99" }
-                before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+                let(:record_klass) { composite_record_klass }
 
                 it { is_expected.to eq(query) }
               end
@@ -570,8 +566,8 @@ module CassandraModel
           end
 
           context 'when the columns are mapped' do
-            let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_partition` = 47" }
-            before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+            let(:query_sql) { "SELECT * FROM #{table_name} WHERE `rk_partition` = 47" }
+            let(:record_klass) { composite_record_klass }
 
             it { is_expected.to eq(query) }
           end
@@ -584,8 +580,8 @@ module CassandraModel
             it { is_expected.to eq(query) }
 
             context 'when the columns are mapped' do
-              let(:query_sql) { "SELECT * FROM #{table_name} WHERE `ck_partition`.`#{child_key}` = 49.99" }
-              before { allow(record_klass).to(receive(:select_column)) { |column| :"ck_#{column}" } }
+              let(:query_sql) { "SELECT * FROM #{table_name} WHERE `rk_partition`.`#{child_key}` = 49.99" }
+              let(:record_klass) { composite_record_klass }
 
               it { is_expected.to eq(query) }
             end
@@ -607,10 +603,7 @@ module CassandraModel
 
           context 'when the columns are mapped' do
             let(:query_sql) { "SELECT * FROM #{table_name} #{clause} `rk_partition`" }
-
-            before do
-              allow(record_klass).to(receive(:select_column)) { |column| :"rk_#{column}" }
-            end
+            let(:record_klass) { composite_record_klass }
 
             it { is_expected.to eq(query) }
           end
@@ -728,10 +721,7 @@ module CassandraModel
 
           context 'when the columns are mapped' do
             let(:query_sql) { "SELECT `rk_partition` FROM #{table_name}" }
-
-            before do
-              allow(record_klass).to(receive(:select_column)) { |column| :"rk_#{column}" }
-            end
+            let(:record_klass) { composite_record_klass }
 
             it { is_expected.to eq(query) }
 
@@ -879,13 +869,14 @@ module CassandraModel
           let(:result_sql_type) { SqlTypeWrapper.new(SqlStringType) }
           let(:result_value) { Faker::Lorem.word }
 
+          let(:clustering_columns) { available_columns.inject({}) { |memo, column| memo.merge!(column => :text) } }
+
           let(:key) { Faker::Lorem.word }
           let(:attributes) { {key => Faker::Lorem.word} }
           let(:result) { {select_key => result_value} }
           let(:select_key) { Faker::Lorem.word }
           let(:options) { {select: [select_key]} }
           let(:available_columns) { [select_key.to_sym] }
-          let(:deferred_columns) { [] }
 
           let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, nil)] }
           let(:query_schema) { SqlStructType.new(fields) }
@@ -894,14 +885,6 @@ module CassandraModel
 
           before do
             allow(data_frame).to receive(:query).with(attributes, options).and_return(query)
-            allow(record_klass).to receive(:new) do |attributes|
-              MockRecord.new(attributes)
-            end
-            allow(record_klass).to receive(:normalized_attributes) do |attributes|
-              attributes.symbolize_keys
-            end
-            allow(record_klass).to receive(:columns).and_return(available_columns)
-            allow(record_klass).to receive(:deferred_columns).and_return(deferred_columns)
           end
 
           it 'should support default values' do
@@ -929,25 +912,25 @@ module CassandraModel
           it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlMapType.apply(SqlStringType, SqlStringType, true)
 
           describe 'converting uuid types' do
-            let(:partition_key) { {select_key.to_sym => :uuid} }
+            let(:clustering_columns) { {select_key.to_sym => :uuid} }
             it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
 
             context 'when the columns are mapped' do
-              let(:mapped_column) { :"rk_#{select_key}" }
-              let(:partition_key) { {mapped_column => :uuid} }
-              before { allow(record_klass).to receive(:select_column).with(select_key.to_sym).and_return(mapped_column) }
+              let(:mapped_column) { :"ck_#{select_key}" }
+              let(:clustering_columns) { {select_key => :uuid} }
+              let(:record_klass) { composite_record_klass }
               it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
             end
           end
 
           describe 'converting timeuuid types' do
-            let(:partition_key) { {select_key.to_sym => :timeuuid} }
+            let(:clustering_columns) { {select_key.to_sym => :timeuuid} }
             it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
 
             context 'when the columns are mapped' do
-              let(:mapped_column) { :"rk_#{select_key}" }
-              let(:partition_key) { {mapped_column => :timeuuid} }
-              before { allow(record_klass).to receive(:select_column).with(select_key.to_sym).and_return(mapped_column) }
+              let(:mapped_column) { :"ck_#{select_key}" }
+              let(:clustering_columns) { {select_key => :timeuuid} }
+              let(:record_klass) { composite_record_klass }
               it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
             end
           end
@@ -972,16 +955,9 @@ module CassandraModel
           end
 
           context 'when the record maps result columns' do
-            let(:result) { {"rk_#{select_key}" => result_value} }
-            let(:fields) { [SqlStructField.new("rk_#{select_key}", result_sql_type, true, nil)] }
-
-            before do
-              allow(record_klass).to receive(:normalized_attributes) do |attributes|
-                attributes.inject({}) do |memo, (key, value)|
-                  memo.merge!(key.match(/^rk_(.+)$/)[1].to_sym => value)
-                end
-              end
-            end
+            let(:result) { {"ck_#{select_key}" => result_value} }
+            let(:fields) { [SqlStructField.new("ck_#{select_key}", result_sql_type, true, nil)] }
+            let(:record_klass) { composite_record_klass }
 
             it 'should map the columns' do
               expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
@@ -1159,12 +1135,12 @@ module CassandraModel
         end
 
         describe '#first' do
-          let(:record_result) { MockRecord.new(record_attributes) }
+          let(:record_result) { record_klass.new(record_attributes) }
           it_behaves_like 'a method mapping a query result to a Record', :first, :first
         end
 
         describe '#request' do
-          let(:record_result) { [MockRecord.new(record_attributes)] }
+          let(:record_result) { [record_klass.new(record_attributes)] }
           it_behaves_like 'a method mapping a query result to a Record', :request, :collect
         end
 
