@@ -13,6 +13,8 @@ import_java_object 'org.apache.log4j.Level', as: 'JLevel'
 import_java_object 'org.apache.log4j.Priority', as: 'JPriority'
 import_java_object 'org.apache.spark.util.Utils', as: 'SparkUtils'
 import_java_object 'org.apache.spark.storage.StorageLevel', as: 'JStorageLevel'
+
+import_java_object 'org.apache.spark.api.cassandra_model.ColumnDeserializer', as: 'SparkColumnDeserializer'
 import_java_object 'org.apache.spark.api.cassandra_model.RowConversions', as: 'SqlRowConversions'
 import_java_object 'org.apache.spark.api.cassandra_model.CassandraHelper', as: 'SparkCassandraHelper'
 import_java_object 'org.apache.spark.api.cassandra_model.SchemaBuilder', as: 'SparkSchemaBuilder'
@@ -21,12 +23,12 @@ import_java_object 'org.apache.spark.api.cassandra_model.MarshalLoader', as: 'Sc
 import_java_object 'org.apache.spark.api.cassandra_model.MapStringStringRowMapping', as: 'SparkMapStringStringRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.SparkRowRowMapping', as: 'SparkSparkRowRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.LuaRDD'
+
 import_java_object 'org.apache.spark.deploy.master.Master', as: 'SparkMaster'
 import_java_object 'org.apache.spark.deploy.worker.RubyWorkerStarter', as: 'SparkWorkerStarter'
 
 if CassandraModel.const_defined?('TESTING_SCALA')
   import_java_object 'com.datastax.spark.connector.CassandraRow', as: 'SparkCassandraRow'
-  import_java_object 'org.apache.spark.api.cassandra_model.ColumnDeserializer', as: 'SparkColumnDeserializer'
   import_java_object 'org.apache.spark.api.cassandra_model.LuaRowValue'
   import_java_object 'org.apache.spark.api.cassandra_model.LuaRowLib'
 end
