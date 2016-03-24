@@ -3,7 +3,10 @@ require 'spec_helper'
 module CassandraModel
   module Spark
     describe DataFrame do
-      let(:cassandra_columns) { {partition: :text} }
+      let(:partition_key) { {partition: :text} }
+      let(:clustering_columns) { {} }
+      let(:record_fields) { {} }
+      let(:cassandra_columns) { partition_key.merge(clustering_columns).merge(record_fields) }
       let(:table_name) { Faker::Lorem.word }
       let(:table) { TableRedux.new(table_name) }
       let(:record_klass_rdd_mapper) { nil }
@@ -236,14 +239,14 @@ module CassandraModel
         its(:schema) { is_expected.to eq(sql_column_schema) }
 
         context 'with a different set of columns' do
-          let(:cassandra_columns) { {partition: :text, clustering: :int} }
+          let(:clustering_columns) { {clustering: :int} }
           let(:sql_columns) { {'partition' => SqlStringType, 'clustering' => SqlIntegerType} }
 
           its(:schema) { is_expected.to eq(sql_column_schema) }
         end
 
         shared_examples_for 'mapping a cassandra column type to a spark sql type' do |cassandra_type, sql_type|
-          let(:cassandra_columns) { {partition: cassandra_type} }
+          let(:partition_key) { {partition: cassandra_type} }
           let(:sql_columns) { {'partition' => sql_type} }
 
           its(:schema) { is_expected.to eq(sql_column_schema) }
@@ -268,13 +271,13 @@ module CassandraModel
             let(:mapped_column) { Faker::Lorem.word.to_sym }
             let(:mapped_column_alias) { Faker::Lorem.word.to_sym }
             let(:type_map) { {mapped_column => {type: SqlMapType.apply(SqlStringType, SqlStringType, true), name: mapped_column_alias}} }
-            let(:cassandra_columns) { {mapped_column => :blob} }
+            let(:partition_key) { {mapped_column => :blob} }
             let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
 
             its(:schema) { is_expected.to eq(sql_column_schema) }
 
             context 'when the Record class maps column names' do
-              let(:cassandra_columns) { {"rk_#{mapped_column}" => :blob} }
+              let(:partition_key) { {"rk_#{mapped_column}" => :blob} }
               let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
 
               before do
@@ -926,24 +929,24 @@ module CassandraModel
           it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlMapType.apply(SqlStringType, SqlStringType, true)
 
           describe 'converting uuid types' do
-            let(:cassandra_columns) { {select_key.to_sym => :uuid} }
+            let(:partition_key) { {select_key.to_sym => :uuid} }
             it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
 
             context 'when the columns are mapped' do
               let(:mapped_column) { :"rk_#{select_key}" }
-              let(:cassandra_columns) { {mapped_column => :uuid} }
+              let(:partition_key) { {mapped_column => :uuid} }
               before { allow(record_klass).to receive(:select_column).with(select_key.to_sym).and_return(mapped_column) }
               it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
             end
           end
 
           describe 'converting timeuuid types' do
-            let(:cassandra_columns) { {select_key.to_sym => :timeuuid} }
+            let(:partition_key) { {select_key.to_sym => :timeuuid} }
             it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
 
             context 'when the columns are mapped' do
               let(:mapped_column) { :"rk_#{select_key}" }
-              let(:cassandra_columns) { {mapped_column => :timeuuid} }
+              let(:partition_key) { {mapped_column => :timeuuid} }
               before { allow(record_klass).to receive(:select_column).with(select_key.to_sym).and_return(mapped_column) }
               it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
             end
