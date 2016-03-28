@@ -71,12 +71,9 @@ module CassandraModel
       end
 
       def spark_data_frame
-        @frame ||= SparkSchemaBuilder.new.tap do |builder|
-          record_klass.cassandra_columns.each do |name, type|
-            type = SQL_TYPE_MAP.fetch(type) { SqlStringType }
-            builder.add_column(name.to_s, type)
-          end
-        end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name.to_s) }
+        @frame ||= sql_context.createDataFrame(rdd, record_klass.sql_schema.schema).tap do |frame|
+          frame.register_temp_table(table_name.to_s)
+        end
       end
 
       def cache

@@ -435,7 +435,7 @@ module CassandraModel
       end
 
       describe '#query' do
-        let(:sql_context) { double(:sql_context) }
+        let(:sql_context) { CassandraSQLContext.new(nil) }
         let(:query) { double(:query) }
         let(:restriction) { {} }
         let(:options) { {} }

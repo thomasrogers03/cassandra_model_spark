@@ -44,6 +44,10 @@ class CassandraSQLContext
   def read
   end
 
+  def createDataFrame(rdd, schema)
+    SqlDataFrame.new(self, rdd, schema)
+  end
+
   protected
 
   attr_reader :spark_context
@@ -60,7 +64,7 @@ class SqlDataFrame
   def initialize(sql_context, rdd, schema)
     @sql_context = sql_context
     @rdd = rdd
-    @schema = create_schema(schema)
+    @schema = schema.is_a?(SqlStructType) ? schema : create_schema(schema)
   end
 
   def cache
