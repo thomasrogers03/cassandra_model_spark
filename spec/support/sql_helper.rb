@@ -247,3 +247,11 @@ class SqlTypeWrapper < SqlDataType
     @internal_type.toString
   end
 end
+
+class SqlRowConversions
+  def self.cassandraRDDToRowRDD(rdd)
+    MappedRDD.new(rdd)
+  end
+
+  MappedRDD = Struct.new(:rdd)
+end

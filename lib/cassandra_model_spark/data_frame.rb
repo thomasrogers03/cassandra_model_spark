@@ -71,7 +71,7 @@ module CassandraModel
       end
 
       def spark_data_frame
-        @frame ||= sql_context.createDataFrame(rdd, record_klass.sql_schema.schema).tap do |frame|
+        @frame ||= sql_context.createDataFrame(converted_rdd, record_klass.sql_schema.schema).tap do |frame|
           frame.register_temp_table(table_name.to_s)
         end
       end
@@ -193,6 +193,10 @@ module CassandraModel
         else
           @derived = true
         end
+      end
+
+      def converted_rdd
+        SqlRowConversions.cassandraRDDToRowRDD(rdd)
       end
 
       def initialize_row_mapping(options)

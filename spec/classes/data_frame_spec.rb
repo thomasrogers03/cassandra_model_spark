@@ -212,6 +212,8 @@ module CassandraModel
 
         it { is_expected.to be_a_kind_of(SqlDataFrame) }
 
+        its(:rdd) { is_expected.to eq(SqlRowConversions.cassandraRDDToRowRDD(rdd)) }
+
         it 'should instance-cache the frame' do
           data_frame.spark_data_frame
           expect(SqlDataFrame).not_to receive(:new)
