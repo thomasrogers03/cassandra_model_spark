@@ -5,7 +5,7 @@ module CassandraModel
 
       def initialize(cassandra_schema)
         fields = cassandra_schema.map do |column, type|
-          SqlStructField.apply(column.to_s, sql_type(type), true, nil)
+          SqlStructField.apply(column.to_s, sql_type(type), true, SqlMetadata.empty)
         end
         if RUBY_ENGINE == 'jruby'
           fields = fields.to_java('org.apache.spark.sql.types.StructField')

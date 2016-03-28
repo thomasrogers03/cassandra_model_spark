@@ -143,6 +143,11 @@ end
 class SqlLongType < SqlDataType
 end
 class SqlMetadata < SqlDataType
+  EMPTY = new.freeze
+
+  def self.empty
+    EMPTY
+  end
 end
 class SqlNullType < SqlDataType
 end

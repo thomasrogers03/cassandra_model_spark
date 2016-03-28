@@ -19,7 +19,7 @@ module CassandraModel
           let(:column) { Faker::Lorem.word.to_sym }
           let(:type) { :text }
           let(:schema) { {column => type} }
-          let(:expected_fields) { [SqlStructField.apply(column.to_s, SqlStringType, true, nil)] }
+          let(:expected_fields) { [SqlStructField.apply(column.to_s, SqlStringType, true, SqlMetadata.empty)] }
 
           it { is_expected.to eq(expected_schema) }
 
@@ -29,8 +29,8 @@ module CassandraModel
             let(:schema) { {column => type, column_two => type_two} }
             let(:expected_fields) do
               [
-                  SqlStructField.apply(column.to_s, SqlStringType, true, nil),
-                  SqlStructField.apply(column_two.to_s, SqlIntegerType, true, nil)
+                  SqlStructField.apply(column.to_s, SqlStringType, true, SqlMetadata.empty),
+                  SqlStructField.apply(column_two.to_s, SqlIntegerType, true, SqlMetadata.empty)
               ]
             end
 
@@ -39,7 +39,7 @@ module CassandraModel
 
           shared_examples_for 'mapping a type to a sql type' do |source_type, sql_type|
             let(:type) { source_type }
-            let(:expected_fields) { [SqlStructField.apply(column.to_s, sql_type, true, nil)] }
+            let(:expected_fields) { [SqlStructField.apply(column.to_s, sql_type, true, SqlMetadata.empty)] }
             it { is_expected.to eq(expected_schema) }
           end
 
