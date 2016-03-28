@@ -101,20 +101,6 @@ class SqlDataFrame
   end
 end
 
-class SparkSchemaBuilder
-  def add_column(name, type)
-    columns[name] = type
-  end
-
-  def columns
-    @columns ||= {}
-  end
-
-  def create_data_frame(sql_context, rdd)
-    SqlDataFrame.new(sql_context, rdd, columns)
-  end
-end
-
 class SqlDataTypeClass < Struct.new(:simple_name)
   alias :getSimpleName :simple_name
 end
