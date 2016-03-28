@@ -51,6 +51,13 @@ group :scala do
   end
 end
 
+group :integration do
+  guard :rspec, cmd: 'bundle exec rspec', spec_paths: %w(integration) do
+    watch(%r{^integration/classes/.+_spec\.rb$})
+    watch('spec/integration_spec_helper.rb') { 'integration' }
+  end
+end
+
 guard :bundler do
   require 'guard/bundler'
   require 'guard/bundler/verify'
