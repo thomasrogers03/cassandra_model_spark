@@ -12,11 +12,9 @@ object RowConversions {
 
   private def cassandraToRow(row: CassandraRow): Seq[Any] = {
     row.columnValues.map {
-      value => value match {
-        case (date: java.util.Date) => new java.sql.Timestamp(date.getTime())
-        case (uuid: java.util.UUID) => uuid.toString()
-        case _ => value
-      }
+      case (date: java.util.Date) => new java.sql.Timestamp(date.getTime())
+      case (uuid: java.util.UUID) => uuid.toString()
+      case value => value
     }
   }
 }
