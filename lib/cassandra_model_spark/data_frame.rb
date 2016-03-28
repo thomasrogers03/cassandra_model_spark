@@ -73,14 +73,7 @@ module CassandraModel
       def spark_data_frame
         @frame ||= SparkSchemaBuilder.new.tap do |builder|
           record_klass.cassandra_columns.each do |name, type|
-            select_name = record_klass.normalized_column(name)
-            mapped_type = row_type_mapping[select_name]
-            type = if mapped_type
-                     name = mapped_type[:name]
-                     mapped_type[:type]
-                   else
-                     SQL_TYPE_MAP.fetch(type) { SqlStringType }
-                   end
+            type = SQL_TYPE_MAP.fetch(type) { SqlStringType }
             builder.add_column(name.to_s, type)
           end
         end.create_data_frame(sql_context, rdd).tap { |frame| frame.register_temp_table(table_name.to_s) }
@@ -199,11 +192,7 @@ module CassandraModel
 
       def initialize_rdd(rdd)
         if rdd
-          @rdd = if @row_mapping[:mapper]
-                   @row_mapping[:mapper].mappedRDD(rdd)
-                 else
-                   rdd
-                 end
+          @rdd = rdd
         else
           @derived = true
         end

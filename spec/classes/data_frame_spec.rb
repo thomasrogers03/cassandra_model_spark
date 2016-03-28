@@ -257,49 +257,6 @@ module CassandraModel
 
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
         it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
-
-        shared_examples_for 'mapping an rdd' do
-          let(:rdd_mapper) { {mapper: row_mapper, type_map: type_map} }
-          let(:type_map) { nil }
-          let(:mapped_rdd) { double(:rdd) }
-          let(:row_mapper) { double(:mapper) }
-
-          before { allow(row_mapper).to receive(:mappedRDD).with(rdd).and_return(mapped_rdd) }
-
-          it 'should create the frame using the mapped rdd' do
-            expect(subject.rdd).to eq(mapped_rdd)
-          end
-
-          context 'when a column type map is provided' do
-            let(:mapped_column) { Faker::Lorem.word.to_sym }
-            let(:mapped_column_alias) { Faker::Lorem.word.to_sym }
-            let(:type_map) { {mapped_column => {type: SqlMapType.apply(SqlStringType, SqlStringType, true), name: mapped_column_alias}} }
-            let(:partition_key) { {mapped_column => :blob} }
-            let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
-
-            its(:schema) { is_expected.to eq(sql_column_schema) }
-
-            context 'when the Record class maps column names' do
-              let(:sql_columns) { {mapped_column_alias.to_s => SqlMapType.apply(SqlStringType, SqlStringType, true)} }
-              let(:record_klass) { composite_record_klass }
-
-              its(:schema) { is_expected.to eq(sql_column_schema) }
-            end
-          end
-        end
-
-        context 'when a row mapper is provided' do
-          let(:options) { {row_mapping: rdd_mapper} }
-          let(:data_frame) { DataFrame.new(record_klass, rdd, options) }
-
-          it_behaves_like 'mapping an rdd'
-        end
-
-        context 'when the record klass has a row mapper' do
-          let(:record_klass_rdd_mapper) { rdd_mapper }
-
-          it_behaves_like 'mapping an rdd'
-        end
       end
 
       describe '#cache' do
