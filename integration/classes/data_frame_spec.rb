@@ -20,5 +20,20 @@ describe 'querying a DataFrame' do
     it 'should allow us to query for column sub-sets' do
       expect(data_frame.select(:value, :description).first).to eq(record_klass.new(value: record.value, description: record.description))
     end
+
+    describe 'aggregation' do
+      let(:key) { record.key }
+      let(:key_two) { Faker::Lorem.sentence }
+      let(:query) { data_frame.select(:key, :* => {aggregate: :count, as: :count}).group(:key) }
+
+      before do
+        5.times { record_klass.create(key: key, value: Faker::Lorem.sentence, description: Faker::Lorem.paragraph) }
+        5.times { record_klass.create(key: key_two, value: Faker::Lorem.sentence, description: Faker::Lorem.paragraph) }
+      end
+
+      it 'supports aggregation' do
+        expect(query.get).to match_array([{key: key, count: 6}, {key: key_two, count: 5}])
+      end
+    end
   end
 end
