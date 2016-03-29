@@ -21,6 +21,10 @@ describe 'querying a DataFrame' do
       expect(data_frame.select(:value, :description).first).to eq(record_klass.new(value: record.value, description: record.description))
     end
 
+    it 'supports raw sql queries' do
+      expect(data_frame.sql("SELECT rk_key, ck_value FROM #{data_frame.table_name}").first).to eq(record_klass.new(key: record.key, value: record.value))
+    end
+
     describe 'aggregation' do
       let(:key) { record.key }
       let(:key_two) { Faker::Lorem.sentence }
