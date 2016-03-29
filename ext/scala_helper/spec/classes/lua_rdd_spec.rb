@@ -2,36 +2,35 @@ require 'scala_spec_helper'
 
 describe LuaRDD do
   let(:model_klass) do
-    Class.new(CassandraModel::Record) do
-      extend CassandraModel::DataModelling
-
-      def self.name
-        Faker::Lorem.word
-      end
-
-      self.table_name = :people
-
-      model_data do |inquirer, data_set|
-        inquirer.knows_about(:id)
-        data_set.is_defined_by(:name)
-        data_set.knows_about(:description)
-      end
-    end
+    generate_composite_model(:company, {id: :int, name: :text}, {value: :text}, {description: :text, uuid: :text})
   end
 
   let(:data_frame) { CassandraModel::Spark::DataFrame.from_csv(model_klass, 'ext/scala_helper/spec/fixtures/test_rdd.csv') }
   let(:schema) { data_frame.spark_data_frame.schema }
   let(:rdd) { data_frame.spark_data_frame.rdd }
   let(:lua_rdd) { LuaRDD.new(schema, rdd) }
+  let(:result_lua_rdd) { lua_rdd }
+  let(:spark_data_frame) { result_lua_rdd.toDF(data_frame.sql_context) }
+  let(:new_data_frame) do
+    CassandraModel::Spark::DataFrame.new(model_klass, nil, spark_data_frame: spark_data_frame, alias: Faker::Lorem.word)
+  end
 
-  subject { lua_rdd }
+  subject { new_data_frame }
 
   describe '#toDF' do
-    let(:spark_data_frame) { lua_rdd.toDF(data_frame.sql_context) }
-    let(:new_data_frame) { CassandraModel::Spark::DataFrame.new(model_klass, nil, spark_data_frame: spark_data_frame, alias: Faker::Lorem.word) }
-
-    subject { new_data_frame }
-
     its(:request) { is_expected.to eq(data_frame.request) }
+  end
+
+  describe '#map' do
+    let(:new_schema) { CassandraModel::Spark::SqlSchema.new(hello: :text, age: :int).schema }
+    let(:result_lua_rdd) { lua_rdd.map(new_schema, "return {'Bobby', 37}") }
+
+    it { expect(subject.request.uniq).to eq([hello: 'Bobby', age: 37]) }
+  end
+
+  describe '#filter' do
+    let(:result_lua_rdd) { lua_rdd.filter("return tonumber(ROW.id) < 3") }
+
+    it { expect(subject.request.uniq).to eq(data_frame.where(:id.lt => 3).get) }
   end
 end
