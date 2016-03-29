@@ -25,6 +25,11 @@ describe 'querying a DataFrame' do
       expect(data_frame.sql("SELECT rk_key, ck_value FROM #{data_frame.table_name}").first).to eq(record_klass.new(key: record.key, value: record.value))
     end
 
+    it 'can normalize the columns' do
+      frame_two = data_frame.normalized
+      expect(frame_two.sql("SELECT key, value FROM #{frame_two.table_name}").first).to eq(record_klass.new(key: record.key, value: record.value))
+    end
+
     describe 'aggregation' do
       let(:key) { record.key }
       let(:key_two) { Faker::Lorem.sentence }
