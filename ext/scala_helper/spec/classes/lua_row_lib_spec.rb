@@ -15,6 +15,12 @@ describe LuaRowLib do
 
   before { globals.set('ROW', lua_row) }
 
+  describe '#new' do
+    let(:script) { "return row.new()" }
+
+    it { expect(subject.row.toSeq.array).to be_empty }
+  end
+
   describe '#append' do
     let(:script) { "return row.append(ROW, 'hello', 'world')" }
 

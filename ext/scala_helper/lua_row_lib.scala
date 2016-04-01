@@ -9,6 +9,7 @@ class LuaRowLib extends TwoArgFunction {
   override def call(mod_name: LuaValue, env: LuaValue): LuaValue = {
     val fn_table = new LuaTable()
 
+    fn_table.set("new", new newrow())
     fn_table.set("append", new append())
     fn_table.set("replace", new replace())
     fn_table.set("slice", new slice())
@@ -35,6 +36,17 @@ class LuaRowLib extends TwoArgFunction {
     case str: String => StringType
     case num: Int => IntegerType
     case dfnum: Double => DoubleType
+  }
+
+  class newrow extends LibFunction {
+    override def call(): LuaValue = {
+      val new_fields: Array[StructField] = Array()
+      val new_schema = StructType(new_fields)
+      val new_values: Seq[Any] = Seq()
+      val new_row = Row.fromSeq(new_values)
+
+      new LuaRowValue(new_schema, new_row)
+    }
   }
 
   class append extends LibFunction {
