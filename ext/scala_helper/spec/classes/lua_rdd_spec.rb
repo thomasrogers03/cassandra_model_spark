@@ -28,6 +28,23 @@ describe LuaRDD do
     it { expect(subject.request.uniq).to eq([hello: 'Bobby', age: 37]) }
   end
 
+  describe '#flatMap' do
+    let(:new_schema) { CassandraModel::Spark::SqlSchema.new(dumped_value: :text).schema }
+    let(:script) do
+      %q{local name = row.append(row.new(), 'dumped_value', ROW.name)
+         local description = row.append(row.new(), 'dumped_value', ROW.description)
+         return {name, description}
+      }
+    end
+    let(:result_lua_rdd) { lua_rdd.flatMap(new_schema, script) }
+    let(:result_values) { subject.request.map(&:values).map(&:first) }
+    let(:expected_values) do
+      data_frame.select(:name, :description).get.map(&:attributes).map(&:values).flatten
+    end
+
+    it { expect(result_values).to match_array(expected_values) }
+  end
+
   describe '#filter' do
     let(:result_lua_rdd) { lua_rdd.filter("return tonumber(ROW.id) < 3") }
 
