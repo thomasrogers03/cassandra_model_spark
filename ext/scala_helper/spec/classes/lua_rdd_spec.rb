@@ -2,7 +2,7 @@ require 'scala_spec_helper'
 
 describe LuaRDD do
   let(:model_klass) do
-    generate_composite_model(:company, {id: :int, name: :text}, {value: :text}, {description: :text, uuid: :text})
+    generate_composite_model(:company, {id: :int, name: :text}, {description: :text}, {uuid: :text})
   end
 
   let(:data_frame) { CassandraModel::Spark::DataFrame.from_csv(model_klass, 'ext/scala_helper/spec/fixtures/test_rdd.csv') }
@@ -49,5 +49,20 @@ describe LuaRDD do
     let(:result_lua_rdd) { lua_rdd.filter("return tonumber(ROW.id) < 3") }
 
     it { expect(subject.request.uniq).to eq(data_frame.where(:id.lt => 3).get) }
+  end
+  
+  describe '#reduceByKeys' do
+    let(:schema_columns) { CassandraModel::Spark::Schema.new(schema).schema }
+    let(:new_schema) { CassandraModel::Spark::SqlSchema.new(schema_columns.merge(count: :int)).schema }
+    let(:map_script) { "return row.append(ROW, 'count', 1)" }
+    let(:reduce_script) do
+      "return row.replace(LHS, 'count', LHS.count + RHS.count)"
+    end
+    let(:result_lua_rdd) { lua_rdd.map(new_schema, map_script).reduceByKeys(['description'], reduce_script) }
+    let(:expected_result) do
+      data_frame.request.group_by(&:description).map { |_, values| values.first.attributes.merge(count: values.count) }
+    end
+
+    it { expect(subject.request).to match_array(expected_result) }
   end
 end
