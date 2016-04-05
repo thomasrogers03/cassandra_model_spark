@@ -390,7 +390,7 @@ module CassandraModel
         let(:select_key) { Faker::Lorem.word }
         let(:result_sql_type) { SqlStringType }
         let(:result) { {select_key.to_sym => Faker::Lorem.word} }
-        let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, nil)] }
+        let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, SqlMetadata.empty)] }
         let(:query_schema) { SqlStructType.new(fields) }
         let(:query_result) { double(:query, collect: [RDDRow[result]], schema: query_schema) }
         let(:query) { "SELECT * FROM #{table_name}" }
@@ -837,7 +837,7 @@ module CassandraModel
           let(:options) { {select: [select_key]} }
           let(:available_columns) { [select_key.to_sym] }
 
-          let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, nil)] }
+          let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, SqlMetadata.empty)] }
           let(:query_schema) { SqlStructType.new(fields) }
           let(:query) { double(:query, schema: query_schema, first: RDDRow[result], collect: [RDDRow[result]]) }
           let(:record_attributes) { {select_key.to_sym => result_value} }
@@ -895,7 +895,7 @@ module CassandraModel
           end
 
           context 'when a type is a StructType' do
-            let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType, true, nil)]) }
+            let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType, true, SqlMetadata.empty)]) }
             let(:result_sql_type) { sql_type }
             let(:result_value) { RDDRow[description: Faker::Lorem.word] }
 
@@ -915,7 +915,7 @@ module CassandraModel
 
           context 'when the record maps result columns' do
             let(:result) { {"ck_#{select_key}" => result_value} }
-            let(:fields) { [SqlStructField.new("ck_#{select_key}", result_sql_type, true, nil)] }
+            let(:fields) { [SqlStructField.new("ck_#{select_key}", result_sql_type, true, SqlMetadata.empty)] }
             let(:record_klass) { composite_record_klass }
 
             it 'should map the columns' do
@@ -987,7 +987,7 @@ module CassandraModel
           end
           let(:field_names) { Faker::Lorem.words }
           let(:symbolized_field_names) { field_names.map(&:to_sym) }
-          let(:fields) { field_names.map { |name| SqlStructField.new(name, nil, true, nil) } }
+          let(:fields) { field_names.map { |name| SqlStructField.new(name, nil, true, SqlMetadata.empty) } }
           let(:schema) { SqlStructType.new(fields) }
 
           before do

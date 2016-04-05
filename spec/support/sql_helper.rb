@@ -57,7 +57,7 @@ class SqlDataFrame
   attr_reader :sql_context, :rdd, :schema
 
   def self.create_schema(schema_hash)
-    fields = schema_hash.map { |name, type| SqlStructField.apply(name, type, true, nil) }
+    fields = schema_hash.map { |name, type| SqlStructField.apply(name, type, true, SqlMetadata.empty) }
     SqlStructType.new(fields)
   end
 
