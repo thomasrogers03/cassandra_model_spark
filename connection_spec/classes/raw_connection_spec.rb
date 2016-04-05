@@ -8,7 +8,7 @@ module CassandraModel
     describe '#java_spark_context' do
       let(:configured_host) { connection.config[:hosts].first }
       let(:default_config) do
-        SparkConf.from_hash({
+        Spark::Lib::SparkConf.from_hash({
                                 'spark.app.name' => 'cassandra_model_spark',
                                 'spark.master' => 'local[*]',
                                 'spark.cassandra.connection.host' => configured_host,
@@ -17,11 +17,11 @@ module CassandraModel
 
       subject { connection.java_spark_context }
 
-      it { is_expected.to be_a_kind_of(JavaSparkContext) }
+      it { is_expected.to be_a_kind_of(Spark::Lib::JavaSparkContext) }
 
       it 'should not initialize the spark context multiple times' do
         connection.java_spark_context
-        expect(JavaSparkContext).not_to receive(:new)
+        expect(Spark::Lib::JavaSparkContext).not_to receive(:new)
         connection.java_spark_context
       end
 
@@ -44,7 +44,7 @@ module CassandraModel
           }
         end
         let(:spark_config) do
-          SparkConf.from_hash({
+          Spark::Lib::SparkConf.from_hash({
                                   'spark.app.name' => 'sparky',
                                   'spark.master' => 'spark.dev',
                                   'spark.executor.memory' => '512g',
@@ -81,9 +81,9 @@ module CassandraModel
 
       subject { connection.create_java_spark_streaming_context }
 
-      it { is_expected.to be_a_kind_of(JavaSparkStreamingContext) }
+      it { is_expected.to be_a_kind_of(Spark::Lib::JavaSparkStreamingContext) }
       its(:sparkContext) { is_expected.to eq(context) }
-      its(:duration) { is_expected.to eq(SparkDuration.new(2000)) }
+      its(:duration) { is_expected.to eq(Spark::Lib::SparkDuration.new(2000)) }
     end
 
   end

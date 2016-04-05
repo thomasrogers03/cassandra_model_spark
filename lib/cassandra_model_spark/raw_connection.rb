@@ -2,7 +2,7 @@ module CassandraModel
   class RawConnection
     def java_spark_context
       @spark_context ||= begin
-        JavaSparkContext.new(spark_conf).tap do |java_spark_context|
+        Spark::Lib::JavaSparkContext.new(spark_conf).tap do |java_spark_context|
           java_spark_context.sc.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
         end
       end
@@ -18,13 +18,13 @@ module CassandraModel
 
     #noinspection RubyInstanceMethodNamingConvention
     def create_java_spark_streaming_context
-      JavaSparkStreamingContext.new(java_spark_context, SparkDuration.new(2000))
+      Spark::Lib::JavaSparkStreamingContext.new(java_spark_context, Spark::Lib::SparkDuration.new(2000))
     end
 
     private
 
     def spark_conf
-      @spark_conf ||= SparkConf.new(true).tap do |conf|
+      @spark_conf ||= Spark::Lib::SparkConf.new(true).tap do |conf|
         conf.set('spark.app.name', 'cassandra_model_spark')
         conf.set('spark.master', 'local[*]')
         conf.set('spark.cassandra.connection.host', config[:hosts].first)

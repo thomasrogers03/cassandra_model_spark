@@ -5,10 +5,10 @@ module CassandraModel
       include QueryHelper
 
       SQL_TYPE_MAP = {
-          int: SqlIntegerType,
-          text: SqlStringType,
-          double: SqlDoubleType,
-          timestamp: SqlTimestampType,
+          int: Lib::SqlIntegerType,
+          text: Lib::SqlStringType,
+          double: Lib::SqlDoubleType,
+          timestamp: Lib::SqlTimestampType,
       }.freeze
       #noinspection RubyStringKeysInHashInspection
       SQL_RUBY_TYPE_FUNCTIONS = {
@@ -33,7 +33,7 @@ module CassandraModel
         end
 
         def create_sql_context(record_klass)
-          CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
+          Lib::CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
             context.setKeyspace(record_klass.table.connection.config[:keyspace])
           end
         end
@@ -196,7 +196,7 @@ module CassandraModel
       end
 
       def converted_rdd
-        SqlRowConversions.cassandraRDDToRowRDD(rdd)
+        Lib::SqlRowConversions.cassandraRDDToRowRDD(rdd)
       end
 
       def initialize_row_mapping(options)

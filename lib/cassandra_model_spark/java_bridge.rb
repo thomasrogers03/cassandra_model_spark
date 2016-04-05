@@ -1,7 +1,15 @@
+module CassandraModel
+  module Spark
+    module Lib
+
+    end
+  end
+end
+
 if RUBY_ENGINE == 'jruby'
   class Hash
     def to_java
-      JavaHashMap.new(self)
+      CassandraModel::Spark::Lib::JavaHashMap.new(self)
     end
   end
 
@@ -24,7 +32,7 @@ if RUBY_ENGINE == 'jruby'
 else
   class Hash
     def to_java
-      JavaHashMap.new.tap do |map|
+      CassandraModel::Spark::Lib::JavaHashMap.new.tap do |map|
         each do |key, value|
           map.put(key, value)
         end
@@ -58,7 +66,7 @@ module JavaBridge
     def import_java_object(path, options = {})
       name = options.fetch(:as) { path.split('.').last }.to_sym
       klass = "Java::#{path}"
-      Object.const_set(name, eval(klass))
+      set_import_const(name, eval(klass))
     end
 
     def initialize_java_engine
@@ -67,7 +75,7 @@ module JavaBridge
   else
     def import_java_object(path, options = {})
       name = options.fetch(:as) { path.split('.').last }.to_sym
-      Object.const_set(name, load_java_class(path))
+      set_import_const(name, load_java_class(path))
     end
 
     def require(path)
@@ -98,6 +106,14 @@ module JavaBridge
       import_quiet { Rjb.import(path) }
     end
   end
+
+  private
+
+  def set_import_const(name, value)
+    CassandraModel::Spark::Lib.const_set(name, value)
+  end
+
+  public
 
   def import_quiet
     prev_verbox = $VERBOSE

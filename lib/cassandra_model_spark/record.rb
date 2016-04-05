@@ -1,7 +1,7 @@
 module CassandraModel
   class Record
     def self.rdd
-      @spark_rdd ||= SparkCassandraHelper.cassandra_table(
+      @spark_rdd ||= Spark::Lib::SparkCassandraHelper.cassandra_table(
           table.connection.spark_context,
           table.connection.config[:keyspace],
           table_name)

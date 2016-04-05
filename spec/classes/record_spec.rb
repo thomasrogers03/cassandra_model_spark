@@ -21,7 +21,7 @@ module CassandraModel
     subject { record_klass }
 
     before do
-      allow(SparkCassandraHelper).to receive(:cassandra_table).with(spark_context, keyspace, table_name).and_return(rdd)
+      allow(Spark::Lib::SparkCassandraHelper).to receive(:cassandra_table).with(spark_context, keyspace, table_name).and_return(rdd)
     end
 
     describe '.rdd' do

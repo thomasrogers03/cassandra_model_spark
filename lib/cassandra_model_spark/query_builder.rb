@@ -30,7 +30,7 @@ module CassandraModel
                       end
         memo.merge!(updated_key => value)
       end.stringify_keys.to_java
-      rdd = SparkCassandraHelper.filterRDD(@record_klass.rdd, updated_restriction)
+      rdd = Spark::Lib::SparkCassandraHelper.filterRDD(@record_klass.rdd, updated_restriction)
       Spark::DataFrame.new(options.delete(:class) || @record_klass, rdd, options)
     end
   end

@@ -7,10 +7,10 @@ end
 require 'bundler'
 Bundler.require(:default, :development, :test)
 
-log_off = JLevel.toLevel('OFF')
-JLogger.getLogger('org').setLevel(log_off)
-JLogger.getLogger('akka').setLevel(log_off)
-JLogger.getRootLogger.setLevel(log_off)
+log_off = CassandraModel::Spark::Lib::JLevel.toLevel('OFF')
+CassandraModel::Spark::Lib::JLogger.getLogger('org').setLevel(log_off)
+CassandraModel::Spark::Lib::JLogger.getLogger('akka').setLevel(log_off)
+CassandraModel::Spark::Lib::JLogger.getRootLogger.setLevel(log_off)
 
 require './spec/support/various_records.rb'
 

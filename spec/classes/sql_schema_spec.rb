@@ -9,7 +9,7 @@ module CassandraModel
 
       describe '#schema' do
         let(:expected_fields) { [] }
-        let(:expected_schema) { SqlStructType.apply(expected_fields) }
+        let(:expected_schema) { Lib::SqlStructType.apply(expected_fields) }
 
         subject { sql_schema.schema }
 
@@ -19,7 +19,7 @@ module CassandraModel
           let(:column) { Faker::Lorem.word.to_sym }
           let(:type) { :text }
           let(:schema) { {column => type} }
-          let(:expected_fields) { [SqlStructField.apply(column.to_s, SqlStringType, true, SqlMetadata.empty)] }
+          let(:expected_fields) { [Lib::SqlStructField.apply(column.to_s, Lib::SqlStringType, true, Lib::SqlMetadata.empty)] }
 
           it { is_expected.to eq(expected_schema) }
 
@@ -29,8 +29,8 @@ module CassandraModel
             let(:schema) { {column => type, column_two => type_two} }
             let(:expected_fields) do
               [
-                  SqlStructField.apply(column.to_s, SqlStringType, true, SqlMetadata.empty),
-                  SqlStructField.apply(column_two.to_s, SqlIntegerType, true, SqlMetadata.empty)
+                  Lib::SqlStructField.apply(column.to_s, Lib::SqlStringType, true, Lib::SqlMetadata.empty),
+                  Lib::SqlStructField.apply(column_two.to_s, Lib::SqlIntegerType, true, Lib::SqlMetadata.empty)
               ]
             end
 
@@ -39,18 +39,18 @@ module CassandraModel
 
           shared_examples_for 'mapping a type to a sql type' do |source_type, sql_type|
             let(:type) { source_type }
-            let(:expected_fields) { [SqlStructField.apply(column.to_s, sql_type, true, SqlMetadata.empty)] }
+            let(:expected_fields) { [Lib::SqlStructField.apply(column.to_s, sql_type, true, Lib::SqlMetadata.empty)] }
             it { is_expected.to eq(expected_schema) }
           end
 
-          it_behaves_like 'mapping a type to a sql type', :double, SqlDoubleType
-          it_behaves_like 'mapping a type to a sql type', :int, SqlIntegerType
-          it_behaves_like 'mapping a type to a sql type', :timestamp, SqlTimestampType
-          it_behaves_like 'mapping a type to a sql type', :blob, SqlBinaryType
-          it_behaves_like 'mapping a type to a sql type', [:list, :int], SqlArrayType.apply(SqlIntegerType)
-          it_behaves_like 'mapping a type to a sql type', [:list, :text], SqlArrayType.apply(SqlStringType)
-          it_behaves_like 'mapping a type to a sql type', [:map, :int, :text], SqlMapType.apply(SqlIntegerType, SqlStringType, true)
-          it_behaves_like 'mapping a type to a sql type', [:map, :text, :int], SqlMapType.apply(SqlStringType, SqlIntegerType, true)
+          it_behaves_like 'mapping a type to a sql type', :double, Lib::SqlDoubleType
+          it_behaves_like 'mapping a type to a sql type', :int, Lib::SqlIntegerType
+          it_behaves_like 'mapping a type to a sql type', :timestamp, Lib::SqlTimestampType
+          it_behaves_like 'mapping a type to a sql type', :blob, Lib::SqlBinaryType
+          it_behaves_like 'mapping a type to a sql type', [:list, :int], Lib::SqlArrayType.apply(Lib::SqlIntegerType)
+          it_behaves_like 'mapping a type to a sql type', [:list, :text], Lib::SqlArrayType.apply(Lib::SqlStringType)
+          it_behaves_like 'mapping a type to a sql type', [:map, :int, :text], Lib::SqlMapType.apply(Lib::SqlIntegerType, Lib::SqlStringType, true)
+          it_behaves_like 'mapping a type to a sql type', [:map, :text, :int], Lib::SqlMapType.apply(Lib::SqlStringType, Lib::SqlIntegerType, true)
         end
       end
 

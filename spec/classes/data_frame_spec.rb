@@ -94,7 +94,7 @@ module CassandraModel
             allow(formatted_reader).to receive(:options).with(java_options).and_return(loader)
             reader = double(:reader)
             allow(reader).to receive(:format).with('com.databricks.spark.csv').and_return(formatted_reader)
-            allow_any_instance_of(CassandraSQLContext).to receive(:read) do |context|
+            allow_any_instance_of(Lib::CassandraSQLContext).to receive(:read) do |context|
               allow(csv_frame).to receive(:sql_context).and_return(context)
               reader
             end
@@ -114,7 +114,7 @@ module CassandraModel
 
           context 'with an existing sql context' do
             let!(:csv_frame) { mock_csv_frame_load_variation(path) }
-            let(:frame_context) { CassandraSQLContext.new(nil) }
+            let(:frame_context) { Lib::CassandraSQLContext.new(nil) }
             let(:options) { {sql_context: frame_context} }
 
             its(:sql_context) { is_expected.to eq(frame_context) }
@@ -168,11 +168,11 @@ module CassandraModel
         subject { data_frame.sql_context }
         before { record_klass.table.connection.config = {keyspace: keyspace} }
 
-        it { is_expected.to eq(CassandraSQLContext.new(spark_context)) }
+        it { is_expected.to eq(Lib::CassandraSQLContext.new(spark_context)) }
 
         it 'should cache the value' do
           data_frame.sql_context
-          expect(CassandraSQLContext).not_to receive(:new)
+          expect(Lib::CassandraSQLContext).not_to receive(:new)
           data_frame.sql_context
         end
 
@@ -206,22 +206,22 @@ module CassandraModel
       end
 
       describe '#spark_data_frame' do
-        let(:sql_columns) { {'partition' => SqlStringType} }
-        let(:sql_column_schema) { SqlDataFrame.create_schema(sql_columns) }
+        let(:sql_columns) { {'partition' => Lib::SqlStringType} }
+        let(:sql_column_schema) { Lib::SqlDataFrame.create_schema(sql_columns) }
         subject { data_frame.spark_data_frame }
 
-        it { is_expected.to be_a_kind_of(SqlDataFrame) }
+        it { is_expected.to be_a_kind_of(Lib::SqlDataFrame) }
 
-        its(:rdd) { is_expected.to eq(SqlRowConversions.cassandraRDDToRowRDD(rdd)) }
+        its(:rdd) { is_expected.to eq(Lib::SqlRowConversions.cassandraRDDToRowRDD(rdd)) }
 
         it 'should instance-cache the frame' do
           data_frame.spark_data_frame
-          expect(SqlDataFrame).not_to receive(:new)
+          expect(Lib::SqlDataFrame).not_to receive(:new)
           data_frame.spark_data_frame
         end
 
         it 'should register a temp table with the name of the table associated with the frame' do
-          expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(table_name)
+          expect_any_instance_of(Lib::SqlDataFrame).to receive(:register_temp_table).with(table_name)
           data_frame.spark_data_frame
         end
 
@@ -236,7 +236,7 @@ module CassandraModel
           let(:data_frame) { DataFrame.new(record_klass, rdd, alias: alias_table_name) }
 
           it 'should register a temp table with the alias' do
-            expect_any_instance_of(SqlDataFrame).to receive(:register_temp_table).with(alias_table_name)
+            expect_any_instance_of(Lib::SqlDataFrame).to receive(:register_temp_table).with(alias_table_name)
             data_frame.spark_data_frame
           end
         end
@@ -245,7 +245,7 @@ module CassandraModel
 
         context 'with a different set of columns' do
           let(:clustering_columns) { {clustering: :int} }
-          let(:sql_columns) { {'partition' => SqlStringType, 'clustering' => SqlIntegerType} }
+          let(:sql_columns) { {'partition' => Lib::SqlStringType, 'clustering' => Lib::SqlIntegerType} }
 
           its(:schema) { is_expected.to eq(sql_column_schema) }
         end
@@ -257,8 +257,8 @@ module CassandraModel
           its(:schema) { is_expected.to eq(sql_column_schema) }
         end
 
-        it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, SqlDoubleType
-        it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, SqlTimestampType
+        it_behaves_like 'mapping a cassandra column type to a spark sql type', :double, Lib::SqlDoubleType
+        it_behaves_like 'mapping a cassandra column type to a spark sql type', :timestamp, Lib::SqlTimestampType
       end
 
       describe '#cache' do
@@ -364,7 +364,7 @@ module CassandraModel
             {
                 mapper: row_mapper,
                 type_map: {
-                    partition: {type: SqlDoubleType, name: :double_partition}
+                    partition: {type: Lib::SqlDoubleType, name: :double_partition}
                 }
             }
           end
@@ -388,11 +388,11 @@ module CassandraModel
 
       describe '#sql' do
         let(:select_key) { Faker::Lorem.word }
-        let(:result_sql_type) { SqlStringType }
+        let(:result_sql_type) { Lib::SqlStringType }
         let(:result) { {select_key.to_sym => Faker::Lorem.word} }
-        let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, SqlMetadata.empty)] }
-        let(:query_schema) { SqlStructType.new(fields) }
-        let(:query_result) { double(:query, collect: [RDDRow[result]], schema: query_schema) }
+        let(:fields) { [Lib::SqlStructField.new(select_key, result_sql_type, true, Lib::SqlMetadata.empty)] }
+        let(:query_schema) { Lib::SqlStructType.new(fields) }
+        let(:query_result) { double(:query, collect: [Lib::RDDRow[result]], schema: query_schema) }
         let(:query) { "SELECT * FROM #{table_name}" }
 
         subject { data_frame.sql(query) }
@@ -437,13 +437,13 @@ module CassandraModel
       end
 
       describe '#query' do
-        let(:sql_context) { CassandraSQLContext.new(nil) }
+        let(:sql_context) { Lib::CassandraSQLContext.new(nil) }
         let(:query) { double(:query) }
         let(:restriction) { {} }
         let(:options) { {} }
         let(:query_sql) { "SELECT * FROM #{table_name}" }
         let(:data_frame) { DataFrame.new(record_klass, rdd, sql_context: sql_context) }
-        let(:mock_schema) { SqlDataFrame.create_schema(rk_partition: :string, ck_partition: :string, ck_price: :double, partition: :string, price: :double) }
+        let(:mock_schema) { Lib::SqlDataFrame.create_schema(rk_partition: :string, ck_partition: :string, ck_price: :double, partition: :string, price: :double) }
 
         subject { data_frame.query(restriction, options) }
 
@@ -686,7 +686,7 @@ module CassandraModel
 
             context 'when the mapped column is not part of the DataFrame schema' do
               let(:query_sql) { "SELECT `partition` FROM #{table_name}" }
-              let(:mock_schema) { SqlDataFrame.create_schema('partition' => 'string') }
+              let(:mock_schema) { Lib::SqlDataFrame.create_schema('partition' => 'string') }
 
               it { is_expected.to eq(query) }
             end
@@ -825,7 +825,7 @@ module CassandraModel
 
       describe 'pulling data from the data set' do
         shared_examples_for 'a method mapping a query result to a Record' do |method, collect_method|
-          let(:result_sql_type) { SqlTypeWrapper.new(SqlStringType) }
+          let(:result_sql_type) { Lib::SqlTypeWrapper.new(Lib::SqlStringType) }
           let(:result_value) { Faker::Lorem.word }
 
           let(:clustering_columns) { available_columns.inject({}) { |memo, column| memo.merge!(column => :text) } }
@@ -837,9 +837,9 @@ module CassandraModel
           let(:options) { {select: [select_key]} }
           let(:available_columns) { [select_key.to_sym] }
 
-          let(:fields) { [SqlStructField.new(select_key, result_sql_type, true, SqlMetadata.empty)] }
-          let(:query_schema) { SqlStructType.new(fields) }
-          let(:query) { double(:query, schema: query_schema, first: RDDRow[result], collect: [RDDRow[result]]) }
+          let(:fields) { [Lib::SqlStructField.new(select_key, result_sql_type, true, Lib::SqlMetadata.empty)] }
+          let(:query_schema) { Lib::SqlStructType.new(fields) }
+          let(:query) { double(:query, schema: query_schema, first: Lib::RDDRow[result], collect: [Lib::RDDRow[result]]) }
           let(:record_attributes) { {select_key.to_sym => result_value} }
 
           before do
@@ -856,7 +856,7 @@ module CassandraModel
           end
 
           shared_examples_for 'converting sql types back to ruby types' do |value, sql_type|
-            let(:result_sql_type) { SqlTypeWrapper.new(sql_type) }
+            let(:result_sql_type) { Lib::SqlTypeWrapper.new(sql_type) }
             let(:result_value) { value }
 
             it 'should return the result mapped to a CassandraModel::Record' do
@@ -864,40 +864,40 @@ module CassandraModel
             end
           end
 
-          it_behaves_like 'converting sql types back to ruby types', 15, SqlIntegerType
-          it_behaves_like 'converting sql types back to ruby types', SqlLong.new(153), SqlLongType
-          it_behaves_like 'converting sql types back to ruby types', 15.3, SqlDoubleType
-          it_behaves_like 'converting sql types back to ruby types', Time.at(12544), SqlTimestampType
-          it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, SqlMapType.apply(SqlStringType, SqlStringType, true)
+          it_behaves_like 'converting sql types back to ruby types', 15, Lib::SqlIntegerType
+          it_behaves_like 'converting sql types back to ruby types', Lib::SqlLong.new(153), Lib::SqlLongType
+          it_behaves_like 'converting sql types back to ruby types', 15.3, Lib::SqlDoubleType
+          it_behaves_like 'converting sql types back to ruby types', Time.at(12544), Lib::SqlTimestampType
+          it_behaves_like 'converting sql types back to ruby types', {'hello' => 'world'}, Lib::SqlMapType.apply(Lib::SqlStringType, Lib::SqlStringType, true)
 
           describe 'converting uuid types' do
             let(:clustering_columns) { {select_key.to_sym => :uuid} }
-            it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
+            it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), Lib::SqlStringType
 
             context 'when the columns are mapped' do
               let(:mapped_column) { :"ck_#{select_key}" }
               let(:clustering_columns) { {select_key => :uuid} }
               let(:record_klass) { composite_record_klass }
-              it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), SqlStringType
+              it_behaves_like 'converting sql types back to ruby types', Cassandra::Uuid.new('00000000-0000-0000-0000-000000000001'), Lib::SqlStringType
             end
           end
 
           describe 'converting timeuuid types' do
             let(:clustering_columns) { {select_key.to_sym => :timeuuid} }
-            it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
+            it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), Lib::SqlStringType
 
             context 'when the columns are mapped' do
               let(:mapped_column) { :"ck_#{select_key}" }
               let(:clustering_columns) { {select_key => :timeuuid} }
               let(:record_klass) { composite_record_klass }
-              it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), SqlStringType
+              it_behaves_like 'converting sql types back to ruby types', Cassandra::TimeUuid.new('00000000-0000-0000-0000-000000000011'), Lib::SqlStringType
             end
           end
 
           context 'when a type is a StructType' do
-            let(:sql_type) { SqlStructType.new([SqlStructField.new('description', SqlStringType, true, SqlMetadata.empty)]) }
+            let(:sql_type) { Lib::SqlStructType.new([Lib::SqlStructField.new('description', Lib::SqlStringType, true, Lib::SqlMetadata.empty)]) }
             let(:result_sql_type) { sql_type }
-            let(:result_value) { RDDRow[description: Faker::Lorem.word] }
+            let(:result_value) { Lib::RDDRow[description: Faker::Lorem.word] }
 
             it 'should recursively map the results' do
               expect(data_frame.public_send(method, attributes, options)).to eq(record_result)
@@ -905,7 +905,7 @@ module CassandraModel
           end
 
           context 'with a type we cannot handle' do
-            let(:result_sql_type) { SqlTypeWrapper.new(SqlFakeType) }
+            let(:result_sql_type) { Lib::SqlTypeWrapper.new(Lib::SqlFakeType) }
             let(:result_value) { '1239333-33333' }
 
             it 'should convert to a string' do
@@ -915,7 +915,7 @@ module CassandraModel
 
           context 'when the record maps result columns' do
             let(:result) { {"ck_#{select_key}" => result_value} }
-            let(:fields) { [SqlStructField.new("ck_#{select_key}", result_sql_type, true, SqlMetadata.empty)] }
+            let(:fields) { [Lib::SqlStructField.new("ck_#{select_key}", result_sql_type, true, Lib::SqlMetadata.empty)] }
             let(:record_klass) { composite_record_klass }
 
             it 'should map the columns' do
@@ -987,8 +987,8 @@ module CassandraModel
           end
           let(:field_names) { Faker::Lorem.words }
           let(:symbolized_field_names) { field_names.map(&:to_sym) }
-          let(:fields) { field_names.map { |name| SqlStructField.new(name, nil, true, SqlMetadata.empty) } }
-          let(:schema) { SqlStructType.new(fields) }
+          let(:fields) { field_names.map { |name| Lib::SqlStructField.new(name, nil, true, Lib::SqlMetadata.empty) } }
+          let(:schema) { Lib::SqlStructType.new(fields) }
 
           before do
             allow(data_frame.spark_data_frame).to receive(:schema).and_return(schema)

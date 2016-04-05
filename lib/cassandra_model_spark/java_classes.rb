@@ -37,14 +37,15 @@ end
    LongType Metadata NullType PrecisionInfo ShortType
    ArrayType MapType
    StringType StructField StructType TimestampType).each do |sql_type|
-  Object.const_set(:"Sql#{sql_type}", import_quiet { SparkSqlDataTypeHelper.public_send(:"get#{sql_type}") })
+  type = import_quiet { CassandraModel::Spark::Lib::SparkSqlDataTypeHelper.public_send(:"get#{sql_type}") }
+  CassandraModel::Spark::Lib.const_set(:"Sql#{sql_type}", type)
 end
 
 #noinspection RubyConstantNamingConvention
-SqlStringArrayType = SparkSqlDataTypeHelper.getArrayType(SqlStringType)
+SqlStringArrayType = CassandraModel::Spark::Lib::SparkSqlDataTypeHelper.getArrayType(CassandraModel::Spark::Lib::SqlStringType)
 
 #noinspection RubyConstantNamingConvention
-SqlIntegerArrayType = SparkSqlDataTypeHelper.getArrayType(SqlIntegerType)
+SqlIntegerArrayType = CassandraModel::Spark::Lib::SparkSqlDataTypeHelper.getArrayType(CassandraModel::Spark::Lib::SqlIntegerType)
 
 #noinspection RubyConstantNamingConvention
-SqlStringStringMapType = SparkSqlDataTypeHelper.getMapType(SqlStringType, SqlStringType)
+SqlStringStringMapType = CassandraModel::Spark::Lib::SparkSqlDataTypeHelper.getMapType(CassandraModel::Spark::Lib::SqlStringType, CassandraModel::Spark::Lib::SqlStringType)
