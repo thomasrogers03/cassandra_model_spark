@@ -50,7 +50,7 @@ describe LuaRDD do
 
     it { expect(subject.request.uniq).to eq(data_frame.where(:id.lt => 3).get) }
   end
-  
+
   describe '#reduceByKeys' do
     let(:schema_columns) { CassandraModel::Spark::Schema.new(schema).schema }
     let(:new_schema) { CassandraModel::Spark::SqlSchema.new(schema_columns.merge(count: :int)).schema }
@@ -64,5 +64,26 @@ describe LuaRDD do
     end
 
     it { expect(subject.request).to match_array(expected_result) }
+  end
+
+  describe '#groupByString' do
+    let(:result_lua_rdd) { lua_rdd.groupByString('return ROW.description') }
+    let(:expected_result) do
+      data_frame.request.group_by(&:description).map do |description, grouped_records|
+        [description, grouped_records.map(&:attributes).map(&:values)]
+      end
+    end
+
+    subject do
+      result_lua_rdd.rdd.collect.map do |row|
+        description, grouped_values = row.toSeq.array
+        grouped_attributes = grouped_values.map(&:toSeq).map(&:array).map do |row|
+          row.map(&:toString)
+        end
+        [description.toString, grouped_attributes]
+      end
+    end
+
+    it { is_expected.to match_array(expected_result) }
   end
 end
