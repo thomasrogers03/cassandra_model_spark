@@ -31,6 +31,8 @@ module CassandraModel
             end
           when :int
             Lib::SqlIntegerType
+          when :boolean
+            Lib::SqlBooleanType
           when :double
             Lib::SqlDoubleType
           when :blob

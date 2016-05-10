@@ -25,6 +25,8 @@ module CassandraModel
             [:map, sql_type(type.keyType), sql_type(type.valueType) ]
           when 'IntegerType'
             :int
+          when 'BooleanType'
+            :boolean
           when 'DoubleType'
             :double
           when 'BinaryType'
