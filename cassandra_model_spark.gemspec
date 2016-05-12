@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'cassandra_model_spark'
-  s.version = '0.0.3'
+  s.version = '0.0.4'
   s.license = 'Apache License 2.0'
   s.summary = 'Spark integration for cassandra_model'
   s.description = %q{Spark integration for cassandra_model.
