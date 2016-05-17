@@ -6,6 +6,7 @@ import org.apache.spark.sql._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd._
 import org.apache.spark.sql.types._
+import javax.xml.bind.DatatypeConverter
 
 object MapStringStringRowMapping {
   private def canDecode(blob: Array[Byte]) = {
@@ -39,6 +40,55 @@ object MapStringStringRowMapping {
     val values = row.columnValues.map {
       value => value match {
         case (blob: Array[Byte]) => decodeValue(blob)
+        case _ => value
+      }
+    }
+
+    new CassandraRow(columns, values)
+  }
+
+  def mappedRDD(rdd: RDD[CassandraRow]): RDD[CassandraRow] = {
+    rdd.map(
+      row => updatedRow(row)
+    )
+  }
+}
+
+object EncodeBytesRowMapping {
+  private def updatedRow(row: CassandraRow): CassandraRow = {
+    val columns = row.columnNames
+    val values = row.columnValues.map {
+      value => value match {
+        case (blob: Array[Byte]) => "BS64" + DatatypeConverter.printBase64Binary(blob)
+        case _ => value
+      }
+    }
+
+    new CassandraRow(columns, values)
+  }
+
+  def mappedRDD(rdd: RDD[CassandraRow]): RDD[CassandraRow] = {
+    rdd.map(
+      row => updatedRow(row)
+    )
+  }
+}
+
+object DecodeBytesRowMapping {
+  private def canDecode(str: String) = {
+    str.substring(0, 3) == "BS64"
+  }
+
+  private def updatedRow(row: CassandraRow): CassandraRow = {
+    val columns = row.columnNames
+    val values = row.columnValues.map {
+      value => value match {
+        case str: String => {
+          if(canDecode(str))
+            DatatypeConverter.parseBase64Binary(str.substring(4))
+          else
+            str
+        }
         case _ => value
       }
     }
