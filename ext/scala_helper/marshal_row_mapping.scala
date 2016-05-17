@@ -21,7 +21,7 @@ object MapStringStringRowMapping {
       value match {
         case (m: Map[_, _]) => m map {
           case (key, value) => {
-            val new_value = value match {
+            val new_value = Option(value) match {
               case Some(some) => String.valueOf(some)
               case None => null
             }
