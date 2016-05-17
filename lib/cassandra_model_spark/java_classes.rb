@@ -20,6 +20,8 @@ import_java_object 'org.apache.spark.api.cassandra_model.CassandraHelper', as: '
 import_java_object 'org.apache.spark.api.cassandra_model.DataTypeHelper', as: 'SparkSqlDataTypeHelper'
 import_java_object 'org.apache.spark.api.cassandra_model.MarshalLoader', as: 'ScalaMarshalLoader'
 import_java_object 'org.apache.spark.api.cassandra_model.MapStringStringRowMapping', as: 'SparkMapStringStringRowMapping'
+import_java_object 'org.apache.spark.api.cassandra_model.EncodeBytesRowMapping', as: 'SparkEncodeBytesRowMapping'
+import_java_object 'org.apache.spark.api.cassandra_model.DecodeBytesRowMapping', as: 'SparkDecodeBytesRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.SparkRowRowMapping', as: 'SparkSparkRowRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.LuaRDD'
 
