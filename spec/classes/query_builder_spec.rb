@@ -76,6 +76,21 @@ module CassandraModel
         it { expect(frame_klass).to eq(klass) }
       end
 
+      context 'when providing a row mapping' do
+        let(:mapped_rdd) { double(:rdd) }
+        let(:row_mapping) { double(:row_mapping) }
+        let(:data_frame) { query_builder.as_data_frame(row_mapping: row_mapping) }
+
+        before do
+          allow(row_mapping).to receive(:mappedRDD) do |filtered_rdd|
+            expect(filtered_rdd.rdd).to eq(rdd)
+            mapped_rdd
+          end
+        end
+
+        it { expect(frame_rdd).to eq(mapped_rdd) }
+      end
+
       describe 'filtering the rdd' do
         subject { frame_rdd }
 
