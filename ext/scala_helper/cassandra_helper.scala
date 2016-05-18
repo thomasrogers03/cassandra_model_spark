@@ -1,6 +1,7 @@
 package org.apache.spark.api.cassandra_model
 
 import org.apache.spark._
+import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd._
 import com.datastax.spark.connector.cql._
@@ -18,7 +19,7 @@ object CassandraHelper {
     sc.cassandraTable(keyspace, table)
   }
 
-  def saveRDDToCassandra(sc: SparkContext, rdd: CassandraRDD[CassandraRow], keyspace: String, table: String, host: String) = {
+  def saveRDDToCassandra(sc: SparkContext, rdd: RDD[CassandraRow], keyspace: String, table: String, host: String) = {
     implicit val c = CassandraConnector(sc.getConf.set("spark.cassandra.connection.host", host))
 
     rdd.saveToCassandra(keyspace, table)
