@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 group :development do
   gem 'rdoc'
-  gem 'cassandra-driver', '~> 1.1', require: false
+  gem 'cassandra-driver', '>= 1.1', '<= 2.0.1', require: false
   gem 'activesupport', require: false
   gem 'concurrent-ruby', require: false
   gem 'thomas_utils', '>= 0.1.4', '< 0.3.0', github: 'thomasrogers03/thomas_utils', require: false

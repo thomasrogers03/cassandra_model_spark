@@ -40,6 +40,9 @@ PATH
       cassandra_model (>= 0.10.0, <= 1.1)
       rjb (~> 1.5.4)
       thomas_utils (>= 0.1.16, < 0.3.0)
+    cassandra_model_spark (0.0.4-java)
+      cassandra_model (>= 0.10.0, <= 1.1)
+      thomas_utils (>= 0.1.16, < 0.3.0)
 
 GEM
   remote: https://rubygems.org/
@@ -50,9 +53,9 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    cassandra-driver (1.2.0)
+    cassandra-driver (2.0.1)
       ione (~> 1.2)
-    cassandra-driver (1.2.0-java)
+    cassandra-driver (2.0.1-java)
       ione (~> 1.2)
     coderay (1.1.0)
     concurrent-ruby (1.0.1)
@@ -151,7 +154,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport
   batch_reactor!
-  cassandra-driver (~> 1.1)
+  cassandra-driver (>= 1.1, <= 2.0.1)
   cassandra_mocks!
   cassandra_model!
   cassandra_model_spark!
