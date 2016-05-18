@@ -12,6 +12,12 @@ object CassandraHelper {
     sc.cassandraTable(keyspace, table)
   }
 
+  def cassandraTableForHost(sc: SparkContext, keyspace: String, table: String, host: String) = {
+    implicit val c = CassandraConnector(sc.getConf.set("spark.cassandra.connection.host", host))
+
+    sc.cassandraTable(keyspace, table)
+  }
+
   def saveRDDToCassandra(sc: SparkContext, rdd: CassandraRDD[CassandraRow], keyspace: String, table: String, host: String) = {
     implicit val c = CassandraConnector(sc.getConf.set("spark.cassandra.connection.host", host))
 
