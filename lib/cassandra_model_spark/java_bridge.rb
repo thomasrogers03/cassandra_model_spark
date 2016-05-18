@@ -1,3 +1,13 @@
+class String
+  def toString
+    self
+  end
+end
+
+class NilClass
+  alias :toString :to_s
+end
+
 module CassandraModel
   module Spark
     module Lib
