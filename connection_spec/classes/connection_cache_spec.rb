@@ -17,7 +17,7 @@ module CassandraModel
       end
 
       it 'should not shutdown spark contexts that have not been created yet' do
-        expect_any_instance_of(JavaSparkContext).not_to receive(:stop)
+        expect_any_instance_of(CassandraModel::Spark::Lib::JavaSparkContext).not_to receive(:stop)
         ConnectionCache.clear
       end
 
