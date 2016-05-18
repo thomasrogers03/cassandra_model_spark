@@ -82,8 +82,11 @@ module CassandraModel
       end
 
       class SparkCassandraHelper
-        #noinspection RubyUnusedLocalVariable
-        def self.cassandra_table(context, keyspace, table)
+        def self.cassandraTable(context, keyspace, table)
+          RDD.new(context)
+        end
+
+        def self.cassandraTableForHost(context, keyspace, table, host)
           RDD.new(context)
         end
       end
