@@ -15,13 +15,14 @@ module CassandraModel
     let(:table_name) { record_klass.table_name }
     let(:spark_context) { ConnectionCache[nil].spark_context }
     let(:keyspace) { ConnectionCache[nil].config[:keyspace] }
+    let(:first_host) { ConnectionCache[nil].config[:hosts].first }
     let(:rdd_count) { rand(0..12345) }
     let(:rdd) { double(:rdd, count: rdd_count) }
 
     subject { record_klass }
 
     before do
-      allow(Spark::Lib::SparkCassandraHelper).to receive(:cassandraTable).with(spark_context, keyspace, table_name).and_return(rdd)
+      allow(Spark::Lib::SparkCassandraHelper).to receive(:cassandraTableForHost).with(spark_context, keyspace, table_name, first_host).and_return(rdd)
     end
 
     describe '.rdd' do
