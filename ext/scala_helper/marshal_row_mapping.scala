@@ -147,11 +147,11 @@ class MappedColumnRowMapping(val column_map: java.util.HashMap[String, String]) 
   private def updatedRow(row: CassandraRow): CassandraRow = {
     val columns = column_map.map {
       column_pair: (String, String) =>
-        column_pair._2
+        column_pair._1
     }.toIndexedSeq
     val old_column_indices = column_map.map {
       column_pair: (String, String) =>
-        row.columnNames.indexOf(column_pair._1)
+        row.columnNames.indexOf(column_pair._2)
     }
     val values = old_column_indices.map {
       case -1 => null
