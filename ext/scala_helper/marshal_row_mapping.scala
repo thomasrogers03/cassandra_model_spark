@@ -7,6 +7,7 @@ import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd._
 import org.apache.spark.sql.types._
 import javax.xml.bind.DatatypeConverter
+import scala.collection.JavaConversions.mapAsScalaMap
 
 object MapStringStringRowMapping {
   private def canDecode(blob: Array[Byte]) = {
@@ -142,7 +143,7 @@ object SparkRowRowMapping {
   }
 }
 
-class MappedColumnRowMapping(val column_map: HashMap[String, String]) {
+class MappedColumnRowMapping(val column_map: java.util.HashMap[String, String]) extends Serializable {
   private def updatedRow(row: CassandraRow): CassandraRow = {
     val columns = column_map.map {
       column_pair: (String, String) =>
