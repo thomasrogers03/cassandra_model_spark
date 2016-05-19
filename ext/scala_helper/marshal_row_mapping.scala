@@ -155,7 +155,7 @@ class MappedColumnRowMapping(val column_map: java.util.HashMap[String, String]) 
     }
     val values = old_column_indices.map {
       case -1 => null
-      case _ => row.columnValues(_)
+      case column_index => row.columnValues.apply(column_index)
     }.toIndexedSeq
 
     new CassandraRow(columns, values)
