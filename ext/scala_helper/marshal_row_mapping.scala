@@ -84,7 +84,7 @@ object DecodeBytesRowMapping {
     val values = row.columnValues.map {
       value => value match {
         case str: String => {
-          if(canDecode(str))
+          if (canDecode(str))
             DatatypeConverter.parseBase64Binary(str.substring(4))
           else
             str
@@ -131,6 +131,31 @@ object SparkRowRowMapping {
         case _ => value
       }
     }
+
+    new CassandraRow(columns, values)
+  }
+
+  def mappedRDD(rdd: RDD[CassandraRow]): RDD[CassandraRow] = {
+    rdd.map(
+      row => updatedRow(row)
+    )
+  }
+}
+
+class MappedColumnRowMapping(val column_map: HashMap[String, String]) {
+  private def updatedRow(row: CassandraRow): CassandraRow = {
+    val columns = column_map.map {
+      column_pair: (String, String) =>
+        column_pair._2
+    }.toIndexedSeq
+    val old_column_indices = column_map.map {
+      column_pair: (String, String) =>
+        row.columnNames.indexOf(column_pair._1)
+    }
+    val values = old_column_indices.map {
+      case -1 => null
+      case _ => row.columnValues(_)
+    }.toIndexedSeq
 
     new CassandraRow(columns, values)
   }

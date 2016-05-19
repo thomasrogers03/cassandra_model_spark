@@ -23,6 +23,7 @@ import_java_object 'org.apache.spark.api.cassandra_model.MapStringStringRowMappi
 import_java_object 'org.apache.spark.api.cassandra_model.EncodeBytesRowMapping', as: 'SparkEncodeBytesRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.DecodeBytesRowMapping', as: 'SparkDecodeBytesRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.SparkRowRowMapping', as: 'SparkSparkRowRowMapping'
+import_java_object 'org.apache.spark.api.cassandra_model.MappedColumnRowMapping', as: 'SparkMappedColumnRowMapping'
 import_java_object 'org.apache.spark.api.cassandra_model.LuaRDD'
 
 import_java_object 'org.apache.spark.deploy.master.Master', as: 'SparkMaster'
