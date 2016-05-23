@@ -19,6 +19,14 @@ module CassandraModel
 
         it { is_expected.to be_a_kind_of(Spark::Lib::JavaSparkContext) }
 
+        context 'when creating the spark context raises an error' do
+          before { allow(Spark::Lib::JavaSparkContext).to receive(:new).and_raise('Not enough heap!') }
+
+          it 'should re-raise the error' do
+            expect { subject }.to raise_error('Not enough heap!')
+          end
+        end
+
         it 'should not initialize the spark context multiple times' do
           connection.java_spark_context
           expect(Spark::Lib::JavaSparkContext).not_to receive(:new)
