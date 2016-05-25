@@ -68,6 +68,10 @@ else
     def self.from_java_string(string)
       string.toString
     end
+
+    def to_java
+      self
+    end
   end
 end
 
