@@ -5,6 +5,8 @@ import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd._
 import com.datastax.spark.connector.cql._
+import org.apache.spark.streaming._
+import org.apache.spark.streaming.kafka._
 import java.util._
 import scala.collection.JavaConversions.mapAsScalaMap
 
@@ -17,6 +19,11 @@ object CassandraHelper {
     implicit val c = CassandraConnector(sc.getConf.set("spark.cassandra.connection.host", host))
 
     sc.cassandraTable(keyspace, table)
+  }
+
+  def createKafkaDStream(ssc: StreamingContext, zookeeper: String, group: String, topics: Array[String]) = {
+    val topic_map = topics.map((_, 1))
+    KafkaUtils.createStream(ssc, zookeeper, group, topic_map.toMap)
   }
 
   def saveRDDToCassandra(sc: SparkContext, rdd: RDD[CassandraRow], keyspace: String, table: String, host: String) = {
