@@ -2,8 +2,6 @@ require 'fileutils'
 
 module CassandraModel
   module Spark
-    cattr_reader :application
-
     class << self
 
       def root
@@ -40,6 +38,10 @@ module CassandraModel
           Logging.logger.info 'Shutting down spark context'
           Spark.application.java_spark_context.stop
         end
+      end
+
+      def application
+        @@application
       end
 
       private
