@@ -20,5 +20,7 @@ Dir.chdir("#{CassandraModel::Spark.root}#{ASSEMBLY_PATH}") do
     puts "=> copying #{path}/ to #{CassandraModel::Spark.home}/"
     `cp -R #{CassandraModel::Spark.root}#{ASSEMBLY_PATH}/#{path}/ #{CassandraModel::Spark.home}/`
   end
+  puts "=> ensuring #{CassandraModel::Spark.config_path} exists"
+  `mkdir -p #{CassandraModel::Spark.root}/config/`
   `touch #{CassandraModel::Spark.home}/RELEASE`
 end
