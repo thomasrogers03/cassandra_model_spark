@@ -2,8 +2,9 @@ require 'fileutils'
 
 module CassandraModel
   module Spark
+    cattr_reader :application
+
     class << self
-      attr_reader :application
 
       def root
         @gem_root ||= File.expand_path('../../..', __FILE__)
@@ -33,8 +34,8 @@ module CassandraModel
         @classpath ||= (ENV['SPARK_CLASSPATH'] || default_classpath)
       end
 
-
-      @application = Application.new(Spark.config)
+      @@application = Application.new(Spark.config)
+      at_exit { Spark.application.java_spark_context.stop if Spark.application.has_spark_context? }
 
       private
 

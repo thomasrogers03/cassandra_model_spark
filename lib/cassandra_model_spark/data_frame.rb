@@ -33,7 +33,7 @@ module CassandraModel
         end
 
         def create_sql_context(record_klass)
-          Lib::CassandraSQLContext.new(record_klass.table.connection.spark_context).tap do |context|
+          Lib::CassandraSQLContext.new(Spark.application.spark_context).tap do |context|
             context.setKeyspace(record_klass.table.connection.config[:keyspace])
           end
         end

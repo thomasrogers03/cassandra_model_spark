@@ -35,8 +35,6 @@ unless CassandraModel.const_defined?('NO_BRIDGE')
   require 'cassandra_model_spark/java_classes'
 end
 
-require 'cassandra_model_spark/raw_connection'
-require 'cassandra_model_spark/connection_cache'
 require 'cassandra_model_spark/record'
 require 'cassandra_model_spark/query_builder'
 require 'cassandra_model_spark/sql_schema'

@@ -1,4 +1,6 @@
 require 'optparse'
+require 'concurrent'
+require_relative 'application'
 require_relative 'spark'
 
 options = {}

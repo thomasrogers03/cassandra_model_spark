@@ -31,14 +31,6 @@ guard :rspec, cmd: 'bundle exec rspec' do
   watch(%r{^spec/support/(.+)\.rb$}) { "spec" }
 end
 
-group :connection do
-  guard :rspec, cmd: 'bundle exec rspec', spec_paths: %w(connection_spec) do
-    watch(%r{^connection_spec/classes/.+_spec\.rb$})
-    watch(%r{^lib/cassandra_model_spark/(.+)\.rb}) { |m| "connection_spec/classes/#{m[1]}_spec.rb" }
-    watch('spec/connection_spec_helper.rb') { 'connection_spec' }
-  end
-end
-
 group :scala do
   guard :scala_helper do
     watch(%r{^ext/scala_helper/.+\.scala$})

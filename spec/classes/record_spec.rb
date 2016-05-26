@@ -13,7 +13,7 @@ module CassandraModel
       end
     end
     let(:table_name) { record_klass.table_name }
-    let(:spark_context) { ConnectionCache[nil].spark_context }
+    let(:spark_context) { global_application.spark_context }
     let(:keyspace) { ConnectionCache[nil].config[:keyspace] }
     let(:first_host) { ConnectionCache[nil].config[:hosts].first }
     let(:rdd_count) { rand(0..12345) }

@@ -163,7 +163,7 @@ module CassandraModel
       end
 
       describe '#sql_context' do
-        let(:spark_context) { record_klass.table.connection.spark_context }
+        let(:spark_context) { global_application.spark_context }
         let(:keyspace) { Faker::Lorem.word }
         subject { data_frame.sql_context }
         before { record_klass.table.connection.config = {keyspace: keyspace} }
