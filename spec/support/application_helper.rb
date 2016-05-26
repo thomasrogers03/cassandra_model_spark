@@ -3,7 +3,7 @@ module ApplicationHelper
 
   before do
     allow(CassandraModel::Spark).to receive(:application) do
-      new CassandraModel::Spark::Application({})
+      CassandraModel::Spark::Application.new({})
     end
   end
 end
