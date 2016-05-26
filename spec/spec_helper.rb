@@ -38,6 +38,7 @@ Dir['./spec/shared_examples/**.rb'].each { |file| require file }
 RSpec.configure do |config|
   require_relative '../lib/cassandra_model_spark'
 
+  config.include ApplicationHelper
   config.include VariousRecords
 
   # rspec-expectations config goes here. You can use an alternate

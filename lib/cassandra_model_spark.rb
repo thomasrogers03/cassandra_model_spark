@@ -25,6 +25,7 @@ require 'thomas_utils'
 require 'batch_reactor'
 require 'cassandra_model'
 require 'rjb' unless RUBY_ENGINE == 'jruby' || CassandraModel.const_defined?('NO_BRIDGE')
+require 'cassandra_model_spark/application'
 require 'cassandra_model_spark/spark'
 
 unless CassandraModel.const_defined?('NO_BRIDGE')
@@ -34,7 +35,6 @@ unless CassandraModel.const_defined?('NO_BRIDGE')
   require 'cassandra_model_spark/java_classes'
 end
 
-require 'cassandra_model_spark/application'
 require 'cassandra_model_spark/raw_connection'
 require 'cassandra_model_spark/connection_cache'
 require 'cassandra_model_spark/record'
