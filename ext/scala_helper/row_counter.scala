@@ -11,10 +11,15 @@ import java.util.Date
 object RowCounter {
   private def createDeserializedStream(stream: DStream[(String, String)]) = {
     stream.map { column_pair: (String, String) =>
-      val deserialized_row = new MarshalLoader(column_pair._2.getBytes()).getValue match {
-        case arr: Array[AnyRef] => arr
-      }
-      (deserialized_row.toSeq, 1)
+      val deserialized_row = new MarshalLoader(column_pair._2.getBytes()).getValue.asInstanceOf[Map[AnyRef, AnyRef]]
+      deserialized_row
+    }
+  }
+
+  private def createFilteredStream(acceptable_columns: Array[String], stream: DStream[Map[AnyRef, AnyRef]]) = {
+    stream.map { row: Map[AnyRef, AnyRef] =>
+      val values = acceptable_columns.map(row(_))
+      (values.toSeq, 1)
     }
   }
 
@@ -27,14 +32,16 @@ class RowCounter(
                   val sc: SparkContext,
                   val columns: Array[String],
                   val timestamp_column: String,
+                  val count_column: String,
                   val stream: DStream[(String, String)]
                   ) {
   private val deserialized_stream = RowCounter.createDeserializedStream(stream)
-  private val reduced_stream = RowCounter.createReducedStream(deserialized_stream)
+  private val filtered_stream = RowCounter.createFilteredStream(columns, deserialized_stream)
+  private val reduced_stream = RowCounter.createReducedStream(filtered_stream)
 
   def saveToCassandra(keyspace: String, table: String, host: String) = {
     implicit val c = CassandraConnector(sc.getConf.set("spark.cassandra.connection.host", host))
-    val updated_columns = columns :+ timestamp_column
+    val updated_columns = columns :+ timestamp_column :+ count_column
 
     reduced_stream.foreachRDD { (rdd: RDD[(Seq[AnyRef], Int)], timestamp: Time) =>
       rdd.map { row: (Seq[AnyRef], Int) =>
