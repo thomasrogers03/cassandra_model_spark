@@ -35,7 +35,12 @@ module CassandraModel
       end
 
       @@application = Application.new(Spark.config)
-      at_exit { Spark.application.java_spark_context.stop if Spark.application.has_spark_context? }
+      at_exit do
+        if Spark.application.has_spark_context?
+          Logging.logger.info 'Shutting down spark context'
+          Spark.application.java_spark_context.stop
+        end
+      end
 
       private
 
