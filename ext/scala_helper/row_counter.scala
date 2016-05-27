@@ -20,9 +20,9 @@ object RowCounter {
   private def createFilteredStream(acceptable_columns: Array[String], counter_column: String, stream: DStream[HashMap[AnyRef, AnyRef]]) = {
     stream.map { row: HashMap[AnyRef, AnyRef] =>
       val values = acceptable_columns.map(row.getOrElse(_, null))
-      val count: Int = row.get(counter_column) match {
-        case num: Some[AnyRef] => num.asInstanceOf[java.lang.Integer]
-        case _ => 1
+      val count: Int = row.getOrElse(counter_column, null) match {
+        case null => 1
+        case num: AnyRef => num.asInstanceOf[java.lang.Integer]
       }
       (values.toSeq, count)
     }
