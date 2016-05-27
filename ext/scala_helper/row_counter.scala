@@ -51,7 +51,7 @@ class RowCounter(
     reduced_stream.foreachRDD { (rdd: RDD[(Seq[AnyRef], Int)], timestamp: Time) =>
       rdd.map { row: (Seq[AnyRef], Int) =>
         val count: java.lang.Integer = row._2
-        val values = row._1 :+ count :+ new Date(timestamp.milliseconds)
+        val values = row._1 :+ new Date(timestamp.milliseconds) :+ count
 
         new CassandraRow(updated_columns, values.toIndexedSeq)
       }.saveToCassandra(keyspace, table)
