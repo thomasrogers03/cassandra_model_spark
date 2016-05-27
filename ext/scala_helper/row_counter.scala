@@ -7,19 +7,24 @@ import org.apache.spark.streaming.dstream.DStream
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.cql._
 import java.util.Date
+import scala.collection.mutable.HashMap
 
 object RowCounter {
   private def createDeserializedStream(stream: DStream[(String, String)]) = {
     stream.map { column_pair: (String, String) =>
-      val deserialized_row = new MarshalLoader(column_pair._2.getBytes()).getValue.asInstanceOf[Map[AnyRef, AnyRef]]
+      val deserialized_row = new MarshalLoader(column_pair._2.getBytes()).getValue.asInstanceOf[HashMap[AnyRef, AnyRef]]
       deserialized_row
     }
   }
 
-  private def createFilteredStream(acceptable_columns: Array[String], stream: DStream[Map[AnyRef, AnyRef]]) = {
-    stream.map { row: Map[AnyRef, AnyRef] =>
-      val values = acceptable_columns.map(row(_))
-      (values.toSeq, 1)
+  private def createFilteredStream(acceptable_columns: Array[String], counter_column: String, stream: DStream[HashMap[AnyRef, AnyRef]]) = {
+    stream.map { row: HashMap[AnyRef, AnyRef] =>
+      val values = acceptable_columns.map(row.getOrElse(_, null))
+      val count: Int = row.get(counter_column) match {
+        case num: Some[AnyRef] => num.asInstanceOf[java.lang.Integer]
+        case _ => 1
+      }
+      (values.toSeq, count)
     }
   }
 
@@ -36,7 +41,7 @@ class RowCounter(
                   val stream: DStream[(String, String)]
                   ) {
   private val deserialized_stream = RowCounter.createDeserializedStream(stream)
-  private val filtered_stream = RowCounter.createFilteredStream(columns, deserialized_stream)
+  private val filtered_stream = RowCounter.createFilteredStream(columns, count_column, deserialized_stream)
   private val reduced_stream = RowCounter.createReducedStream(filtered_stream)
 
   def saveToCassandra(keyspace: String, table: String, host: String) = {
