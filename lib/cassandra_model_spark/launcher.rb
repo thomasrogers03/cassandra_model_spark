@@ -70,7 +70,7 @@ module CassandraModel
 
       def add_master_jars
         Spark.application do |connection|
-          connection.config = {spark: {master: master_url}}
+          connection.spark_config = {spark: {master: master_url}}
           connection.spark_context.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
         end
         Spark.force_shutdown!
@@ -122,7 +122,7 @@ module CassandraModel
 
       def config
         @config ||= begin
-          override_config = Spark.application.config.fetch(:spark_daemon) { {} }
+          override_config = Spark.application.spark_config.fetch(:spark_daemon) { {} }
           {
               id: 1,
               ui_port: 8180,
