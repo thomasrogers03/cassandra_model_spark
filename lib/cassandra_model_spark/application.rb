@@ -4,7 +4,7 @@ module CassandraModel
       extend Forwardable
 
       def_delegator :@java_spark_context, :value!, :java_spark_context
-      attr_accessor :config
+      attr_accessor :spark_config
 
       def initialize(config)
         @spark_config = config || {}
@@ -29,8 +29,6 @@ module CassandraModel
       end
 
       private
-
-      attr_reader :spark_config
 
       def spark_conf
         Spark::Lib::SparkConf.new(true).tap do |conf|

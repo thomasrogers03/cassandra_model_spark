@@ -6,16 +6,18 @@ module CassandraModel
       let(:config) { {hosts: 3.times.map { Faker::Internet.ip_v4_address }} }
       let(:connection) { Application.new(config[:spark]) }
 
-      describe '#config' do
+      describe '#spark_config' do
+        let(:config) { {spark: Faker::Lorem.words} }
+
         subject { connection }
 
-        its(:config) { is_expected.to eq(config[:spark]) }
+        its(:spark_config) { is_expected.to eq(config[:spark]) }
 
         context 'when overriding the configuration after initialization' do
           let(:override_config) { Faker::Lorem.words }
 
-          before { subject.config = override_config }
-          its(:config) { is_expected.to eq(override_config) }
+          before { subject.spark_config = override_config }
+          its(:spark_config) { is_expected.to eq(override_config) }
         end
       end
 
