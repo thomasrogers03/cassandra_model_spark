@@ -8,8 +8,12 @@ module CassandraModel
         @gem_root ||= File.expand_path('../../..', __FILE__)
       end
 
+      def home
+        @home ||= (ENV['SPARK_HOME'] || default_home)
+      end
+
       def config_path
-        @config_path ||= "#{root}/config"
+        @config_path ||= "#{home}/config"
       end
 
       def config_file_path
@@ -22,10 +26,6 @@ module CassandraModel
                     else
                       {}
                     end
-      end
-
-      def home
-        @home ||= (ENV['SPARK_HOME'] || default_home)
       end
 
       def classpath
