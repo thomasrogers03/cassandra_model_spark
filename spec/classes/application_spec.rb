@@ -6,6 +6,19 @@ module CassandraModel
       let(:config) { {hosts: 3.times.map { Faker::Internet.ip_v4_address }} }
       let(:connection) { Application.new(config[:spark]) }
 
+      describe '#config' do
+        subject { connection }
+
+        its(:config) { is_expected.to eq(config[:spark]) }
+
+        context 'when overriding the configuration after initialization' do
+          let(:override_config) { Faker::Lorem.words }
+
+          before { subject.config = override_config }
+          its(:config) { is_expected.to eq(override_config) }
+        end
+      end
+
       describe '#java_spark_context' do
         let(:default_config) do
           Spark::Lib::SparkConf.from_hash({

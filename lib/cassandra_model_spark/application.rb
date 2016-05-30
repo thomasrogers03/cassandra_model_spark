@@ -4,6 +4,7 @@ module CassandraModel
       extend Forwardable
 
       def_delegator :@java_spark_context, :value!, :java_spark_context
+      attr_accessor :config
 
       def initialize(config)
         @spark_config = config || {}
