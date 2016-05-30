@@ -11,7 +11,7 @@ module CassandraModel
       def run_master
         validate_env!
 
-        result = SparkMaster.startRpcEnvAndEndpoint(master_config[:host], master_config[:master_port], master_config[:ui_port], spark_conf)._1
+        result = Spark::Lib::SparkMaster.startRpcEnvAndEndpoint(master_config[:host], master_config[:master_port], master_config[:ui_port], spark_conf)._1
         wait_for_shutdown do
           result.shutdown
           result.awaitTermination
@@ -27,7 +27,7 @@ module CassandraModel
       def run_slave
         validate_env!
 
-        result = SparkWorkerStarter.startWorker(master_url, slave_config[:host], master_config[:master_port], master_config[:ui_port], spark_conf)
+        result = Spark::Lib::SparkWorkerStarter.startWorker(master_url, slave_config[:host], master_config[:master_port], master_config[:ui_port], spark_conf)
         wait_for_shutdown do
           result.shutdown
           result.awaitTermination
@@ -47,7 +47,7 @@ module CassandraModel
       private
 
       def spark_conf
-        @spark_conf ||= ConnectionCache[nil].send(:spark_conf)
+        @spark_conf ||= Spark.application.send(:spark_conf)
       end
 
       def wait_for_shutdown
@@ -64,12 +64,12 @@ module CassandraModel
 
       def validate_env!
         unless ENV['SPARK_HOME'] && File.expand_path(ENV['SPARK_HOME']) == Spark.home
-          raise 'Spark enviroment not set correctly'
+          raise 'Spark environment not set correctly'
         end
       end
 
       def add_master_jars
-        ConnectionCache[nil].tap do |connection|
+        Spark.application do |connection|
           connection.config = {spark: {master: master_url}}
           connection.spark_context.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
         end
@@ -122,7 +122,7 @@ module CassandraModel
 
       def config
         @config ||= begin
-          override_config = ConnectionCache[nil].config.fetch(:spark_daemon) { {} }
+          override_config = Spark.application.config.fetch(:spark_daemon) { {} }
           {
               id: 1,
               ui_port: 8180,
