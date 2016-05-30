@@ -73,7 +73,7 @@ module CassandraModel
           connection.config = {spark: {master: master_url}}
           connection.spark_context.addJar("#{Spark.classpath}/cmodel_scala_helper.jar")
         end
-        ConnectionCache.clear
+        Spark.force_shutdown!
       end
 
       def workers
