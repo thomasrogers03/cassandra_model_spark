@@ -32,12 +32,18 @@ module CassandraModel
         @classpath ||= (ENV['SPARK_CLASSPATH'] || default_classpath)
       end
 
+      @@shutdown = false
       @@application = Application.new(Spark.config)
       at_exit do
-        if Spark.application.has_spark_context?
+        if Spark.application.has_spark_context? && !@@shutdown
           Logging.logger.info 'Shutting down spark context'
           Spark.application.java_spark_context.stop
         end
+      end
+
+      def force_shutdown!
+        @@shutdown = true
+        Spark.application.java_spark_context.stop
       end
 
       def application
