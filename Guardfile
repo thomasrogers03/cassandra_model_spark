@@ -43,6 +43,14 @@ group :scala do
   end
 end
 
+group :jruby_spec do
+  guard :rspec, cmd: 'rvm jruby do bundle exec rspec', spec_paths: %w(jruby_spec) do
+    watch(%r{^jruby_spec/classes/.+_spec\.rb$})
+    watch(%r{^lib/cassandra_model_spark/(.+)\.rb}) { |m| "jruby_spec/classes/#{m[1]}_spec.rb" }
+    watch('spec/jruby_spec_helper.rb') { 'jruby_spec' }
+  end
+end
+
 group :integration do
   guard :rspec, cmd: 'bundle exec rspec', spec_paths: %w(integration) do
     watch(%r{^integration/classes/.+_spec\.rb$})
