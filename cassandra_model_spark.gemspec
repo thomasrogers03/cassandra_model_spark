@@ -19,6 +19,7 @@ Inspired by the ruby-spark gem.}
   s.homepage = 'https://www.github.com/thomasrogers03/cassandra_model_spark'
   s.add_runtime_dependency 'cassandra_model', '>= 0.10.0', '<= 1.1'
   s.add_runtime_dependency 'thomas_utils', '>= 0.1.16', '< 0.3.0'
+  s.add_runtime_dependency 'connection_pool', '~> 2.2.0'
   s.add_runtime_dependency 'ruby-kafka', '~> 0.3.7'
   s.add_runtime_dependency 'rjb', '~> 1.5.4'
 

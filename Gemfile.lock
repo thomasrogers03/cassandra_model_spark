@@ -38,12 +38,9 @@ PATH
   specs:
     cassandra_model_spark (0.0.4)
       cassandra_model (>= 0.10.0, <= 1.1)
+      connection_pool (~> 2.2.0)
       rjb (~> 1.5.4)
       ruby-kafka (~> 0.3.7)
-      thomas_utils (>= 0.1.16, < 0.3.0)
-    cassandra_model_spark (0.0.4-java)
-      cassandra_model (>= 0.10.0, <= 1.1)
-      jruby-kafka (~> 3.6.0)
       thomas_utils (>= 0.1.16, < 0.3.0)
 
 GEM
@@ -62,6 +59,7 @@ GEM
     coderay (1.1.0)
     concurrent-ruby (1.0.1)
     concurrent-ruby (1.0.1-java)
+    connection_pool (2.2.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
     faker (1.6.1)
@@ -164,6 +162,7 @@ DEPENDENCIES
   cassandra_model!
   cassandra_model_spark!
   concurrent-ruby
+  connection_pool
   faker
   guard
   guard-bundler

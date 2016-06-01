@@ -10,6 +10,7 @@ group :development do
   gem 'cassandra_model', github: 'thomasrogers03/cassandra_model', require: false
   gem 'rjb', platform: :ruby, require: false
   gem 'pry'
+  gem 'connection_pool', require: false
   gem 'ruby-kafka', platform: :ruby, require: false
   gem 'jruby-kafka', platform: :jruby, require: false
 end
