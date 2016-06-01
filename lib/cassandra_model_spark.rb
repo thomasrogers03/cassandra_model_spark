@@ -24,6 +24,7 @@ require 'active_support/core_ext/class/attribute_accessors'
 require 'thomas_utils'
 require 'batch_reactor'
 require 'cassandra_model'
+require 'connection_pool'
 if RUBY_PLATFORM == 'java'
   require 'jruby-kafka'
   require 'cassandra_model_spark/kafka_batch'
@@ -31,6 +32,7 @@ if RUBY_PLATFORM == 'java'
 else
   require 'ruby-kafka'
   require 'rjb' unless CassandraModel.const_defined?('NO_BRIDGE')
+  require 'cassandra_model_spark/kafka_reactor'
 end
 require 'cassandra_model_spark/application'
 require 'cassandra_model_spark/spark'
