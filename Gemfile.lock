@@ -42,6 +42,11 @@ PATH
       rjb (~> 1.5.4)
       ruby-kafka (~> 0.3.7)
       thomas_utils (>= 0.1.16, < 0.3.0)
+    cassandra_model_spark (0.0.4-java)
+      cassandra_model (>= 0.10.0, <= 1.1)
+      connection_pool (~> 2.2.0)
+      jruby-kafka (~> 3.6.0)
+      thomas_utils (>= 0.1.16, < 0.3.0)
 
 GEM
   remote: https://rubygems.org/
