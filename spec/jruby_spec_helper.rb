@@ -1,4 +1,4 @@
-raise UnsupportedPlatform unless RUBY_PLATFORM == 'java'
+raise NotImplementedError, 'Unsupported platform, please use JRuby' unless RUBY_PLATFORM == 'java'
 
 require 'rspec'
 
