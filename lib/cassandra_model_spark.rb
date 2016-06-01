@@ -29,6 +29,7 @@ if RUBY_PLATFORM == 'java'
   require 'jruby-kafka'
   require 'cassandra_model_spark/kafka_batch'
   require 'cassandra_model_spark/kafka_producer'
+  require 'cassandra_model_spark/jruby_kafka_reactor'
 else
   require 'ruby-kafka'
   require 'rjb' unless CassandraModel.const_defined?('NO_BRIDGE')
