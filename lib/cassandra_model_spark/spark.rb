@@ -39,14 +39,6 @@ module CassandraModel
         Spark.application.java_spark_context.stop
       end
 
-      @@application = Application.new(Spark.config)
-      at_exit do
-        if Spark.application.has_spark_context? && !@@shutdown
-          Logging.logger.info 'Shutting down spark context'
-          force_shutdown!
-        end
-      end
-
       def application
         @@application
       end
@@ -62,6 +54,14 @@ module CassandraModel
       def default_home
         File.expand_path('~/.cassandra_model_spark').tap do |path|
           FileUtils.mkdir_p(path)
+        end
+      end
+
+      @@application = Application.new(Spark.config)
+      at_exit do
+        if Spark.application.has_spark_context? && !@@shutdown
+          Logging.logger.info 'Shutting down spark context'
+          force_shutdown!
         end
       end
     end
