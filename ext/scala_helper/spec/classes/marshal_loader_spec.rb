@@ -46,6 +46,16 @@ module CassandraModel
             context 'with a double' do
               let(:value) { rand * 99999.0 }
               it { is_expected.to eq(value.to_s) }
+
+              context 'infinity' do
+                let(:value) { 1 / 0.0 }
+                it { is_expected.to eq(value.to_s) }
+              end
+
+              context '-infinity' do
+                let(:value) { -1 / 0.0 }
+                it { is_expected.to eq(value.to_s) }
+              end
             end
           end
 
