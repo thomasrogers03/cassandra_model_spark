@@ -20,6 +20,7 @@ outputPath in packageDependency := file(s"${_targetDir}/spark-assembly-${sparkVe
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion excludeAll(ExclusionRule(organization = "org.apache.hadoop")),
+  "org.apache.spark" % "spark-repl_2.10" % sparkVersion,
   "org.apache.spark" %% "spark-sql" % sparkVersion,
   "org.apache.spark" %% "spark-hive" % sparkVersion,
   "org.apache.spark" %% "spark-streaming" % sparkVersion,
