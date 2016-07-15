@@ -70,12 +70,11 @@ class MarshalLoader(dump: Array[Byte]) {
     val length = decodeInt()
     val str_value = new String(nextBytes(length))
 
-    val result: java.lang.Double = if(str_value.equals("-inf"))
-      -1 / 0.0
-    else if(str_value.equals("inf"))
-      1 / 0.0
-    else
-      str_value.toDouble
+    val result: java.lang.Double = str_value match {
+      case "-inf" => -1 / 0.0
+      case "inf" => 1 / 0.0
+      case _ => str_value.toDouble
+    }
 
     recordObject(result)
     result
