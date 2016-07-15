@@ -61,7 +61,8 @@ module CassandraModel
       at_exit do
         if Spark.application.has_spark_context? && !@@shutdown
           Logging.logger.info 'Shutting down spark context'
-          Spark.force_shutdown!
+          @@shutdown = true
+          Spark.application.java_spark_context.stop
         end
       end
     end
