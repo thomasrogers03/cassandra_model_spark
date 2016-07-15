@@ -30,7 +30,9 @@ module CassandraModel
 
       def config
         @config ||= if File.exists?(config_file_path)
-                      YAML.load(File.read(config_file_path))
+                      config = YAML.load(File.read(config_file_path))
+                      config = config[ENV['RAILS_ENV']] if ENV['RAILS_ENV']
+                      config
                     else
                       {}
                     end
