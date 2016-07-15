@@ -18,10 +18,10 @@ module CassandraModel
           @kafka_pool.with do |kafka|
             producer = kafka.producer
             block[producer]
-            Ione::Future.resolved(producer.deliver_messages)
+            ThomasUtils::Future.value(producer.deliver_messages)
           end
         rescue Exception => e
-          Ione::Future.failed(e)
+          ThomasUtils::Future.error(e)
         end
       end
 

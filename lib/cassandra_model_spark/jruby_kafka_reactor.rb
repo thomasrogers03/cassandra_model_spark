@@ -27,9 +27,9 @@ module CassandraModel
         begin
           batch = KafkaBatch.new
           block[batch]
-          Ione::Future.resolved(@producer.send_msgs(batch.messages))
+          ThomasUtils::Future.value(@producer.send_msgs(batch.messages))
         rescue Exception => e
-          Ione::Future.failed(e)
+          ThomasUtils::Future.error(e)
         end
       end
 
