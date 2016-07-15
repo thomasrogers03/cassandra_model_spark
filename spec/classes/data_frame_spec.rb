@@ -319,7 +319,18 @@ module CassandraModel
       end
 
       it_behaves_like 'an async method not yet implemented', :request_async
-      it_behaves_like 'an async method not yet implemented', :first_async
+
+      describe '#first_async' do
+        let(:record_result) { double(:result) }
+        let(:params) { {Faker::Lorem.word => Faker::Lorem.sentence} }
+
+        subject { data_frame.first_async(params) }
+
+        before { allow(data_frame).to receive(:first).with(params).and_return(record_result) }
+
+        it { is_expected.to be_a_kind_of(Cassandra::Future) }
+        its(:get) { is_expected.to eq(record_result) }
+      end
 
       describe '#normalized' do
         let(:partition_key) { available_columns.inject({}) { |memo, column| memo.merge!(column => :text) } }

@@ -102,11 +102,12 @@ module CassandraModel
       end
 
       def request_async(*_)
-        ResultPaginator.new(first_async) {}
+        future = Cassandra::Future.error(NotImplementedError.new)
+        ResultPaginator.new(future) {}
       end
 
-      def first_async(*_)
-        Cassandra::Future.error(NotImplementedError.new)
+      def first_async(*args)
+        Cassandra::Future.value(first(*args))
       end
 
       def sql(query)
