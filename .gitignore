@@ -10,6 +10,7 @@ tmp
 .ruby-env
 .idea
 spike
+config
 *.gem
 ext/scala_helper/target
 ext/scala_helper/project/project
