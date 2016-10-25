@@ -28,6 +28,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming-flume" % sparkVersion,
   "org.apache.spark" %% "spark-graphx" % sparkVersion,
   "org.apache.spark" %% "spark-mllib" % sparkVersion,
+  "org.apache.spark" % "spark-repl_2.10" % sparkVersion,
   "org.apache.hadoop" %  "hadoop-client" % hadoopClientVersion,
   "com.datastax.spark" %% "spark-cassandra-connector" % cassandraConnectionVersion,
   "com.datastax.spark" %% "spark-cassandra-connector-java" % cassandraConnectionVersion,
